@@ -10,7 +10,6 @@ import com.example.airdry.database.Entities.Stack
 import com.example.airdry.domain.repository.interfaces.EmployeeRepository
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
-import com.example.airdry.util.Enums
 import androidx.lifecycle.viewModelScope
 import com.example.airdry.database.Entities.WorkDone
 
@@ -46,22 +45,28 @@ class WorkViewModel @Inject constructor(
         _selectedEmployee.value = employee
     }
 
-    fun createStack(length: Enums.StackLength, width: Enums.StackWidth) {
-        val stack = Stack(length = length, width = width)
-        viewModelScope.launch {
-            stackRepo.createStack(stack)
-            Toast.makeText(app, "Stack saved", Toast.LENGTH_SHORT).show()
-        }
-    }
-    fun createStack(length: Enums.StackLength, width: Enums.StackWidth, onCreated: (Stack) -> Unit) {
-        viewModelScope.launch {
-            val stack = Stack(length = length, width = width)
 
+    fun createStack(stack: Stack,  onCreated: (Stack) -> Unit) {
+        viewModelScope.launch {
             stackRepo.createStack(stack)
             onCreated(stack)
         }
     }
 
+    fun saveStackAndWork(stack: Stack, workDone: List<WorkDone>) {
+        viewModelScope.launch {
+            stackRepo.createStack(stack)
+            workDone.forEach {
+                workDoneRepo.createWork(it)
+            }
+
+        }
+    }
+
+
+    fun toastStackCreated() {
+        Toast.makeText(app, "Stack Created", Toast.LENGTH_SHORT).show()
+    }
     fun createWorkDone(data: WorkDone) {
         viewModelScope.launch {
             workDoneRepo.createWork(data)

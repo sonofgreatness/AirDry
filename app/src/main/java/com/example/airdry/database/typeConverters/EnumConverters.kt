@@ -1,18 +1,16 @@
 package com.example.airdry.database.typeConverters
 
 import androidx.room.TypeConverter
-import com.example.airdry.util.Enums
+import com.example.airdry.util.Enums.StackType
 
 class EnumConverters {
     @TypeConverter
-    fun fromStackLength(length: Enums.StackLength): String = length.name
+    fun fromStackType(type: StackType): String {
+        return type.displayName
+    }
 
     @TypeConverter
-    fun toStackLength(name: String): Enums.StackLength = Enums.StackLength.valueOf(name)
-
-    @TypeConverter
-    fun fromStackWidth(width: Enums.StackWidth): String = width.name
-
-    @TypeConverter
-    fun toStackWidth(name: String): Enums.StackWidth = Enums.StackWidth.valueOf(name)
+    fun toStackType(value: String): StackType {
+        return StackType.fromDisplayName(value)
+    }
 }

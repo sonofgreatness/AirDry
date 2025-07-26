@@ -9,16 +9,17 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed
- class  Screen(val route: String, val title: String, val icon: ImageVector) {
+ class  Screen(val route: String, val title: String, val icon: ImageVector?) {
     object Workers : Screen("workers", "Workers", Icons.Default.Person)
     object WorkDone : Screen("workdone", "Work Done", Icons.Default.Build)
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
     object CreateWorker : Screen("workers/create", "New Worker", Icons.Default.Add)
     object EditWorker : Screen("workers/edit", "Edit Worker", Icons.Default.Edit)
+    object SelectEmployee : Screen("select_employee", "Select", Icons.Default.Person)
+    object CreateStackAndWork : Screen("create_stack", "Create Stack",null)
 
-    object SelectEmployee : Screen("work/selectEmployee", "Select Employee", Icons.Default.Person)
-    object CreateStack : Screen("work/createStack", "Create Stack", Icons.Default.Add)
-    object RecordWork : Screen("work/recordWork", "Record Work", Icons.Default.Build)
+    object RecordWork : Screen("record_work", "Record Work", Icons.Default.Edit)
+
 
     fun withArgs(vararg args: String): String {
         return if (args.isNotEmpty()) {

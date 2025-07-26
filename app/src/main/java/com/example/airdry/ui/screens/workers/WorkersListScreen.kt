@@ -24,10 +24,13 @@ fun WorkersListScreen(
     navController: NavController,
     viewModel: EmployeeViewModel
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.getAllEmployees()
+    }
     val workers by viewModel.allEmployees.observeAsState(emptyList())
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Employees", style = MaterialTheme.typography.headlineMedium)
+        Text("Employees", style = MaterialTheme.typography.titleMedium)
 
         Spacer(Modifier.height(16.dp))
 

@@ -22,7 +22,7 @@ import com.example.airdry.util.Constants
     entities = [Employee::class,
         Stack::class,
         WorkDone::class]
-    , version = 2,
+    , version = 3,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, UUIDConverter::class,

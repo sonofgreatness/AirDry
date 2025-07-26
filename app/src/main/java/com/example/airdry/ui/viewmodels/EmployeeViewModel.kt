@@ -32,10 +32,10 @@ class EmployeeViewModel
 
 
 
-    private fun getAllEmployees() {
+     fun getAllEmployees() {
         viewModelScope.launch {
-            Toast.makeText(application, "Getting Employees ... ${repository.getAllEmployees().size}", Toast.LENGTH_SHORT).show()
-            _allEmployees.value = repository.getAllEmployees()
+          _allEmployees.value = repository.getAllEmployees()
+            Toast.makeText(application.applicationContext, "Employees Loaded", Toast.LENGTH_SHORT).show()
         }
     }
      fun createEmployee(entity: Employee) {
