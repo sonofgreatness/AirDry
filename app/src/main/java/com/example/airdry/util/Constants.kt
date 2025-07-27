@@ -13,7 +13,7 @@ class Constants {
         const val STACKTYPE_T3_0 = "1976x76  1 metre"
         const val STACKTYPE_T3_2 = "1976x76  1.2 metre"
         const val STACKTYPE_T3_5 = "1976x76  1.5 metre"
-
+        const val FILE_PATH = "AirDry/Reports/Excel"
 
     }
 }

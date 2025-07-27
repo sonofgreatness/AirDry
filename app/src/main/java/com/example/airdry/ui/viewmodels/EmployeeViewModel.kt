@@ -18,21 +18,15 @@ class EmployeeViewModel
     @Inject constructor(    private val application: Application,
                             private val repository: EmployeeRepository):
     ViewModel() {
-
-
-
     private val _allEmployees = MutableLiveData<List<Employee>>()
     val allEmployees: LiveData<List<Employee>>
         get() = _allEmployees
-
-
     init {
         getAllEmployees()
     }
      fun getAllEmployees() {
         viewModelScope.launch {
           _allEmployees.value = repository.getAllEmployees().toList()
-            Toast.makeText(application.applicationContext, "Employees Refreshed", Toast.LENGTH_SHORT).show()
         }
     }
      fun createEmployee(entity: Employee) {
@@ -53,5 +47,4 @@ class EmployeeViewModel
     suspend fun getEmployeeById(id: UUID): Employee? {
         return repository.getById(id)
     }
-
     }

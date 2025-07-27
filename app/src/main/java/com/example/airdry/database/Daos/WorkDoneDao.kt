@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.example.airdry.database.Entities.WorkDone
 import com.example.airdry.database.Entities.WorkWithStack
+import java.time.LocalDate
 import java.util.UUID
 @Dao
 interface  WorkDoneDao {
@@ -26,5 +27,17 @@ interface  WorkDoneDao {
     @Transaction
     @Query("SELECT * FROM work_done WHERE employee_id = :employeeId")
     suspend fun getWorkByEmployeeId(employeeId: UUID): List<WorkWithStack>
+
+
+    @Transaction
+    @Query("SELECT * FROM work_done")
+    suspend fun getWorkWithStack(): List<WorkWithStack>
+
+    @Transaction
+    @Query("""
+    SELECT * FROM work_done 
+    WHERE date_worked BETWEEN :startDate AND :endDate""")
+    suspend fun getWorkWithStackBetweenDates(startDate: String, endDate: String): List<WorkWithStack>
+
 
 }

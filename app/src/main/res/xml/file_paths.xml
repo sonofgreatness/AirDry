@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Access internal storage: /data/data/your.package.name/files/ -->
+    <files-path
+        name="internal_files"
+        path="." />
+
+    <!-- Access external private storage: /storage/emulated/0/Android/data/your.package.name/files/ -->
+    <external-files-path
+        name="external_files"
+        path="." />
+
+
+    <external-path
+        name="documents"
+        path="Documents/" />
+</paths>

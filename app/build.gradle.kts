@@ -77,4 +77,12 @@ dependencies {
     implementation ( libs.androidx.runtime.livedata)
 
 
+    implementation ("org.apache.poi:poi:5.2.3")
+    implementation ("org.apache.poi:poi-ooxml:5.2.3")
+
+    // Required for OOXML support (low overhead)
+    implementation ("org.apache.commons:commons-collections4:4.4")
+    implementation ("org.apache.commons:commons-compress:1.21")
+
+
 }

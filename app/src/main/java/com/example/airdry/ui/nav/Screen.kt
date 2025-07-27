@@ -17,9 +17,7 @@ sealed
     object EditWorker : Screen("workers/edit", "Edit Worker", Icons.Default.Edit)
     object SelectEmployee : Screen("select_employee", "Select", Icons.Default.Person)
     object CreateStackAndWork : Screen("create_stack", "Create Stack",null)
-
-    object RecordWork : Screen("record_work", "Record Work", Icons.Default.Edit)
-
+    object GenerateExcel : Screen("generate_excel", "Generate Excel", null)
 
     fun withArgs(vararg args: String): String {
         return if (args.isNotEmpty()) {

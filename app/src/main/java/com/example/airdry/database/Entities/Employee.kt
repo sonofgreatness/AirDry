@@ -16,4 +16,8 @@ data class Employee (
 
         return "$name  $surname $phoneNumber"
     }
+    fun printFullname  (): String{
+        return "$name  $surname"
+
+    }
 }
