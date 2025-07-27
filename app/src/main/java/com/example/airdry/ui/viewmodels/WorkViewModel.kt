@@ -1,6 +1,7 @@
 package com.example.airdry.ui.viewmodels
 
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -54,12 +55,33 @@ class WorkViewModel @Inject constructor(
     }
 
     fun saveStackAndWork(stack: Stack, workDone: List<WorkDone>) {
+
         viewModelScope.launch {
-            stackRepo.createStack(stack)
-            workDone.forEach {
-                workDoneRepo.createWork(it)
+            try {
+                Log.d("Fuseki1", stack.id.toString())
+                stackRepo.createStack(stack)
+            }catch (ex : Exception)
+            {
+
+                Toast.makeText(app.applicationContext,
+                    "Failed to Save Stack :  ${ex.message}",Toast.LENGTH_SHORT).show()
             }
 
+            try {
+                workDone.forEach { it ->
+                    Log.d("Fuseki2", "work_id ${it.id} stackId ${it.stackId}")
+                }
+                workDone.forEach {
+
+                    workDoneRepo.createWork(it)
+                }
+            }
+            catch (ex: Exception)
+            {
+
+                Toast.makeText(app.applicationContext,
+                    "Failed to Save WorkDone :  ${ex.message}",Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

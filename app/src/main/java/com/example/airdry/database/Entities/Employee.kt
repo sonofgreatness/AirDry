@@ -11,4 +11,9 @@ data class Employee (
     @ColumnInfo(name = "phone_number") val phoneNumber: String,
     @ColumnInfo(name = "date_created") val dateCreated: Timestamp = Timestamp(System.currentTimeMillis()),
     @ColumnInfo(name = "is_active") val isActive: Boolean = false
-)
+){
+    override fun toString() : String{
+
+        return "$name  $surname $phoneNumber"
+    }
+}

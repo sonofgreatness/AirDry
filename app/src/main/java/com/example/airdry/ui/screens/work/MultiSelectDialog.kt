@@ -15,15 +15,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
+import com.example.airdry.database.Entities.Employee
 @Composable
 fun MultiSelectDialog(
-    allItems: List<String>,
-    selectedItems: List<String>,
+    allItems: List<Employee>,
+    selectedItems: List<Employee>,
     onDismiss: () -> Unit,
-    onConfirm: (List<String>) -> Unit
+    onConfirm: (List<Employee>) -> Unit,
+    defaultEmployee: Employee
 ) {
-    val selected = remember { mutableStateListOf<String>().apply { addAll(selectedItems) } }
+    val selected = remember {
+        mutableStateListOf<Employee>().apply {
+            // Ensure defaultEmployee is always included
+            addAll(selectedItems)
+            if (defaultEmployee !in this) add(defaultEmployee)
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -37,25 +44,32 @@ fun MultiSelectDialog(
                 Text("Cancel")
             }
         },
-        title = { Text("Select Materials") },
+        title = { Text("Select Workers Sharing") },
         text = {
             Column {
                 allItems.forEach { item ->
                     val isChecked = item in selected
+                    val isDefault = item == defaultEmployee
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                if (isChecked) selected.remove(item) else selected.add(item)
-                            }
+                            .then(
+                                if (!isDefault) Modifier.clickable {
+                                    if (isChecked) selected.remove(item) else selected.add(item)
+                                } else Modifier // Do not allow clicks on defaultEmployee
+                            )
                             .padding(vertical = 4.dp)
                     ) {
                         Checkbox(
                             checked = isChecked,
-                            onCheckedChange = null // use Row click
+                            onCheckedChange = null,
+                            enabled = !isDefault
                         )
-                        Text(text = item)
+                        Text(
+                            text = item.toString() + if (isDefault) " (default)" else ""
+                        )
                     }
                 }
             }

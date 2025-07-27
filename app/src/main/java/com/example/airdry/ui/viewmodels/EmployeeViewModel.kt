@@ -25,17 +25,14 @@ class EmployeeViewModel
     val allEmployees: LiveData<List<Employee>>
         get() = _allEmployees
 
+
     init {
         getAllEmployees()
-
     }
-
-
-
      fun getAllEmployees() {
         viewModelScope.launch {
-          _allEmployees.value = repository.getAllEmployees()
-            Toast.makeText(application.applicationContext, "Employees Loaded", Toast.LENGTH_SHORT).show()
+          _allEmployees.value = repository.getAllEmployees().toList()
+            Toast.makeText(application.applicationContext, "Employees Refreshed", Toast.LENGTH_SHORT).show()
         }
     }
      fun createEmployee(entity: Employee) {
@@ -48,6 +45,7 @@ class EmployeeViewModel
         viewModelScope.launch {
             Toast.makeText(application, "Employee Edited", Toast.LENGTH_SHORT).show()
             repository.editEmployee(entity)
+            getAllEmployees()
 
         }
     }

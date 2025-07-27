@@ -10,7 +10,7 @@ interface EmployeeDao {
     @Update
     suspend fun editEmployee(entity: Employee)
     @Query("""
-        SELECT * FROM employee 
+        SELECT * FROM  employee WHERE is_active =1
         
     """)
     suspend fun getAllEmployees() :List<Employee>

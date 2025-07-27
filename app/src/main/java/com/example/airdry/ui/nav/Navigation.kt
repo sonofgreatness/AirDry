@@ -102,16 +102,8 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
 
                     // State to hold the data
                     var employee by remember { mutableStateOf<Employee?>(null) }
-                    //val employees by employeeViewModel.allEmployees.observeAsState(emptyList())
-                     val employees = listOf(
-                         Employee(
-                             id = UUID.randomUUID(),
-                             name = "John",
-                             surname = "Doe",
-                             phoneNumber = "1234567890",
-                             nationalId = "123456789",
-                         )
-                     )
+                    val employees by employeeViewModel.allEmployees.observeAsState(emptyList())
+
 
                     // Launch coroutine to fetch data
                     LaunchedEffect(employeeId) {
