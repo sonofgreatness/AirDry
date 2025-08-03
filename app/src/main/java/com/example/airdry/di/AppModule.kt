@@ -1,16 +1,21 @@
 package com.example.airdry.di
 
 import android.app.Application
+import androidx.work.WorkerFactory
 import com.example.airdry.database.Daos.EmployeeDao
 import com.example.airdry.database.Daos.StackDao
 import com.example.airdry.database.Daos.WorkDoneDao
 import com.example.airdry.database.MainDatabase
 import com.example.airdry.domain.repository.implementations.EmployeeRepositoryImpl
+import com.example.airdry.domain.repository.implementations.ReportConfigRepositoryImpl
 import com.example.airdry.domain.repository.implementations.StackRepositoryImpl
 import com.example.airdry.domain.repository.implementations.WorkDoneRepositoryImpl
 import com.example.airdry.domain.repository.interfaces.EmployeeRepository
+import com.example.airdry.domain.repository.interfaces.ReportConfigRepository
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
+import com.example.airdry.domain.workers.factories.MyWorkerFactory
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,8 +67,11 @@ fun providesEmployeeRepository(employeeDao: EmployeeDao): EmployeeRepository {
 fun providesWorkDoneRepository(workDoneDao: WorkDoneDao): WorkDoneRepository {
     return  WorkDoneRepositoryImpl(workDoneDao)
 }
-
-
+@Provides
+@Singleton
+fun providesReportConfigRepository(app: Application): ReportConfigRepository {
+    return ReportConfigRepositoryImpl(app)
+}
 
 
 

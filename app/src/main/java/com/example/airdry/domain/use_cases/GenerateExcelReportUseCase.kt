@@ -1,12 +1,16 @@
 package com.example.airdry.domain.use_cases
 
 import android.app.Application
-import android.content.Context
-import android.os.Build
 import android.os.Environment
 import android.util.Log
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.example.airdry.R
 import com.example.airdry.domain.repository.interfaces.EmployeeRepository
+import com.example.airdry.domain.repository.interfaces.ReportConfigRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
+import com.example.airdry.domain.workers.GenerateExcelReportToExternalStorageWorker
 import com.example.airdry.util.Constants.Companion.FILE_PATH
 import com.example.airdry.util.operational_states.ExcelReportResult
 import kotlinx.coroutines.flow.Flow
@@ -22,144 +26,122 @@ class GenerateExcelReportUseCase @Inject constructor(
     private val app: Application,
     private val employeeRepo: EmployeeRepository,
     private val workRepo: WorkDoneRepository,
+    private  val reportConfigRepo: ReportConfigRepository
 ) {
     operator fun invoke(
         startDate: String,
         endDate: String
     ): Flow<ExcelReportResult> = flow {
         try {
-            val context = app.applicationContext
-            Log.d("ExcelReport", "Invoked with startDate=$startDate and endDate=$endDate")
 
-            val workWithStack = workRepo.getWorkWithStackBetweenDates(startDate, endDate)
-            Log.d("ExcelReport", "Fetched ${workWithStack.size} work records")
 
-            if (workWithStack.isEmpty()) {
-                emit(ExcelReportResult.Error("No work data found in selected date range."))
-                return@flow
+
+            val internalFile = writeWorkBook(startDate, endDate)
+            try {
+             val workRequest = OneTimeWorkRequestBuilder<GenerateExcelReportToExternalStorageWorker>()
+                              .addTag("generate_excel_report")
+                            .setInputData(workDataOf(
+                                "startDate" to startDate,
+                                 "endDate" to endDate))
+                              .build()
+                WorkManager.getInstance(app.applicationContext)
+                    .beginWith(workRequest)
+                    .enqueue()
+
+
+
+                
+            }catch (ex : Exception)
+            {
+                Log.d("GenerateExcelReportUseCase","failed to  write  to external  storage ${ex.localizedMessage}")
             }
-
-            // Step 2: Create Excel workbook
-            val workbook = XSSFWorkbook()
-            val sheet = workbook.createSheet("Work Report")
-
-            // Step 3: Header
-            val headerRow = sheet.createRow(0)
-            headerRow.createCell(0).setCellValue("Employee Name")
-            headerRow.createCell(1).setCellValue("Date Worked")
-            headerRow.createCell(2).setCellValue("Stack Name")
-            headerRow.createCell(3).setCellValue("Quantity")
-            headerRow.createCell(4).setCellValue("% Owned")
-
-            // Step 4: Fill data
-            workWithStack.forEachIndexed { index, item ->
-                val employee = employeeRepo.getById(item.workDone.employeeId)
-                val row = sheet.createRow(index + 1)
-                val percentage = item.workDone.ownershipFraction * 100.0
-                val roundedPercentage = BigDecimal(percentage).setScale(2, RoundingMode.HALF_UP).toDouble()
-
-                row.createCell(0).setCellValue(employee?.printFullname() ?: "Unknown")
-                row.createCell(1).setCellValue(item.workDone.dateWorked.toString())
-                row.createCell(2).setCellValue(item.stack.type.displayName)
-                row.createCell(3).setCellValue(item.workDone.amount.toDouble())
-                row.createCell(4).setCellValue(roundedPercentage)
-            }
-
-            // Step 5: Determine output location
-            val fileName = "work_report_${startDate}_to_${endDate}.xlsx"
-            val childFolder = FILE_PATH
-            val fullPath = File(context.filesDir, childFolder)
-
-            val dirCreated = fullPath.mkdirs() || fullPath.exists()
-            val internalFile = File(fullPath, fileName)
-
-            Log.d("ExcelReport", "Created dir=${fullPath.absolutePath}, success=$dirCreated")
-
-            if (!dirCreated) {
-                emit(ExcelReportResult.Error("Failed to create directory: ${fullPath.absolutePath}"))
-                return@flow
-            }
-
-
-
-            FileOutputStream(internalFile).use { workbook.write(it) }
-            workbook.close()
-
-/*
-            // 3. Attempt to copy to external Documents folder (if allowed)
-            val externalFilePath = tryCopyToExternalStorage(context, internalFile)
-
-            // 4. Emit success, returning the internal path and (optionally) the shared one
-            val message = if (externalFilePath != null) {
-                "Report saved to internal and shared storage: $externalFilePath"
-            } else {
-                "Report saved to internal app folder: ${internalFile.absolutePath}"
-            }
-*/
-
-
-            Log.d("ExcelReport", "Excel.. saved to: ${internalFile.absolutePath}")
             emit(ExcelReportResult.Success(internalFile.absolutePath))
 
         } catch (e: Exception) {
-            Log.e("ExcelReport", "Error generating report", e)
             emit(ExcelReportResult.Error("Failed to generate Excel report: ${e.localizedMessage}"))
         }
     }
-}
-private fun tryCopyToExternalStorage(context: Context, sourceFile: File): String? {
-    val TAG = "ExcelExport"
 
-    return try {
-        Log.d(TAG, "Attempting to copy file: ${sourceFile.absolutePath}")
+    private suspend fun writeWorkBook(startDate: String, endDate: String): File {
+        val internalhostPath: String = app.filesDir.path
+        val workWithStack = workRepo.getWorkWithStackBetweenDates(startDate, endDate)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Log.d(TAG, "Using scoped storage (API >= 29)")
-
-            val targetDir = File(
-                context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
-                "AirDry/Reports/Excel"
-            )
-
-            Log.d(TAG, "Target directory for scoped storage: ${targetDir.absolutePath}")
-
-            if (!targetDir.exists()) {
-                val created = targetDir.mkdirs()
-                Log.d(TAG, "Created target directory: $created")
-            }
-
-            val destFile = File(targetDir, sourceFile.name)
-            Log.d(TAG, "Destination file path: ${destFile.absolutePath}")
-
-            sourceFile.copyTo(destFile, overwrite = true)
-            Log.d(TAG, "File copied successfully to scoped storage")
-
-            return destFile.absolutePath
-        } else {
-            Log.d(TAG, "Using legacy storage (API < 29)")
-
-            val publicDir = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
-                "AirDry/Reports/Excel"
-            )
-
-            Log.d(TAG, "Public documents directory: ${publicDir.absolutePath}")
-
-            if (!publicDir.exists()) {
-                val created = publicDir.mkdirs()
-                Log.d(TAG, "Created public directory: $created")
-            }
-
-            val destFile = File(publicDir, sourceFile.name)
-            Log.d(TAG, "Destination file path: ${destFile.absolutePath}")
-
-            sourceFile.copyTo(destFile, overwrite = true)
-            Log.d(TAG, "File copied successfully to public storage")
-
-            return destFile.absolutePath
+        if (workWithStack.isEmpty()) {
+            throw Exception("No work data found in selected date range.")
         }
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to copy file: ${e.message}", e)
-        return null
+
+        // Step 2: Create Excel workbook
+        val workbook = XSSFWorkbook()
+        val sheet = workbook.createSheet("Work Report")
+
+        // Step 3: Header
+        val headerRow = sheet.createRow(0)
+        headerRow.createCell(0).setCellValue("Employee Name")
+        headerRow.createCell(1).setCellValue("Date Worked")
+        headerRow.createCell(2).setCellValue("Stack Name")
+        headerRow.createCell(3).setCellValue("Quantity")
+        headerRow.createCell(4).setCellValue("% Owned")
+        headerRow.createCell(5).setCellValue("height")
+        headerRow.createCell(6).setCellValue("breath")
+        headerRow.createCell(7).setCellValue("width")
+        headerRow.createCell(8).setCellValue("numberOfPieces")
+        headerRow.createCell(9).setCellValue("cubes per stack")
+
+
+        // Step 4: Fill data
+        workWithStack.forEachIndexed { index, item ->
+            val employee = employeeRepo.getById(item.workDone.employeeId)
+            val row = sheet.createRow(index + 1)
+            val percentage = item.workDone.ownershipFraction * 100.0
+            val roundedPercentage =
+                BigDecimal(percentage).setScale(2, RoundingMode.HALF_UP).toDouble()
+
+            val dimens = item.stack.type.height * item.stack.type.breadth * item.stack.type.width
+            val  sum = item.stack.type.numberOfPieces * item.workDone.amount * item.workDone.ownershipFraction
+            val cubes = dimens * sum
+
+
+
+            row.createCell(0).setCellValue(employee?.printFullname() ?: "Unknown")
+            row.createCell(1).setCellValue(item.workDone.dateWorked.toString())
+            row.createCell(2).setCellValue(item.stack.type.displayName)
+            row.createCell(3).setCellValue(item.workDone.amount.toDouble())
+            row.createCell(4).setCellValue(roundedPercentage)
+            row.createCell(5).setCellValue(item.stack.type.height.toDouble())
+            row.createCell(6).setCellValue(item.stack.type.breadth.toDouble())
+            row.createCell(7).setCellValue(item.stack.type.width.toDouble())
+            row.createCell(8).setCellValue(item.stack.type.numberOfPieces.toDouble())
+            row.createCell(9).setCellValue(cubes)
+        }
+
+
+        setupDirectories()
+        val internalFile = writeToInternal(startDate, endDate, internalhostPath)
+        FileOutputStream(internalFile).use { workbook.write(it) }
+        workbook.close()
+        return internalFile
     }
+
+
+    private fun setupDirectories() {
+        reportConfigRepo.setUpInternalDirectories()
+        reportConfigRepo.setUpExternalDirectories()
+    }
+}
+
+
+
+
+private fun writeToInternal(
+    startDate: String,
+    endDate: String,
+    internalhostPath: String
+): File {
+
+    val fileName = "work_report_${startDate}_to_${endDate}.xlsx"
+    val childFolder = FILE_PATH
+    val fullPath = File(internalhostPath, childFolder)
+    val internalFile = File(fullPath, fileName)
+
+    return internalFile
 }

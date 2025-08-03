@@ -12,6 +12,7 @@ import com.example.airdry.database.Daos.WorkDoneDao
 import com.example.airdry.database.Entities.Employee
 import com.example.airdry.database.Entities.Stack
 import com.example.airdry.database.Entities.WorkDone
+import com.example.airdry.database.migration.Migrations.Companion.MIGRATION_4_5
 import com.example.airdry.database.typeConverters.EnumConverters
 import com.example.airdry.database.typeConverters.TimestampConverter
 import com.example.airdry.database.typeConverters.UUIDConverter
@@ -22,7 +23,7 @@ import com.example.airdry.util.Constants
     entities = [Employee::class,
         Stack::class,
         WorkDone::class]
-    , version = 4,
+    , version = 5,
     exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, UUIDConverter::class,
@@ -51,7 +52,7 @@ abstract class MainDatabase :RoomDatabase() {
 
                 )
 
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_4_5)
                     .build()
 
                 INSTANCE = instance

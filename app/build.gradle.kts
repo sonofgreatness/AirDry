@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id ("kotlin-kapt")
 }
 
 android {
@@ -69,13 +70,11 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
    // implementation(libs.accompanist.navigation.animation)
 
-
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
     implementation ( libs.androidx.runtime.livedata)
-
 
     implementation ("org.apache.poi:poi:5.2.3")
     implementation ("org.apache.poi:poi-ooxml:5.2.3")
@@ -83,6 +82,13 @@ dependencies {
     // Required for OOXML support (low overhead)
     implementation ("org.apache.commons:commons-collections4:4.4")
     implementation ("org.apache.commons:commons-compress:1.21")
+
+    // Hilt + WorkManager
+    implementation ("androidx.hilt:hilt-work:1.0.0")
+    kapt ("androidx.hilt:hilt-compiler:1.0.0")
+    // WorkManager
+    implementation ("androidx.work:work-runtime-ktx:2.7.1")
+
 
 
 }

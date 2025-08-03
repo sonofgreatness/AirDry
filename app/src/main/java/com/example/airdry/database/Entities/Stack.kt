@@ -8,7 +8,7 @@ import java.util.*
 @Entity(tableName = "stack")
 data class Stack(
     @PrimaryKey val id: UUID = UUID.randomUUID(),
-    @ColumnInfo(name = "length")
+    @ColumnInfo(name = "type")
     val type: Enums.StackType,
     @ColumnInfo(name = "date_created")
     val dateCreated: Timestamp = Timestamp(System.currentTimeMillis())

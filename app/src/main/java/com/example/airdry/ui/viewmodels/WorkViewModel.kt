@@ -107,13 +107,11 @@ class WorkViewModel @Inject constructor(
                         val filePath = result.filePath
                         val file = File(filePath)
                         val context = app.applicationContext
-
-                        Toast.makeText(context, "FILE CREATED: $filePath", Toast.LENGTH_SHORT).show()
-
+                        Toast.makeText(context, "FILE CREATED", Toast.LENGTH_SHORT).show()
                         try {
                             val uri = FileProvider.getUriForFile(
                                 context,
-                                "${context.packageName}.provider", // Ensure this matches your manifest
+                                "${context.packageName}.provider",
                                 file
                             )
 
