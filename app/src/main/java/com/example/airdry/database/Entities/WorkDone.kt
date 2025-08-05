@@ -39,4 +39,6 @@ data class WorkDone(
     @ColumnInfo(name = "date_worked")
     val dateWorked: Timestamp = Timestamp(System.currentTimeMillis()),
     val amount: Double
-)
+){
+
+}
