@@ -2,6 +2,7 @@ package com.example.airdry.database.typeConverters
 
 import androidx.room.TypeConverter
 import java.sql.Timestamp
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,9 +24,13 @@ class TimestampConverter {
     // String <-> Timestamp converters
     @TypeConverter
     fun fromString(value: String?): Timestamp? {
-        return value?.let {
-            val date = formatter.parse(it)
-            date?.let { Timestamp(it.time) }
+        return try {
+            value?.let {
+                val date = formatter.parse(it)
+                date?.let { Timestamp(it.time) }
+            }
+        } catch (e: Exception) {
+            Timestamp(System.currentTimeMillis())
         }
     }
 

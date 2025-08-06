@@ -42,6 +42,10 @@ class WorkViewModel @Inject constructor(
     private val _selectedEmployee = MutableLiveData<Employee?>()
     val selectedEmployee: LiveData<Employee?> = _selectedEmployee
 
+    private val _allStacks = MutableLiveData<List<Stack?>>()
+    val allStacks : LiveData<List<Stack?>>  get() = _allStacks
+
+
     private val _workDoneWithStack = MutableLiveData<Map<UUID, List<WorkWithStack>>>()
     val workDoneWithStack: LiveData<Map<UUID, List<WorkWithStack>>> = _workDoneWithStack
 
@@ -50,6 +54,15 @@ class WorkViewModel @Inject constructor(
 
     init{
        loadWorkDoneWithStack()
+        loadAllStacks()
+    }
+
+     fun loadAllStacks() {
+        viewModelScope.launch{
+            stackRepo.getAllStacks().let{
+                _allStacks.postValue(it)
+            }
+        }
     }
 
     fun loadWorkDoneWithStack() {
@@ -63,17 +76,10 @@ class WorkViewModel @Inject constructor(
     }
 
 
-    fun saveStackAndWork(stack: Stack, workDone: List<WorkDone>) {
+    fun saveStackAndWork(workDone: List<WorkDone>) {
 
         viewModelScope.launch {
-            try {
-                stackRepo.createStack(stack)
-            }catch (ex : Exception)
-            {
 
-                Toast.makeText(app.applicationContext,
-                    "Failed to Save Stack :  ${ex.message}",Toast.LENGTH_SHORT).show()
-            }
 
             try {
                 workDone.forEach {
@@ -87,6 +93,7 @@ class WorkViewModel @Inject constructor(
             }
         }
     }
+
 
 
 

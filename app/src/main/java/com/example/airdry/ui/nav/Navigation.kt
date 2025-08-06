@@ -108,21 +108,23 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                     // State to hold the data
                     var employee by remember { mutableStateOf<Employee?>(null) }
                     val employees by employeeViewModel.allEmployees.observeAsState(emptyList())
-
+                    val stacks by workViewModel.allStacks.observeAsState(emptyList())
 
                     // Launch coroutine to fetch data
                     LaunchedEffect(employeeId) {
                         employee = workViewModel.getEmployeeById(employeeId)
                         employeeViewModel.getAllEmployees()
+                        workViewModel.loadAllStacks()
                     }
 
 
                     if ( employee != null) {
                             CreateStackAndWorkScreen(
+                                 allStacks = stacks,
                                 allEmployees =employees ,
                                 defaultEmployee = employee!!,
-                                onSubmit = { stack, workDoneList ->
-                                    workViewModel.saveStackAndWork(stack, workDoneList)
+                                onSubmit = {workDoneList ->
+                                    workViewModel.saveStackAndWork(workDoneList)
                                     navController.navigate(Screen.SelectEmployee.route)
                                 }
                             )

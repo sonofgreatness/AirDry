@@ -126,7 +126,7 @@ private fun SelectEmployeeCreateStackCard(
                                 val stackType = workWithStack.stack.type
                                 val amount = workWithStack.workDone.amount
                                 val fraction = workWithStack.workDone.ownershipFraction
-                                Text(" - ${stackType.displayName} | Amount: $amount | %Owned: ${String.format("%.2f", (fraction * 100.0))}%", style = MaterialTheme.typography.bodySmall)
+                                Text(" - $stackType | Amount: $amount | %Owned: ${String.format("%.2f", (fraction * 100.0))}%", style = MaterialTheme.typography.bodySmall)
                             }
                         } else {
                             Text(" - No work recorded", style = MaterialTheme.typography.bodySmall)

@@ -30,13 +30,14 @@ import com.example.airdry.util.Enums
 
 @Composable
 fun CreateStackAndWorkScreen(
+    allStacks :List<Stack?>,
     allEmployees: List<Employee>,
     defaultEmployee: Employee,
-    onSubmit: (Stack, List<WorkDone>) -> Unit
+    onSubmit: (List<WorkDone>) -> Unit
 ) {
     val context = LocalContext.current
 
-    var selectedType by remember { mutableStateOf(Enums.StackType.STACKTYPE_T1_5) }
+    var selectedType by remember { mutableStateOf<Stack?>(null) }
     var amount by remember { mutableStateOf("") }
     var isShared by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
@@ -51,10 +52,10 @@ fun CreateStackAndWorkScreen(
         Text("Select Stack Type", style = MaterialTheme.typography.labelMedium)
 
         DropdownMenuBox(
-            items = Enums.StackType.values().toList(),
+            items = allStacks,
             selectedItem = selectedType,
             onItemSelected = { selectedType = it },
-            label = { it.displayName }
+            label = { it?.type ?: "no stacks found" }
         )
 
         Spacer(Modifier.height(16.dp))
@@ -122,7 +123,7 @@ fun CreateStackAndWorkScreen(
                 }
                 else {
 
-                    val stack = Stack(type = selectedType)
+                    val stack = selectedType
                     val totalEmployees = if (isShared) selectedEmployees.size else 1
                     val fraction = 1.0f / totalEmployees
                     val employees = if (isShared) selectedEmployees else listOf(defaultEmployee)
@@ -130,13 +131,13 @@ fun CreateStackAndWorkScreen(
                     val workList = employees.map { emp ->
                         WorkDone(
                             employeeId = emp.id,
-                            stackId = stack.id,
+                            stackId = stack!!.id,
                             amount = (amount.toDoubleOrNull() ?: 0.0),
                             ownershipFraction = fraction
                         )
                     }
 
-                    onSubmit(stack, workList)
+                    onSubmit(workList)
 
                 } },
             modifier = Modifier.fillMaxWidth(),
