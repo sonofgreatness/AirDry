@@ -102,6 +102,34 @@ class WorkViewModel @Inject constructor(
         return employeeRepo.getById(id)
     }
 
+
+
+
+
+    fun createStack(entity:Stack){
+
+        viewModelScope.launch {
+            stackRepo.createStack(entity)
+            Toast.makeText(app.applicationContext
+            ,"New stack saved", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun editStack(entity:Stack){
+
+        viewModelScope.launch {
+            stackRepo.editStack(entity)
+            Toast.makeText(app.applicationContext
+                ,"Stack edited", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
+    suspend fun  getStackById(id :UUID) : Stack?{
+
+        return stackRepo.getStackById(id)
+    }
+
     fun generatExcelReport(startDate: LocalDate, endDate: LocalDate) {
         val formatter = DateTimeFormatter.ISO_LOCAL_DATE
         val start = startDate.format(formatter)

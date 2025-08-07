@@ -29,3 +29,12 @@ data class Stack(
     @ColumnInfo(name = "date_created")
     val dateCreated: Timestamp = Timestamp(System.currentTimeMillis())
 )
+{
+
+    fun getStackCubes () :Float{
+
+        return (width*height*numberOfPieces*breadth)
+    }
+
+
+}

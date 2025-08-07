@@ -13,10 +13,9 @@ data class WorkWithStack(
     val stack: Stack
 ){
     fun getCubes (): Double{
-        val dimens = stack.height * stack.breadth * stack.width
-        val sum =
-            stack.numberOfPieces * workDone.amount * workDone.ownershipFraction
-        return   dimens * sum
+
+        val sum = workDone.amount * workDone.ownershipFraction
+        return   stack.getStackCubes() * sum
 
     }
 }

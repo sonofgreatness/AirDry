@@ -41,7 +41,7 @@ import com.example.airdry.database.Entities.Employee
 import com.example.airdry.ui.screens.reports.GenerateExcelScreen
 import com.example.airdry.ui.screens.work.CreateStackAndWorkScreen
 import com.example.airdry.ui.screens.work.EmployeeSelectionScreen
-
+import com.example.airdry.ui.screens.settings.*
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
 import com.example.airdry.ui.screens.workers.WorkersListScreen
@@ -50,7 +50,7 @@ import com.example.airdry.ui.viewmodels.WorkViewModel
 import java.util.UUID
 
 @Composable
-fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewModel)  {
+fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewModel) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -62,11 +62,11 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
             NavHost(navController = navController, startDestination = Screen.SelectEmployee.route) {
 
                 composable(Screen.Workers.route) {
-                    WorkersListScreen(navController= navController, viewModel = employeeViewModel)
+                    WorkersListScreen(navController = navController, viewModel = employeeViewModel)
                 }
 
                 composable(Screen.CreateWorker.route) {
-                    CreateWorkerScreen(navController= navController, viewModel = employeeViewModel)
+                    CreateWorkerScreen(navController = navController, viewModel = employeeViewModel)
                 }
 
                 composable(
@@ -77,20 +77,24 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                         },
                     )
                 ) { entry ->
-                   val  id = entry.arguments?.getString("workerId")
-                    EditWorkerScreen(navController= navController, employeeId = id.toString()
-                        , viewModel = employeeViewModel)
+                    val id = entry.arguments?.getString("workerId")
+                    EditWorkerScreen(
+                        navController = navController,
+                        employeeId = id.toString(),
+                        viewModel = employeeViewModel
+                    )
                 }
                 composable(Screen.Settings.route) {
-                    Greeting("Settings", navController = navController)
+
+                    Settings(navController)
                 }
 
 
                 composable(Screen.SelectEmployee.route) {
-                    EmployeeSelectionScreen(viewModel = workViewModel,
-                        employeeViewModel = employeeViewModel
-                    , onMovetoGenerateExcel = {
-                        navController.navigate(Screen.GenerateExcel.route)
+                    EmployeeSelectionScreen(
+                        viewModel = workViewModel,
+                        employeeViewModel = employeeViewModel, onMovetoGenerateExcel = {
+                            navController.navigate(Screen.GenerateExcel.route)
                         }) {
                         val selectedId = workViewModel.selectedEmployee.value?.id
                         if (selectedId != null) {
@@ -103,7 +107,8 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                     arguments = listOf(navArgument("employeeId") { type = NavType.StringType })
                 ) { backStackEntry ->
 
-                    val employeeId = UUID.fromString(backStackEntry.arguments?.getString("employeeId"))
+                    val employeeId =
+                        UUID.fromString(backStackEntry.arguments?.getString("employeeId"))
 
                     // State to hold the data
                     var employee by remember { mutableStateOf<Employee?>(null) }
@@ -118,105 +123,127 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                     }
 
 
-                    if ( employee != null) {
-                            CreateStackAndWorkScreen(
-                                 allStacks = stacks,
-                                allEmployees =employees ,
-                                defaultEmployee = employee!!,
-                                onSubmit = {workDoneList ->
-                                    workViewModel.saveStackAndWork(workDoneList)
-                                    navController.navigate(Screen.SelectEmployee.route)
-                                }
-                            )
+                    if (employee != null) {
+                        CreateStackAndWorkScreen(
+                            allStacks = stacks,
+                            allEmployees = employees,
+                            defaultEmployee = employee!!,
+                            onSubmit = { workDoneList ->
+                                workViewModel.saveStackAndWork(workDoneList)
+                                navController.navigate(Screen.SelectEmployee.route)
+                            }
+                        )
 
                     }
                 }
 
-                composable (Screen.GenerateExcel.route){
+                composable(Screen.GenerateExcel.route) {
                     GenerateExcelScreen(
-                        onGenerate = {startDate, endDate ->
+                        onGenerate = { startDate, endDate ->
                             workViewModel.generatExcelReport(startDate, endDate)
                         }
                     )
                 }
+                composable(Screen.ManageStacks.route) {
 
-            }
-        }
-    }
-}
+                    val stacks by workViewModel.allStacks.observeAsState(emptyList())
+                    // Launch coroutine to fetch data
+                    LaunchedEffect(stacks) {
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier, navController: NavController) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+                        workViewModel.loadAllStacks()
+                    }
+                    ManageStacksScreen(stacks, navController)
+                }
+                composable(Screen.ManageUpdates.route) { ManageUpdatesScreen() }
 
+                composable(Screen.CreateStack.route) {
+                    CreateStackScreen(navController, workViewModel)
+                }
 
-@Composable
-fun BottomNavigationBar(navController: NavController) {
-    val screens = listOf(Screen.Workers, Screen.SelectEmployee, Screen.Settings)
-    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
-    Box {
-        NavigationBar(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            tonalElevation = 8.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-        ) {
-            screens.forEachIndexed { index, screen ->
-                if (index == 1) {
-                    Spacer(Modifier.weight(1f)) // Leave space for center FAB
-                } else {
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                screen.icon!!,
-                                contentDescription = screen.title,
-                                tint = if (currentDestination?.route == screen.route)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.onSurface
-                            )
+                composable(
+                    route = Screen.EditStack.route + "/{stackId}",
+                    arguments = listOf(
+                        navArgument("stackId") {
+                            type = NavType.StringType
                         },
-                        label = { Text(screen.title) },
-                        selected = currentDestination?.route == screen.route,
-                        onClick = {
-                            navController.navigate(screen.route) {
-
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
+                    )
+                ) { entry ->
+                    val id = entry.arguments?.getString("stackId")
+                    EditStackScreen(
+                        navController = navController,
+                        stackId = id.toString(),
+                        viewModel = workViewModel
                     )
                 }
             }
         }
+    }
 
-        // Center FAB
-        FloatingActionButton(
-            onClick = {
-                navController.navigate(Screen.SelectEmployee.route)
-            },
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = Color.White,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = (-36).dp)
-                .size(64.dp),
-            shape = CircleShape
-        ) {
-            Icon(
-                Screen.WorkDone.icon!!,
-                contentDescription = "Work Done",
-                modifier = Modifier.size(28.dp)
-            )
+}
+
+    @Composable
+    fun BottomNavigationBar(navController: NavController) {
+        val screens = listOf(Screen.Workers, Screen.SelectEmployee, Screen.Settings)
+        val currentDestination = navController.currentBackStackEntryAsState().value?.destination
+        Box {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                tonalElevation = 8.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                screens.forEachIndexed { index, screen ->
+                    if (index == 1) {
+                        Spacer(Modifier.weight(1f)) // Leave space for center FAB
+                    } else {
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    screen.icon!!,
+                                    contentDescription = screen.title,
+                                    tint = if (currentDestination?.route == screen.route)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            label = { Text(screen.title) },
+                            selected = currentDestination?.route == screen.route,
+                            onClick = {
+                                navController.navigate(screen.route) {
+
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Center FAB
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(Screen.SelectEmployee.route)
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .offset(y = (-36).dp)
+                    .size(64.dp),
+                shape = CircleShape
+            ) {
+                Icon(
+                    Screen.WorkDone.icon!!,
+                    contentDescription = "Work Done",
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
-}
