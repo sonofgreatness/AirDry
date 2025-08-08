@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.airdry.ui.nav.Screen
 import com.example.airdry.ui.theme.ForestGreen
+import com.example.airdry.ui.theme.Typography
 
 @Composable
     fun Settings(
@@ -27,9 +28,7 @@ import com.example.airdry.ui.theme.ForestGreen
                      Alignment.CenterHorizontally
                  )
                      ,
-                 style = MaterialTheme.typography.titleLarge,
-                 color = MaterialTheme.colorScheme.onSurface
-
+                 style = Typography.titleLarge
 
              )
             GreenDivider()

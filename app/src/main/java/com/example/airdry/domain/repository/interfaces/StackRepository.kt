@@ -12,5 +12,5 @@ interface StackRepository {
     suspend fun editStack(stack: Stack)
     suspend fun getStackById(id: UUID): Stack?
     suspend fun getAllStacks(): List<Stack>
-
+    suspend fun deleteStack(stack: Stack)
 }

@@ -112,7 +112,6 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
 
                     // State to hold the data
                     var employee by remember { mutableStateOf<Employee?>(null) }
-                    val employees by employeeViewModel.allEmployees.observeAsState(emptyList())
                     val stacks by workViewModel.allStacks.observeAsState(emptyList())
 
                     // Launch coroutine to fetch data
@@ -126,7 +125,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                     if (employee != null) {
                         CreateStackAndWorkScreen(
                             allStacks = stacks,
-                            allEmployees = employees,
+                            employeeViewModel,
                             defaultEmployee = employee!!,
                             onSubmit = { workDoneList ->
                                 workViewModel.saveStackAndWork(workDoneList)

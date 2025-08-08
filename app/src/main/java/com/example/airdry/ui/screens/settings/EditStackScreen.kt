@@ -40,6 +40,13 @@ fun EditStackScreen(
                 viewModel.editStack(updatedStack)
                 navController.popBackStack()
             }
+            ,
+            onDelete = {
+                stack ->
+                viewModel.deleteStack(stack)
+                navController.popBackStack()
+            },
+            showDeleteButton = true
         )
     } else {
         // Loading indicator while data is being fetched

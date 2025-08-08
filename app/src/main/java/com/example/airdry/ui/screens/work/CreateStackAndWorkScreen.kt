@@ -26,12 +26,13 @@ import androidx.compose.ui.unit.dp
 import com.example.airdry.database.Entities.Employee
 import com.example.airdry.database.Entities.Stack
 import com.example.airdry.database.Entities.WorkDone
+import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.util.Enums
 
 @Composable
 fun CreateStackAndWorkScreen(
     allStacks :List<Stack?>,
-    allEmployees: List<Employee>,
+    viewModel: EmployeeViewModel,
     defaultEmployee: Employee,
     onSubmit: (List<WorkDone>) -> Unit
 ) {
@@ -95,7 +96,7 @@ fun CreateStackAndWorkScreen(
 
         if (showDialog) {
             MultiSelectDialog(
-                allItems = allEmployees,
+               viewModel,
                 selectedItems = selectedEmployees,
                 defaultEmployee = defaultEmployee,
                 onDismiss = { showDialog = false },

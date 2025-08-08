@@ -19,4 +19,8 @@ interface EmployeeDao {
      @Query("SELECT * FROM employee WHERE id = :id LIMIT 1")
      suspend  fun getById(id: UUID): Employee?
 
+
+    @Query("SELECT * FROM employee WHERE name LIKE '%' || :searchTerm || '%' OR  surname LIKE '%' || :searchTerm || '%'")
+    suspend fun  getFilteredEmployees(searchTerm : String): List<Employee>?
+
 }

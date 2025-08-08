@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.airdry.database.Entities.Employee
 import com.example.airdry.ui.nav.Screen
+import com.example.airdry.ui.theme.Typography
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 
 @Composable
@@ -48,7 +49,7 @@ fun WorkersListScreen(
     val workers by viewModel.allEmployees.observeAsState(emptyList())
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Employees", style = MaterialTheme.typography.titleMedium)
+        Text("Employees", style = Typography.titleLarge)
 
         Spacer(Modifier.height(16.dp))
 

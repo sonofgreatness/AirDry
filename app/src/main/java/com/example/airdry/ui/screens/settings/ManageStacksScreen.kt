@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.airdry.database.Entities.Stack
 import com.example.airdry.ui.nav.Screen
+import com.example.airdry.ui.theme.Typography
 
 
 @Composable
@@ -33,9 +34,8 @@ fun ManageStacksScreen(
 
         Text(
             "Current Stacks",
-            style = MaterialTheme.typography.titleLarge,
+            style = Typography.titleLarge,
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            color = MaterialTheme.colorScheme.onSurface
         )
 
 

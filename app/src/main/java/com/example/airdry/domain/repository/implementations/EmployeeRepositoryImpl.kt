@@ -11,4 +11,6 @@ class EmployeeRepositoryImpl @Inject constructor(val employeeDao : EmployeeDao):
     override suspend fun editEmployee(entity: Employee)  = employeeDao.editEmployee(entity)
     override suspend fun getAllEmployees()= employeeDao.getAllEmployees()
     override suspend fun getById(id: UUID)  = employeeDao.getById(id)
+    override  suspend fun  getFilteredEmployees(searchTerm : String)
+            = employeeDao.getFilteredEmployees(searchTerm)
 }

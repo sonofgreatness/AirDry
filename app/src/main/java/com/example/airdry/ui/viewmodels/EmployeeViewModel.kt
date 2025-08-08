@@ -1,6 +1,7 @@
 package com.example.airdry.ui.viewmodels
 
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -21,7 +22,14 @@ class EmployeeViewModel
     private val _allEmployees = MutableLiveData<List<Employee>>()
     val allEmployees: LiveData<List<Employee>>
         get() = _allEmployees
+
+    private val _filteredEmployees = MutableLiveData<List<Employee>>()
+    val filteredEmployees :LiveData<List<Employee>>
+        get() = _filteredEmployees
+
+
     init {
+        loadAllEmployees()
         getAllEmployees()
     }
      fun getAllEmployees() {
@@ -44,6 +52,23 @@ class EmployeeViewModel
         }
     }
 
+
+    fun updateFilteredEmployees(searchTerm :String){
+
+    viewModelScope.launch{
+        repository.getFilteredEmployees(searchTerm).let{
+            _filteredEmployees.postValue(it)
+        }
+    }
+    }
+
+    fun loadAllEmployees() {
+        viewModelScope.launch {
+            val all = repository.getFilteredEmployees("") ?: emptyList()
+            _filteredEmployees.postValue(all)
+            Log.d("loadEmployees", " loadEmployees called size -> ${all.size}")
+        }
+    }
     suspend fun getEmployeeById(id: UUID): Employee? {
         return repository.getById(id)
     }

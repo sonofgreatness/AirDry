@@ -9,5 +9,6 @@ interface EmployeeRepository {
     suspend fun editEmployee(entity: Employee)
     suspend fun getAllEmployees() :List<Employee>
     suspend  fun getById(id: UUID): Employee?
+    suspend fun  getFilteredEmployees(searchTerm : String) : List<Employee>?
 
 }

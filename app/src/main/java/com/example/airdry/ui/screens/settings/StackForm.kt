@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -18,10 +19,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.airdry.database.Entities.Stack
+import com.example.airdry.ui.theme.ForestGreen
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -37,7 +39,10 @@ fun StackForm(
         numberOfPieces = 0,
         dateCreated =Timestamp(System.currentTimeMillis())
     ),
-    onSubmit: (Stack) -> Unit)
+    onSubmit: (Stack) -> Unit,
+    onDelete: (Stack) -> Unit ={},
+    showDeleteButton:Boolean =false
+)
 {
 
     var type by remember { mutableStateOf(stack.type)}
@@ -64,7 +69,8 @@ fun StackForm(
             onValueChange = { breadth = it.toFloat() },
             label = { Text("breadth/length") },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal))
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
+        )
 
         Spacer(Modifier.height(8.dp))
 
@@ -73,7 +79,8 @@ fun StackForm(
             onValueChange = { width = it.toFloat() },
             label = { Text("width") },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal))
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
+        )
 
 
 
@@ -84,7 +91,8 @@ fun StackForm(
             onValueChange = { height = it.toFloat() },
             label = { Text("height") },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal))
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
+        )
 
 
         Spacer(Modifier.height(8.dp))
@@ -94,7 +102,8 @@ fun StackForm(
             onValueChange = { numberOfPieces = it.toInt() },
             label = { Text("number of pieces") },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number))
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+        )
 
 
 
@@ -107,22 +116,38 @@ fun StackForm(
 
         Button(
             onClick = {
-                   onSubmit(
-                     Stack(
-                         id = stack.id,
-                         type = type,
-                         breadth = breadth,
-                         width = width,
-                         height = height,
-                         numberOfPieces = numberOfPieces,
-                     )
+                onSubmit(
+                    Stack(
+                        id = stack.id,
+                        type = type,
+                        breadth = breadth,
+                        width = width,
+                        height = height,
+                        numberOfPieces = numberOfPieces,
                     )
+                )
 
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Save")
         }
+
+        if (showDeleteButton){
+            Spacer(Modifier.height(16.dp))
+            Button(
+            onClick = { onDelete(stack) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Red,
+                contentColor = Color.White
+            )
+        ) {
+            Text("Delete")
+        }
+
+    }
+
     }
 
 }

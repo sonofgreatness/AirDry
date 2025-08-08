@@ -11,6 +11,5 @@ class StackRepositoryImpl @Inject constructor(val stackDao: StackDao) : StackRep
     override suspend fun editStack(stack: Stack) = stackDao.editStack(stack)
     override suspend fun getStackById(id: UUID) = stackDao.getStackById(id)
     override suspend fun getAllStacks() = stackDao.getAllStacks()
-
-
+    override  suspend fun deleteStack(stack: Stack) = stackDao.deleteStack(stack)
 }

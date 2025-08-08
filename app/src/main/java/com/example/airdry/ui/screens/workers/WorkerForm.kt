@@ -36,7 +36,8 @@ fun WorkerForm(
         name = "",
         surname = null,
         nationalId = "",
-        phoneNumber = ""
+        phoneNumber = "",
+        isActive = true
     ),
     onSubmit: (Employee) -> Unit
 ) {
@@ -97,11 +98,9 @@ fun WorkerForm(
             value = phoneNumber,
             isError = showPhoneNumberError,
             onValueChange = {
-
                 if (it.length <= 8 && it.all { char -> char.isDigit() }){
                 phoneNumber = it
-                }
-                            },
+                }},
             label = { Text("Phone Number") },
             supportingText = {
                 if (showPhoneNumberError) Text("Phone number must be exactly 8 digits.")

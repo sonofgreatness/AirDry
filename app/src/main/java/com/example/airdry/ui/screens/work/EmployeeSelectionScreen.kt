@@ -1,7 +1,9 @@
 package com.example.airdry.ui.screens.work
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,8 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +39,7 @@ import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import com.example.airdry.util.toLocalDateTime
 import java.time.LocalDate
-
+import androidx.compose.runtime.getValue
 @Composable
 fun EmployeeSelectionScreen(
     viewModel: WorkViewModel,
@@ -42,17 +51,22 @@ fun EmployeeSelectionScreen(
 
     LaunchedEffect(Unit) {
         employeeViewModel.getAllEmployees()
+        employeeViewModel.updateFilteredEmployees("")
         viewModel.loadWorkDoneWithStack()
     }
 
-    val employees = employeeViewModel.allEmployees.observeAsState(emptyList()).value
+
+    val searchTerm = remember { mutableStateOf("") }
+
+
+    val employees by employeeViewModel.filteredEmployees.observeAsState(emptyList())
     val workMap = viewModel.workDoneWithStack.observeAsState(emptyMap()).value
     val today = remember { LocalDate.now() }
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "Select Worker (Create Stack)",
+                "Select Worker , Save work done",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )
@@ -70,6 +84,42 @@ fun EmployeeSelectionScreen(
         }
 
         Spacer(Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            OutlinedTextField(
+                value = searchTerm.value,
+
+                onValueChange = { searchTerm.value = it
+                    employeeViewModel.updateFilteredEmployees(it)
+                },
+                placeholder = { Text("Search...") },
+                singleLine = true,
+                shape = CircleShape,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+                    .background(MaterialTheme.colorScheme.surface, CircleShape),
+
+            )
+
+            Icon(Icons.Default.Close,
+                contentDescription = "Close",
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable {
+                        searchTerm.value = ""
+                        employeeViewModel.updateFilteredEmployees("")
+                    })
+        }
+
 
         LazyColumn {
             items(employees) { employee ->

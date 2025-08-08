@@ -16,13 +16,13 @@ import java.util.UUID
             entity = Employee::class,
             parentColumns = ["id"],
             childColumns = ["employee_id"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.RESTRICT
         ),
         ForeignKey(
             entity = Stack::class,
             parentColumns = ["id"],
             childColumns = ["stack_id"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.RESTRICT
         )
     ],
     indices = [Index("employee_id"), Index("stack_id")]

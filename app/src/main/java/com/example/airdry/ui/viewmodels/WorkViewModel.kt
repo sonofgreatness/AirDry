@@ -130,6 +130,22 @@ class WorkViewModel @Inject constructor(
         return stackRepo.getStackById(id)
     }
 
+
+
+    fun deleteStack(stack: Stack){
+        viewModelScope.launch {
+            try{
+                stackRepo.deleteStack(stack)
+                Toast.makeText(app.applicationContext, "Stack deleted"
+                    ,Toast.LENGTH_SHORT).show()
+            }
+            catch (ex: Exception){
+                Toast.makeText(app.applicationContext, "Failed to delete stack ,:${ex.message} "
+                ,Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     fun generatExcelReport(startDate: LocalDate, endDate: LocalDate) {
         val formatter = DateTimeFormatter.ISO_LOCAL_DATE
         val start = startDate.format(formatter)
