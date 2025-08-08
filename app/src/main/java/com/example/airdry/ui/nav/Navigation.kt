@@ -39,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.airdry.database.Entities.Employee
 import com.example.airdry.ui.screens.reports.GenerateExcelScreen
+import com.example.airdry.ui.screens.reports.ViewExcelScreen
 import com.example.airdry.ui.screens.work.CreateStackAndWorkScreen
 import com.example.airdry.ui.screens.work.EmployeeSelectionScreen
 import com.example.airdry.ui.screens.settings.*
@@ -138,8 +139,9 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
 
                 composable(Screen.GenerateExcel.route) {
                     GenerateExcelScreen(
-                        onGenerate = { startDate, endDate ->
-                            workViewModel.generatExcelReport(startDate, endDate)
+                        workViewModel,
+                        onMoveToNextScreen = {
+                            navController.navigate(Screen.ViewExcel.route)
                         }
                     )
                 }
@@ -173,6 +175,9 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                         stackId = id.toString(),
                         viewModel = workViewModel
                     )
+                }
+                composable (Screen.ViewExcel.route){
+                    ViewExcelScreen(workViewModel)
                 }
             }
         }

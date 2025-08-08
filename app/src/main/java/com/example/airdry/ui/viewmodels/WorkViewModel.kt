@@ -1,6 +1,8 @@
 package com.example.airdry.ui.viewmodels
 
 import android.app.Application
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
@@ -17,7 +19,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.airdry.database.Entities.WorkDone
 import com.example.airdry.database.Entities.WorkWithStack
 import com.example.airdry.domain.use_cases.GenerateExcelReportUseCase
+import com.example.airdry.util.classes.ExcelFileItem
 import com.example.airdry.util.operational_states.ExcelReportResult
+import com.example.airdry.util.operational_states.ExcelReportUiState
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,16 +49,25 @@ class WorkViewModel @Inject constructor(
     private val _allStacks = MutableLiveData<List<Stack?>>()
     val allStacks : LiveData<List<Stack?>>  get() = _allStacks
 
+    private val _uiState = MutableLiveData(ExcelReportUiState())
+    val uiState: LiveData<ExcelReportUiState> get() = _uiState
 
     private val _workDoneWithStack = MutableLiveData<Map<UUID, List<WorkWithStack>>>()
     val workDoneWithStack: LiveData<Map<UUID, List<WorkWithStack>>> = _workDoneWithStack
 
 
 
+    private val _files = MutableLiveData<List<ExcelFileItem>>()
+    val files: LiveData<List<ExcelFileItem>> get() = _files
+
+    private val filesDirPath: String = app.filesDir.path
+
+
 
     init{
        loadWorkDoneWithStack()
         loadAllStacks()
+        loadExcelFiles()
     }
 
      fun loadAllStacks() {
@@ -146,47 +159,117 @@ class WorkViewModel @Inject constructor(
         }
     }
 
+
+
     fun generatExcelReport(startDate: LocalDate, endDate: LocalDate) {
         val formatter = DateTimeFormatter.ISO_LOCAL_DATE
         val start = startDate.format(formatter)
         val end = endDate.format(formatter)
 
         viewModelScope.launch {
+            _uiState.postValue(ExcelReportUiState(isLoading = true))
             generateExcelReportUseCase(start, end).collect { result ->
                 when (result) {
                     is ExcelReportResult.Success -> {
-                        val filePath = result.filePath
-                        val file = File(filePath)
-                        val context = app.applicationContext
-                        Toast.makeText(context, "FILE CREATED", Toast.LENGTH_SHORT).show()
-                        try {
-                            val uri = FileProvider.getUriForFile(
-                                context,
-                                "${context.packageName}.provider",
-                                file
-                            )
 
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
 
-                            context.startActivity(intent)
-
-                        } catch (e: Exception) {
-                            Log.e("ExcelReport", "Failed to open file: ${e.message}", e)
-                            Toast.makeText(context, "Could not open file", Toast.LENGTH_SHORT).show()
-                        }
+                        openGeneratedFile(result.filePath)
                     }
-
                     is ExcelReportResult.Error -> {
-                        Log.e("ExcelReport", "Error: ${result.message}")
-                        Toast.makeText(app.applicationContext, "FAILED: ${result.message}", Toast.LENGTH_SHORT).show()
+
+                        _uiState.postValue(ExcelReportUiState(
+                            isLoading = false,
+                            errorMessage = result.message ?: "Unknown error"
+                        ))
+                        Toast.makeText(app, "FAILED: ${result.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         }
     }
 
+    private fun openGeneratedFile(filePath: String) {
+        val file = File(filePath)
+        val context = app.applicationContext
+        try {
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                file
+            )
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+
+            context.startActivity(intent)
+            _uiState.postValue( ExcelReportUiState(
+                isLoading = false,
+                successMessage = "Report generated successfully!"
+            ))
+
+        } catch (e: Exception) {
+            _uiState.postValue(ExcelReportUiState(
+                isLoading = false,
+                errorMessage = "Could not open file"
+            ))
+            Log.e("ExcelReport", "Failed to open file: ${e.message}", e)
+            Toast.makeText(context, "Could not open file", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
+    fun loadExcelFiles() {
+        val dir = File(filesDirPath)
+        val fileList = dir.listFiles()
+            ?.filter { it.extension.lowercase() == "xlsx" }
+            ?.map { ExcelFileItem(it.name, it) }
+            ?: emptyList()
+
+        _files.value = fileList
+    }
+
+    fun deleteFile(item: ExcelFileItem) {
+        if (item.file.exists()) {
+            item.file.delete()
+            loadExcelFiles()
+        }
+    }
+
+    fun shareFile(context: Context, item: ExcelFileItem) {
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            item.file
+        )
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        context.startActivity(Intent.createChooser(intent, "Share Excel File"))
+    }
+
+    fun openFile(context: Context, item: ExcelFileItem) {
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            item.file
+        )
+
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        try {
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "No app found to open Excel files", Toast.LENGTH_SHORT).show()
+        }
+    }
 
 }

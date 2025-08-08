@@ -4,6 +4,7 @@ package com.example.airdry.ui.screens.workers
 
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -61,14 +62,28 @@ fun WorkersListScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+         if(workers.isEmpty()){
+             Box(
+                 Modifier.fillMaxSize(),
+                 contentAlignment = Alignment.Center
+             ) {
+                 Text("No workers found", style = MaterialTheme.typography.bodyLarge)
+             }
+         }else{
         LazyColumn {
             items(workers) { worker ->
-                WorkerCard(worker = worker, onClick = {
-                    navController.navigate(Screen.EditWorker.withArgs(worker.id.toString()))
-                },
-                    employeeViewModel = viewModel)
+                WorkerCard(
+                    worker = worker, onClick = {
+                        navController.navigate(Screen.EditWorker.withArgs(worker.id.toString()))
+                    },
+                    employeeViewModel = viewModel
+                )
             }
         }
+    }
+
+
+
 
 
 

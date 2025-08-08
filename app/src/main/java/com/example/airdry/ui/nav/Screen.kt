@@ -18,6 +18,7 @@ sealed
     object SelectEmployee : Screen("select_employee", "Select", Icons.Default.Person)
     object CreateStackAndWork : Screen("create_stack", "Create Stack",null)
     object GenerateExcel : Screen("generate_excel", "Generate Excel", null)
+    object ViewExcel : Screen("view_excel", "View Excel", null)
     object ManageUpdates:Screen("manage_updates", "Manage Updates",null )
     object ManageStacks:Screen("manage_stacks", "Manage Stacks", null)
     object CreateStack: Screen ("stacks/save", "New Stack", null)
