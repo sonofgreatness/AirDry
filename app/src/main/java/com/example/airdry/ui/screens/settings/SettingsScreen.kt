@@ -1,7 +1,9 @@
 package com.example.airdry.ui.screens.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Divider
@@ -20,42 +22,63 @@ import com.example.airdry.ui.theme.Typography
     fun Settings(
         navController: NavController
     ){
-        Column {
-            //Header row
 
-             Text("Main Settings",
-                 modifier = Modifier.padding(16.dp).align(
-                     Alignment.CenterHorizontally
-                 )
-                     ,
-                 style = Typography.titleLarge
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column {
+                //Header row
 
-             )
-            GreenDivider()
-            Text("Check For Updates"
-            , modifier = Modifier.padding(16.dp).align(
-                    Alignment.Start
-                ).clickable{
-                    navController.navigate(route = Screen.ManageUpdates.route)
-                }
-                ,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                Text(
+                    "Main Settings",
+                    modifier = Modifier.padding(16.dp).align(
+                        Alignment.CenterHorizontally
+                    ),
+                    style = Typography.titleLarge
 
-            )
+                )
+                GreenDivider()
+                Text(
+                    "Check For Updates", modifier = Modifier.padding(16.dp).align(
+                        Alignment.Start
+                    ).clickable {
+                        navController.navigate(route = Screen.ManageUpdates.route)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
 
-         GreenDivider()
-            Text("Manage Stack Settings",
-                    modifier = Modifier.padding(16.dp).align(Alignment.Start).clickable{
-                  navController.navigate(route = Screen.ManageStacks.route)
-            },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                )
 
-            )
-            GreenDivider()
+                GreenDivider()
+                Text(
+                    "Manage Stack Settings",
+                    modifier = Modifier.padding(16.dp).align(Alignment.Start).clickable {
+                        navController.navigate(route = Screen.ManageStacks.route)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+
+                )
+                GreenDivider()
+
+
+            }
+            Column(
+                modifier = Modifier.align(Alignment.BottomStart)
+            ) {
+                GreenDivider()
+                Text(
+                    "About",
+                    modifier = Modifier.padding(16.dp).align(Alignment.Start).clickable {
+                        navController.navigate(route = Screen.About.route)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+
+                )
+                GreenDivider()
+            }
         }
-
 
     }
 

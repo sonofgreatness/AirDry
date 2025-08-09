@@ -46,12 +46,13 @@ import com.example.airdry.ui.screens.settings.*
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
 import com.example.airdry.ui.screens.workers.WorkersListScreen
+import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import java.util.UUID
 
 @Composable
-fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewModel) {
+fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewModel, connectionsViewModel: ConnectionsViewModel) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -155,7 +156,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                     }
                     ManageStacksScreen(stacks, navController)
                 }
-                composable(Screen.ManageUpdates.route) { ManageUpdatesScreen() }
+                composable(Screen.ManageUpdates.route) { ManageUpdatesScreen(connectionsViewModel) }
 
                 composable(Screen.CreateStack.route) {
                     CreateStackScreen(navController, workViewModel)
@@ -178,6 +179,11 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                 }
                 composable (Screen.ViewExcel.route){
                     ViewExcelScreen(workViewModel)
+                }
+
+                composable(Screen.About.route)
+                {
+                    AboutScreen()
                 }
             }
         }

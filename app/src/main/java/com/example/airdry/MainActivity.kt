@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.airdry.ui.nav.Navigation
 import com.example.airdry.ui.theme.AirDryTheme
+import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import com.example.airdry.util.Constants
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
 
     private val mEmployeeViewModel: EmployeeViewModel by viewModels()
     private val mWorkViewModel: WorkViewModel by viewModels()
-
+    private val mConnectionsViewModel : ConnectionsViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -35,7 +36,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AirDryTheme {
-                Navigation(mEmployeeViewModel, mWorkViewModel)
+                Navigation(mEmployeeViewModel, mWorkViewModel, mConnectionsViewModel)
             }
         }
     }

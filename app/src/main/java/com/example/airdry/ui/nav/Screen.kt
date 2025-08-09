@@ -23,6 +23,7 @@ sealed
     object ManageStacks:Screen("manage_stacks", "Manage Stacks", null)
     object CreateStack: Screen ("stacks/save", "New Stack", null)
     object EditStack:Screen("stacks/edit", "Edit Stack", null)
+    object  About :Screen("about", "About App", null)
 
     fun withArgs(vararg args: String): String {
         return if (args.isNotEmpty()) {

@@ -11,6 +11,8 @@ android {
     namespace = "com.example.airdry"
     compileSdk = 35
 
+
+
     defaultConfig {
         applicationId = "com.example.airdry"
         minSdk = 26
@@ -19,6 +21,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val githubPat = project.findProperty("HUB_PAT") ?: System.getenv("HUB_PAT")
+        buildConfigField("String", "HUB_PAT", "\"$githubPat\"")
+
+
     }
 
     buildTypes {
@@ -39,6 +46,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -76,12 +84,12 @@ dependencies {
 
     implementation ( libs.androidx.runtime.livedata)
 
-    implementation ("org.apache.poi:poi:5.2.3")
-    implementation ("org.apache.poi:poi-ooxml:5.2.3")
+    implementation (libs.poi)
+    implementation (libs.poi.ooxml)
 
     // Required for OOXML support (low overhead)
-    implementation ("org.apache.commons:commons-collections4:4.4")
-    implementation ("org.apache.commons:commons-compress:1.21")
+    implementation (libs.commons.collections4)
+    implementation (libs.commons.compress)
 
     // Hilt + WorkManager
     implementation ("androidx.hilt:hilt-work:1.0.0")
@@ -89,6 +97,12 @@ dependencies {
     // WorkManager
     implementation ("androidx.work:work-runtime-ktx:2.7.1")
 
+    // Retrofit + Gson
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.logging.interceptor)
 
+    // Preferences
+    implementation (libs.androidx.preference.ktx)
 
 }
