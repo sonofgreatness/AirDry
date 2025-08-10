@@ -13,6 +13,9 @@ import androidx.work.DelegatingWorkerFactory
 import com.example.airdry.domain.repository.interfaces.EmployeeRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
 import com.example.airdry.domain.workers.factories.MyWorkerFactory
+import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL
+import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL_DESCRIPTION
+import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL_DESCRIPTION_MAIN
 import com.example.airdry.util.Constants.Companion.GENERATE_FILE_CHANNEL_DESCRIPTION
 import javax.inject.Inject
 
@@ -34,8 +37,21 @@ class AirDryApplication: Application(), Configuration.Provider {
             ).apply {
                 description = "Used for foreground notifications while generating Excel reports."
             }
+
+
+            val channel2 = NotificationChannel(
+                DOWNLOAD_FILE_CHANNEL,
+                DOWNLOAD_FILE_CHANNEL_DESCRIPTION,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = DOWNLOAD_FILE_CHANNEL_DESCRIPTION_MAIN
+            }
+
             val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel) }
+
+            notificationManager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannel(channel2)
+        }
 
     }
 
