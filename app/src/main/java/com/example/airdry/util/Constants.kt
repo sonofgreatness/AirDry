@@ -3,7 +3,7 @@ package com.example.airdry.util
 class Constants {
     companion object {
         const val LOCAL_DATABASE_NAME="AirDryDatabase"
-
+        const val SERVER_PORT = 9090
         const val STACKTYPE_T1_5 = "25x76  1.5 metre"
         const val STACKTYPE_T1_8 = "25x76  1.8 metre"
 
@@ -30,6 +30,25 @@ class Constants {
 
         const val GITHUB_API = "https://api.github.com/"
         const val GITHUB_REPO_URL = "repos/sonofgreatness/AirDry/releases"
+       const val API_BASE_URL = "http://10.251.105.27:$SERVER_PORT"
+        const val PRODUCT_KEY = "si_sonofgreatness"
+        const val  PRODUCT_KEY_PRODUCT_KEY= "key"
+        const val  FAILED_LOGIN = "Failed to login, check credentials"
+        const val  FRESH_DATA_KEY = "fresh_data"
+        const val CONNECTIVITY_DELAY_TIME =5000L
+        const val NOT_LOGGED_IN_ERROR= "User is not logged in"
+        const val USER_FOUND_NOT_ERROR = "User not found"
+        const val SERVER_OK_TEXT = "Server is up and running"
+        const val QUERY_STRING = "queryString"
+        const val QUERY_PAGE = "page"
+        const val QUERY_PAGE_SIZE = "pageSize"
+        const val START_DATE = "startDate"
+        const val END_DATE = "endDate"
+        const val WORK_DONE_EDIT_GRACE_PERIOD = 7
+        const val WORK_DONE_EDIT_GRACE_PERIOD_CAPTURER = 2
+        const val  DEFAULT_PAGE_SIZE =20
+        const val  DEFAULT_PAGE =1
+
 
     }
 }

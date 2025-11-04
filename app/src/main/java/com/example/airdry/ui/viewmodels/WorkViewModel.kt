@@ -10,9 +10,9 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.Stack
-import com.example.airdry.domain.repository.interfaces.EmployeeRepository
+import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
 import androidx.lifecycle.viewModelScope
@@ -24,8 +24,6 @@ import com.example.airdry.util.operational_states.ExcelReportResult
 import com.example.airdry.util.operational_states.ExcelReportUiState
 
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
@@ -38,13 +36,13 @@ class WorkViewModel @Inject constructor(
     private val app: Application,
     private val workDoneRepo: WorkDoneRepository,
     private val stackRepo: StackRepository,
-    private val employeeRepo: EmployeeRepository,
+    private val employeeRepo: UserRepository,
     private val generateExcelReportUseCase: GenerateExcelReportUseCase,
 ) : ViewModel()
 {
 
-    private val _selectedEmployee = MutableLiveData<Employee?>()
-    val selectedEmployee: LiveData<Employee?> = _selectedEmployee
+    private val _selectedAppUser = MutableLiveData<AppUser?>()
+    val selectedAppUser: LiveData<AppUser?> = _selectedAppUser
 
     private val _allStacks = MutableLiveData<List<Stack?>>()
     val allStacks : LiveData<List<Stack?>>  get() = _allStacks
@@ -84,8 +82,8 @@ class WorkViewModel @Inject constructor(
             _workDoneWithStack.postValue(grouped)
         }
     }
-    fun selectEmployee(employee: Employee) {
-        _selectedEmployee.value = employee
+    fun selectEmployee(appUser: AppUser) {
+        _selectedAppUser.value = appUser
     }
 
 
@@ -111,7 +109,7 @@ class WorkViewModel @Inject constructor(
 
 
 
-    suspend fun getEmployeeById(id: UUID): Employee? {
+    suspend fun getEmployeeById(id: UUID): AppUser? {
         return employeeRepo.getById(id)
     }
 

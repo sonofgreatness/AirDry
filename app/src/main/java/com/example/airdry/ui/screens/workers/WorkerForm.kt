@@ -24,39 +24,48 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.ui.theme.AirDryTheme
 import java.util.UUID
 
 @Composable
 fun WorkerForm(
     title: String,
-    worker: Employee = Employee(
+    worker: AppUser = AppUser(
         id = UUID.randomUUID(),
         name = "",
         surname = null,
-        nationalId = "",
         phoneNumber = "",
-        isActive = true
+        isActive = true,
+        secondaryPhone = null,
+        isApproved = null,
+        createdAt = null,
+        updatedAt = null,
+        createdBy = null,
+        updatedBy = null,
+        userTypeId = null,
+        organizationId = null,
+        departmentId = null,
+        sectionId = null
     ),
-    onSubmit: (Employee) -> Unit
+    onSubmit: (AppUser) -> Unit
 ) {
     var name by remember { mutableStateOf(worker.name) }
     var surname by remember { mutableStateOf(worker.surname ?: "") }
-    var nationalId by remember { mutableStateOf(worker.nationalId) }
+    var nationalId by remember { mutableStateOf(worker.secondaryPhone) }
     var phoneNumber by remember { mutableStateOf(worker.phoneNumber) }
     var isActive by remember { mutableStateOf(worker.isActive) }
-    val isNationalIdValid = nationalId.length == 13 && nationalId.all { it.isDigit() }
-    val showIdError = nationalId.isNotEmpty() && !isNationalIdValid
-    val isPhoneNumberValid = phoneNumber.length == 8 && phoneNumber.all { it.isDigit() }
-    val showPhoneNumberError = phoneNumber.isNotEmpty() && !isPhoneNumberValid
+    val isNationalIdValid = nationalId!!.length == 13 && nationalId!!.all { it.isDigit() }
+    val showIdError = nationalId!!.isNotEmpty() && !isNationalIdValid
+    val isPhoneNumberValid = phoneNumber!!.length == 8 && phoneNumber!!.all { it.isDigit() }
+    val showPhoneNumberError = phoneNumber!!.isNotEmpty() && !isPhoneNumberValid
     val context  = LocalContext.current
     Column(Modifier.padding(16.dp)) {
         Text(text = title, style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = name,
+            value = name!!,
             onValueChange = { name = it.trim() },
             label = { Text("First Name") },
             modifier = Modifier.fillMaxWidth()
@@ -76,7 +85,7 @@ fun WorkerForm(
 
 
         OutlinedTextField(
-            value = nationalId,
+            value = nationalId.toString(),
             onValueChange = {
                 // Only allow digits and up to 13 characters
                 if (it.length <= 13 && it.all { char -> char.isDigit() }) {
@@ -95,7 +104,7 @@ fun WorkerForm(
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = phoneNumber,
+            value = phoneNumber.toString(),
             isError = showPhoneNumberError,
             onValueChange = {
                 if (it.length <= 8 && it.all { char -> char.isDigit() }){
@@ -116,7 +125,7 @@ fun WorkerForm(
         ) {
             Text("Is Active", modifier = Modifier.weight(1f))
             Switch(
-                checked = isActive,
+                checked = isActive == true,
                 onCheckedChange = { isActive = it }
             )
         }
@@ -130,14 +139,22 @@ fun WorkerForm(
             onClick = {
                 if (isNationalIdValid && isPhoneNumberValid){
                 onSubmit(
-                    Employee(
+                    AppUser(
                         id = worker.id,
                         name = name,
                         surname = if (surname.isBlank()) null else surname,
-                        nationalId = nationalId,
                         phoneNumber = phoneNumber,
-                        dateCreated = worker.dateCreated,
-                        isActive = isActive
+                        createdAt = worker.createdAt,
+                        secondaryPhone =null,
+                        isActive = null,
+                        isApproved = null,
+                        updatedAt = null,
+                        createdBy = null,
+                        updatedBy = null,
+                        userTypeId = null,
+                        organizationId = null,
+                        departmentId = null,
+                        sectionId = null,
                     )
                 )
             } else{

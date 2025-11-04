@@ -1,15 +1,20 @@
 package com.example.airdry.ui.viewmodels
 
 import android.app.Application
-import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.airdry.database.Entities.ProductKey
 import com.example.airdry.domain.REST_API.data_class.Asset
 import com.example.airdry.domain.REST_API.data_class.ReleaseResponse
 import com.example.airdry.domain.REST_API.interfaces.GithubApi
+import com.example.airdry.domain.repository.interfaces.ProductKeyRepository
 import com.example.airdry.domain.use_cases.DownloadUpdateUseCase
+import com.example.airdry.util.Constants.Companion.PRODUCT_KEY
+import com.example.airdry.util.operational_states.WorkerReleaseResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,12 +22,11 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.time.Instant
 import javax.inject.Inject
-import com.example.airdry.util.operational_states.WorkerReleaseResponse
 
 @HiltViewModel
 class ConnectionsViewModel @Inject constructor(
     private val context : Application,
-    val sharedPreferences: SharedPreferences,
+   private val productKeyRepo: ProductKeyRepository,
     private val api: GithubApi,
     private  val downloadUpdateUseCase: DownloadUpdateUseCase
 ) : ViewModel(){
@@ -31,11 +35,15 @@ class ConnectionsViewModel @Inject constructor(
 
     private val _releases = MutableStateFlow<List<ReleaseResponse>>(emptyList())
     val releases: StateFlow<List<ReleaseResponse>> = _releases
+    private  val _isProductKeyvalid  = MutableLiveData<Boolean>()
+    val isProductKeyvalid: LiveData<Boolean> get() = _isProductKeyvalid
 
 
     init{
         fetchAllReleases()
+      //  checkProductKey()
     }
+
 
 
 
@@ -97,5 +105,34 @@ class ConnectionsViewModel @Inject constructor(
             }
         }
     }
+    fun saveProductKey (key: String){
+       viewModelScope.launch {
+           productKeyRepo.getProductKeys().let { list->
+               if(list.isEmpty()){
+                   val pr = ProductKey(keyValue = key)
+                   productKeyRepo.createProductKey(pr)
+                   _isProductKeyvalid.postValue(true)
+                   Toast.makeText(context,"Success", Toast.LENGTH_SHORT).show()
 
+               }
+           }
+       }
+
+    }
+
+     fun checkProductKey() {
+        viewModelScope.launch {
+            productKeyRepo.getProductKeys().let{list->
+                if(list.isEmpty())
+                {
+                    Toast.makeText(context,
+                        "product key invalid", Toast.LENGTH_SHORT).show()
+                    _isProductKeyvalid.postValue(false)
+                }else{
+                   _isProductKeyvalid.postValue(list[0].keyValue == PRODUCT_KEY)
+                }
+            }
+
+        }
+    }
 }

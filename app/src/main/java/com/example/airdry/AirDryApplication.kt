@@ -4,27 +4,20 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import com.example.airdry.util.Constants.Companion.GENERATE_FILE_CHANNEL
-import dagger.hilt.android.HiltAndroidApp
-
 import androidx.work.Configuration
-import androidx.work.DelegatingWorkerFactory
-import com.example.airdry.domain.repository.interfaces.EmployeeRepository
-import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
 import com.example.airdry.domain.workers.factories.MyWorkerFactory
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL_DESCRIPTION
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL_DESCRIPTION_MAIN
+import com.example.airdry.util.Constants.Companion.GENERATE_FILE_CHANNEL
 import com.example.airdry.util.Constants.Companion.GENERATE_FILE_CHANNEL_DESCRIPTION
+import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
 class AirDryApplication: Application(), Configuration.Provider {
 
-
     @Inject lateinit var myWorkerFactory: MyWorkerFactory
-
 
     override fun onCreate() {
         super.onCreate()
@@ -37,8 +30,6 @@ class AirDryApplication: Application(), Configuration.Provider {
             ).apply {
                 description = "Used for foreground notifications while generating Excel reports."
             }
-
-
             val channel2 = NotificationChannel(
                 DOWNLOAD_FILE_CHANNEL,
                 DOWNLOAD_FILE_CHANNEL_DESCRIPTION,
@@ -52,11 +43,7 @@ class AirDryApplication: Application(), Configuration.Provider {
             notificationManager.createNotificationChannel(channel)
             notificationManager.createNotificationChannel(channel2)
         }
-
     }
-
-
-
     override fun getWorkManagerConfiguration(): Configuration {
         return Configuration.Builder()
             .setWorkerFactory(myWorkerFactory)

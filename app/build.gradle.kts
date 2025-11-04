@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlinSerialization)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id ("kotlin-kapt")
@@ -10,9 +11,6 @@ plugins {
 android {
     namespace = "com.example.airdry"
     compileSdk = 35
-
-
-
     defaultConfig {
         applicationId = "com.example.airdry"
         minSdk = 26
@@ -37,13 +35,16 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -67,8 +68,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
     // Room
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler) // Use ksp for Room
@@ -104,5 +103,23 @@ dependencies {
 
     // Preferences
     implementation (libs.androidx.preference.ktx)
+    implementation(libs.multiplatform.settings)
+    implementation(libs.multiplatform.settings.no.arg)
+    // a
+    implementation("com.auth0:java-jwt:4.4.0")
+    implementation("io.ktor:ktor-client-core:2.3.11")
+    implementation("io.ktor:ktor-client-cio:2.3.11")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
+    val ktorVersion = "2.3.11"
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    implementation("io.ktor:ktor-client-logging:2.3.11")
+    implementation("org.slf4j:slf4j-api:2.0.13")
+
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.androidx.material.icons.extended)
 
 }

@@ -23,17 +23,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.Stack
 import com.example.airdry.database.Entities.WorkDone
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
-import com.example.airdry.util.Enums
 
 @Composable
 fun CreateStackAndWorkScreen(
     allStacks :List<Stack?>,
     viewModel: EmployeeViewModel,
-    defaultEmployee: Employee,
+    defaultAppUser: AppUser,
     onSubmit: (List<WorkDone>) -> Unit
 ) {
     val context = LocalContext.current
@@ -42,8 +41,8 @@ fun CreateStackAndWorkScreen(
     var amount by remember { mutableStateOf("") }
     var isShared by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-    var selectedEmployees by remember {
-        mutableStateOf(listOf<Employee>(defaultEmployee))
+    var selectedAppUsers by remember {
+        mutableStateOf(listOf<AppUser>(defaultAppUser))
     }
 
     Column(Modifier.padding(16.dp)) {
@@ -75,7 +74,7 @@ fun CreateStackAndWorkScreen(
                 onCheckedChange = {
                     isShared = it
                     showDialog = it
-                    selectedEmployees = listOf(defaultEmployee) // always keep default
+                    selectedAppUsers = listOf(defaultAppUser) // always keep default
                 }
             )
             Text("Is this work shared?")
@@ -84,24 +83,24 @@ fun CreateStackAndWorkScreen(
         if (isShared) {
             Text("Select Employees Sharing the Work", style = MaterialTheme.typography.labelMedium)
             OutlinedTextField(
-                value = selectedEmployees.joinToString { it.name },
+                value = selectedAppUsers.joinToString { it.name!! },
                 onValueChange = {},
                 label = { Text("Selecting Workers Sharing...") },
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth()
             )
         } else {
-            Text("Assigned to: ${defaultEmployee.name}", style = MaterialTheme.typography.bodyMedium)
+            Text("Assigned to: ${defaultAppUser.name}", style = MaterialTheme.typography.bodyMedium)
         }
 
         if (showDialog) {
             MultiSelectDialog(
                viewModel,
-                selectedItems = selectedEmployees,
-                defaultEmployee = defaultEmployee,
+                selectedItems = selectedAppUsers,
+                defaultAppUser = defaultAppUser,
                 onDismiss = { showDialog = false },
                 onConfirm = { chosen ->
-                    selectedEmployees = chosen
+                    selectedAppUsers = chosen
                     showDialog = false
                 }
             )
@@ -110,7 +109,7 @@ fun CreateStackAndWorkScreen(
         Spacer(Modifier.height(16.dp))
 
         val isAmountValid = amount.toDoubleOrNull() != null
-        val isSelectionValid = !isShared || selectedEmployees.size > 1
+        val isSelectionValid = !isShared || selectedAppUsers.size > 1
 
         Button(
             onClick = {
@@ -125,9 +124,9 @@ fun CreateStackAndWorkScreen(
                 else {
 
                     val stack = selectedType
-                    val totalEmployees = if (isShared) selectedEmployees.size else 1
+                    val totalEmployees = if (isShared) selectedAppUsers.size else 1
                     val fraction = 1.0f / totalEmployees
-                    val employees = if (isShared) selectedEmployees else listOf(defaultEmployee)
+                    val employees = if (isShared) selectedAppUsers else listOf(defaultAppUser)
 
                     val workList = employees.map { emp ->
                         WorkDone(

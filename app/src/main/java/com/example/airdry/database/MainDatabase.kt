@@ -7,14 +7,19 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.airdry.database.Daos.EmployeeDao
+import com.example.airdry.database.Daos.UserManagement.EmployeeDao
+import com.example.airdry.database.Daos.ProducKeyDao
 import com.example.airdry.database.Daos.StackDao
 import com.example.airdry.database.Daos.WorkDoneDao
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
+import com.example.airdry.database.Entities.ProductKey
 import com.example.airdry.database.Entities.Stack
+import com.example.airdry.database.Entities.UserManagement.Department
+import com.example.airdry.database.Entities.UserManagement.Section
+import com.example.airdry.database.Entities.UserManagement.Organization
+import com.example.airdry.database.Entities.UserManagement.Profile
+import com.example.airdry.database.Entities.UserManagement.UserType
 import com.example.airdry.database.Entities.WorkDone
-import com.example.airdry.database.migration.Migrations.Companion.MIGRATION_4_5
-import com.example.airdry.database.migration.Migrations.Companion.MIGRATION_5_6
 import com.example.airdry.database.typeConverters.EnumConverters
 import com.example.airdry.database.typeConverters.TimestampConverter
 import com.example.airdry.database.typeConverters.UUIDConverter
@@ -24,9 +29,13 @@ import java.util.UUID
 
 @Database
     (
-    entities = [Employee::class,
+    entities = [AppUser::class,
         Stack::class,
-        WorkDone::class]
+        WorkDone::class,ProductKey::class,
+        Organization::class,
+        Department::class,Section::class,
+        UserType::class, Profile::class
+               ]
     , version = 1,
     exportSchema = false
 )
@@ -37,6 +46,7 @@ abstract class MainDatabase :RoomDatabase() {
     abstract fun getEmployeeDao(): EmployeeDao
     abstract fun getStackDao(): StackDao
     abstract fun getWorkDoneDao(): WorkDoneDao
+    abstract  fun getProducKeyDao(): ProducKeyDao
 
     companion object {
         @Volatile

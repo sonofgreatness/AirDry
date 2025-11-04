@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import java.util.UUID
 
@@ -20,14 +20,14 @@ fun EditWorkerScreen(
     employeeId: String,
     viewModel: EmployeeViewModel
 ) {
-    val employeeState = remember { mutableStateOf<Employee?>(null) }
+    val appUserState = remember { mutableStateOf<AppUser?>(null) }
 
     LaunchedEffect(employeeId) {
         val result = viewModel.getEmployeeById(UUID.fromString(employeeId))
-        employeeState.value = result
+        appUserState.value = result
     }
 
-    val employee = employeeState.value
+    val employee = appUserState.value
 
     if (employee != null) {
         WorkerForm(

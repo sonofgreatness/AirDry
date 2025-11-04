@@ -3,7 +3,7 @@ import android.content.Context
 import android.os.Environment
 import com.example.airdry.R
 import com.example.airdry.database.Entities.WorkWithStack
-import com.example.airdry.domain.repository.interfaces.EmployeeRepository
+import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
 import org.apache.poi.ss.usermodel.FillPatternType
 import org.apache.poi.ss.usermodel.IndexedColors
@@ -22,7 +22,7 @@ import java.util.Locale
 
 class FileGenerationUtil  (
     private val app: Context,
-    private val employeeRepo: EmployeeRepository,
+    private val employeeRepo: UserRepository,
     private val workRepo: WorkDoneRepository
 ) {
 

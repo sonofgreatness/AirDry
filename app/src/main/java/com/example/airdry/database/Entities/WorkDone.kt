@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -13,7 +14,7 @@ import java.util.UUID
     tableName = "work_done",
     foreignKeys = [
         ForeignKey(
-            entity = Employee::class,
+            entity = AppUser::class,
             parentColumns = ["id"],
             childColumns = ["employee_id"],
             onDelete = ForeignKey.RESTRICT

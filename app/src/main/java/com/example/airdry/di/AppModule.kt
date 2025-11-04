@@ -3,29 +3,33 @@ package com.example.airdry.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.work.WorkerFactory
-import com.example.airdry.database.Daos.EmployeeDao
+import com.example.airdry.ConnectivityObserver
+import com.example.airdry.auth.SessionExpiryRepository
+import com.example.airdry.auth.SessionManager
+import com.example.airdry.database.Daos.UserManagement.EmployeeDao
+import com.example.airdry.database.Daos.ProducKeyDao
 import com.example.airdry.database.Daos.StackDao
 import com.example.airdry.database.Daos.WorkDoneDao
 import com.example.airdry.database.MainDatabase
-import com.example.airdry.domain.REST_API.interfaces.GithubApi
-import com.example.airdry.domain.repository.implementations.EmployeeRepositoryImpl
+import com.example.airdry.domain.REST_API.interfaces.UserApi
+import com.example.airdry.domain.repository.implementations.UserRepositoryImpl
+import com.example.airdry.domain.repository.implementations.ProductKeyRepositoryImpl
 import com.example.airdry.domain.repository.implementations.ReportConfigRepositoryImpl
 import com.example.airdry.domain.repository.implementations.StackRepositoryImpl
 import com.example.airdry.domain.repository.implementations.WorkDoneRepositoryImpl
-import com.example.airdry.domain.repository.interfaces.EmployeeRepository
+import com.example.airdry.domain.repository.interfaces.UserRepository
+import com.example.airdry.domain.repository.interfaces.ProductKeyRepository
 import com.example.airdry.domain.repository.interfaces.ReportConfigRepository
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
-import com.example.airdry.domain.workers.factories.MyWorkerFactory
-import com.example.airdry.util.Constants.Companion.GITHUB_API
-import dagger.Binds
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.SharedPreferencesSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
 @Module
@@ -60,12 +64,20 @@ object AppModule {
     fun providesWorkDoneDao(app: Application): WorkDoneDao {
         return MainDatabase.getDatabase(app).getWorkDoneDao()
     }
+
+    @Provides
+    @Singleton //to ensure single instance
+    fun providesProductKeyDao(app: Application): ProducKeyDao {
+        return MainDatabase.getDatabase(app).getProducKeyDao()
+    }
+
+
     /****************************************************************/
 
     @Provides
     @Singleton //to ensure single instance
-    fun providesEmployeeRepository(employeeDao: EmployeeDao): EmployeeRepository {
-        return EmployeeRepositoryImpl(employeeDao)
+    fun providesEmployeeRepository(employeeDao: EmployeeDao): UserRepository {
+        return UserRepositoryImpl(employeeDao)
 
     }
     @Provides
@@ -83,4 +95,41 @@ object AppModule {
     fun providesReportConfigRepository(app: Application): ReportConfigRepository {
         return ReportConfigRepositoryImpl(app)
     }
+
+    @Provides
+    @Singleton
+    fun providesProductKeyRepository(producKeyDao: ProducKeyDao) : ProductKeyRepository{
+
+        return ProductKeyRepositoryImpl(producKeyDao)
+    }
+    @Provides
+    @Singleton
+    fun providesSettings(app: Application): Settings {
+        val prefs = app.getSharedPreferences("settings_prefs", Context.MODE_PRIVATE)
+        return SharedPreferencesSettings(prefs)
+    }
+    @Provides
+    @Singleton
+    fun providesLogger() : Logger{
+        return LoggerFactory.getLogger("BrotherHood Mobile")
+    }
+    @Provides
+    @Singleton
+    fun providesessionManager(settings: Settings, logger: Logger
+    ): SessionManager{
+        return SessionManager(settings,logger)
+    }
+    @Provides
+    @Singleton
+    fun provideSessionExpiryRepository(settings: Settings) : SessionExpiryRepository{
+        return SessionExpiryRepository(settings)
+    }
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(  userApi: UserApi,
+                                     logger: Logger) : ConnectivityObserver{
+        return ConnectivityObserver(userApi,logger)
+    }
+
+
 }

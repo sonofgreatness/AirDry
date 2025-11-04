@@ -24,7 +24,9 @@ sealed
     object CreateStack: Screen ("stacks/save", "New Stack", null)
     object EditStack:Screen("stacks/edit", "Edit Stack", null)
     object  About :Screen("about", "About App", null)
-
+    object Login : Screen("login","Login Screen", null)
+    object ProductKey: Screen("product key", "Product Key", null )
+    object  Profile:Screen("profile","Profile Screen",null)
     fun withArgs(vararg args: String): String {
         return if (args.isNotEmpty()) {
             buildString {

@@ -14,11 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -34,13 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.airdry.R
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.WorkWithStack
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import com.example.airdry.util.toLocalDateTime
 import java.time.LocalDate
-import androidx.compose.runtime.getValue
+
 @Composable
 fun EmployeeSelectionScreen(
     viewModel: WorkViewModel,
@@ -133,14 +133,14 @@ fun EmployeeSelectionScreen(
         }
         else{
         LazyColumn {
-            items(employees) { employee ->
+            itemsIndexed(employees) { index, employee ->
                 val workGroups = workMap[employee.id]?.groupBy {
                     it.workDone.dateWorked.toLocalDateTime().toLocalDate()
                 } ?: emptyMap()
 
                 SelectEmployeeCreateStackCard(
                     viewModel = viewModel,
-                    employee = employee,
+                    appUser = employee,
                     workGroups = workGroups,
                     today = today,
                     onSelected = onSelected
@@ -155,14 +155,14 @@ fun EmployeeSelectionScreen(
 @Composable
 private fun SelectEmployeeCreateStackCard(
     viewModel: WorkViewModel,
-    employee: Employee,
+    appUser: AppUser,
     workGroups: Map<LocalDate, List<WorkWithStack>>,
     today: LocalDate,
     onSelected: () -> Unit
 ) {
     Card(
         onClick = {
-            viewModel.selectEmployee(employee)
+            viewModel.selectEmployee(appUser)
             onSelected()
         },
         modifier = Modifier
@@ -170,7 +170,7 @@ private fun SelectEmployeeCreateStackCard(
             .fillMaxWidth()
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(text = "${employee.name} ${employee.surname ?: ""}", style = MaterialTheme.typography.titleMedium)
+            Text(text = "${appUser.name} ${appUser.surname ?: ""}", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
 
             if (workGroups.isEmpty()) {

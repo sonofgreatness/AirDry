@@ -6,8 +6,7 @@ import android.util.Log
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.example.airdry.database.Entities.WorkWithStack
-import com.example.airdry.domain.repository.interfaces.EmployeeRepository
+import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.ReportConfigRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
 import com.example.airdry.domain.workers.GenerateExcelReportToExternalStorageWorker
@@ -15,17 +14,11 @@ import com.example.airdry.util.FileGenerationUtil
 import com.example.airdry.util.operational_states.ExcelReportResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.apache.poi.xssf.usermodel.XSSFSheet
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import java.io.File
-import java.io.FileOutputStream
-import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 class GenerateExcelReportUseCase @Inject constructor(
     private val app: Application,
-    private val employeeRepo: EmployeeRepository,
+    private val employeeRepo: UserRepository,
     private val workRepo: WorkDoneRepository,
     private  val reportConfigRepo: ReportConfigRepository
 ) {

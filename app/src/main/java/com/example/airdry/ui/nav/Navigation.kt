@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +38,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.ConnectivityObserver
+import com.example.airdry.auth.SessionManager
+import com.example.airdry.database.Entities.UserManagement.AppUser
+import com.example.airdry.ui.AirDryTopAppBar
+import com.example.airdry.ui.screens.auth.LoginScreen
+import com.example.airdry.ui.screens.auth.ProfileScreen
+import com.example.airdry.ui.screens.protection.ProductKeyScreen
+
 import com.example.airdry.ui.screens.reports.GenerateExcelScreen
 import com.example.airdry.ui.screens.reports.ViewExcelScreen
 import com.example.airdry.ui.screens.work.CreateStackAndWorkScreen
@@ -46,23 +54,51 @@ import com.example.airdry.ui.screens.settings.*
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
 import com.example.airdry.ui.screens.workers.WorkersListScreen
+import com.example.airdry.ui.viewmodels.AuthViewModel
 import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
+import com.example.airdry.ui.viewmodels.ProfileViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import java.util.UUID
 
 @Composable
-fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewModel, connectionsViewModel: ConnectionsViewModel) {
+fun Navigation(employeeViewModel: EmployeeViewModel,
+               workViewModel: WorkViewModel,
+               connectionsViewModel: ConnectionsViewModel,
+               authViewModel: AuthViewModel,
+               sessionManager: SessionManager,
+               connectivityObserver: ConnectivityObserver,
+               profileViewModel: ProfileViewModel
+               ) {
+    val isServerUp by  connectivityObserver.isServerReachable.collectAsState()
+    val isUserLoggedIn  by sessionManager.isLoggedInFlow.collectAsState()
     val navController = rememberNavController()
-
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val title = "BrotherHood Mobile"
+    val showBackIcon = currentRoute !in listOf(
+        Screen.Workers.route,
+        Screen.SelectEmployee.route,
+        Screen.Settings.route,
+        Screen.Login.route)
     Scaffold(
         modifier = Modifier
             .windowInsetsPadding(WindowInsets.navigationBars),
+        topBar = {
+            AirDryTopAppBar(
+                title = title,
+                showBackIcon = showBackIcon,
+                onBackClick = { navController.popBackStack() },
+                onProfileClick = {navController.navigate(Screen.Profile.route)},
+                isServerUp = isServerUp,
+                isUserLoggedIn = isUserLoggedIn
+            )
+        },
         bottomBar = { BottomNavigationBar(navController) }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             NavHost(navController = navController, startDestination = Screen.SelectEmployee.route) {
-
+        //
                 composable(Screen.Workers.route) {
                     WorkersListScreen(navController = navController, viewModel = employeeViewModel)
                 }
@@ -98,7 +134,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                         employeeViewModel = employeeViewModel, onMovetoGenerateExcel = {
                             navController.navigate(Screen.GenerateExcel.route)
                         }) {
-                        val selectedId = workViewModel.selectedEmployee.value?.id
+                        val selectedId = workViewModel.selectedAppUser.value?.id
                         if (selectedId != null) {
                             navController.navigate(Screen.CreateStackAndWork.withArgs(selectedId.toString()))
                         }
@@ -113,22 +149,22 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                         UUID.fromString(backStackEntry.arguments?.getString("employeeId"))
 
                     // State to hold the data
-                    var employee by remember { mutableStateOf<Employee?>(null) }
+                    var appUser by remember { mutableStateOf<AppUser?>(null) }
                     val stacks by workViewModel.allStacks.observeAsState(emptyList())
 
                     // Launch coroutine to fetch data
                     LaunchedEffect(employeeId) {
-                        employee = workViewModel.getEmployeeById(employeeId)
+                        appUser = workViewModel.getEmployeeById(employeeId)
                         employeeViewModel.getAllEmployees()
                         workViewModel.loadAllStacks()
                     }
 
 
-                    if (employee != null) {
+                    if (appUser != null) {
                         CreateStackAndWorkScreen(
                             allStacks = stacks,
                             employeeViewModel,
-                            defaultEmployee = employee!!,
+                            defaultAppUser = appUser!!,
                             onSubmit = { workDoneList ->
                                 workViewModel.saveStackAndWork(workDoneList)
                                 navController.navigate(Screen.SelectEmployee.route)
@@ -184,6 +220,20 @@ fun Navigation(employeeViewModel: EmployeeViewModel, workViewModel: WorkViewMode
                 composable(Screen.About.route)
                 {
                     AboutScreen()
+                }
+                composable(Screen.ProductKey.route) {
+                    ProductKeyScreen(connectionsViewModel)
+                }
+                composable(Screen.Login.route) {
+                    LoginScreen(
+                        authViewModel,
+                        {
+                            navController.navigate(Screen.ManageUpdates.route)
+                        }
+                    )
+                }
+                composable(Screen.Profile.route) {
+                    ProfileScreen(profileViewModel,sessionManager=sessionManager, navController = navController)
                 }
             }
         }

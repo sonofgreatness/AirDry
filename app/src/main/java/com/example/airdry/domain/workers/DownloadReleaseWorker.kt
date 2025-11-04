@@ -9,8 +9,6 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.example.airdry.BuildConfig
 import com.example.airdry.R
-import com.example.airdry.domain.repository.interfaces.EmployeeRepository
-import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL_DESCRIPTION
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_NOTIFICATION_TITLE

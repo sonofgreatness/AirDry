@@ -7,7 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.example.airdry.R
-import com.example.airdry.domain.repository.interfaces.EmployeeRepository
+import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
 import com.example.airdry.util.Constants.Companion.GENERATE_FILE_CHANNEL
 import com.example.airdry.util.Constants.Companion.GENERATE_FILE_NOTIFICATION_DESCRIPTION
@@ -19,7 +19,7 @@ import dagger.assisted.AssistedInject
 
 
 class GenerateExcelReportToExternalStorageWorker @AssistedInject constructor(
-    private val employeeRepo: EmployeeRepository,
+    private val employeeRepo: UserRepository,
     private val workRepo: WorkDoneRepository,
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters

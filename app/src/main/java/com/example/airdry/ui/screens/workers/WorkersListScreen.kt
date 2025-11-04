@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -34,7 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.ui.nav.Screen
 import com.example.airdry.ui.theme.Typography
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
@@ -71,7 +71,7 @@ fun WorkersListScreen(
              }
          }else{
         LazyColumn {
-            items(workers) { worker ->
+            itemsIndexed (workers){  index, worker ->
                 WorkerCard(
                     worker = worker, onClick = {
                         navController.navigate(Screen.EditWorker.withArgs(worker.id.toString()))
@@ -92,7 +92,7 @@ fun WorkersListScreen(
 }
 @Composable
 fun WorkerCard(
-    worker: Employee,
+    worker: AppUser,
     onClick: () -> Unit,
     employeeViewModel: EmployeeViewModel
 ) {
@@ -116,12 +116,10 @@ fun WorkerCard(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
-
                 IconButton(
                     onClick = {
                         val updatedWorker = worker.copy(isActive = false)
                         employeeViewModel.editEmployee(updatedWorker)
-
                     }
                 ) {
                     Icon(
@@ -133,24 +131,20 @@ fun WorkerCard(
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-
             Text(
                 text = "Phone: ${worker.phoneNumber}",
                 style = MaterialTheme.typography.bodyMedium
             )
-
             Text(
-                text = "National ID: ${worker.nationalId}",
+                text = "National ID: ${worker.secondaryPhone}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
-
             Spacer(modifier = Modifier.height(4.dp))
-
             Text(
-                text = if (worker.isActive) "Active" else "Inactive",
+                text = if (worker.isActive == true) "Active" else "Inactive",
                 style = MaterialTheme.typography.labelSmall,
-                color = if (worker.isActive) Color.Green else Color.Red,
+                color = if (worker.isActive == true) Color.Green else Color.Red,
                 fontWeight = FontWeight.Bold
             )
         }

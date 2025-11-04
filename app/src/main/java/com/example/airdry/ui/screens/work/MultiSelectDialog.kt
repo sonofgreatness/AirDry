@@ -18,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -28,22 +27,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.airdry.database.Entities.Employee
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 
 @Composable
 fun MultiSelectDialog(
     viewModel: EmployeeViewModel,
-    selectedItems: List<Employee>,
+    selectedItems: List<AppUser>,
     onDismiss: () -> Unit,
-    onConfirm: (List<Employee>) -> Unit,
-    defaultEmployee: Employee
+    onConfirm: (List<AppUser>) -> Unit,
+    defaultAppUser: AppUser
 ) {
     val selected = remember {
-        mutableStateListOf<Employee>().apply {
+        mutableStateListOf<AppUser>().apply {
             // Ensure defaultEmployee is always included
             addAll(selectedItems)
-            if (defaultEmployee !in this) add(defaultEmployee)
+            if (defaultAppUser !in this) add(defaultAppUser)
         }
     }
 
@@ -109,7 +108,7 @@ fun MultiSelectDialog(
 
                 allItems.forEach { item ->
                     val isChecked = item in selected
-                    val isDefault = item == defaultEmployee
+                    val isDefault = item == defaultAppUser
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
