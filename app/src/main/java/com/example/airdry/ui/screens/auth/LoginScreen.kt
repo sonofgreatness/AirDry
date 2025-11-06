@@ -60,7 +60,6 @@ fun LoginScreen(
                 focusManager = focusManager,
                 onDone = { authViewModel.login() }
             )
-
             Button(
                 onClick = { authViewModel.login() },
                 enabled = uiState !is UiState.Loading
@@ -68,13 +67,11 @@ fun LoginScreen(
                 Text(if (uiState is UiState.Loading) "Logging in..." else "Login")
             }
         }
-
         when (uiState) {
             is UiState.Error -> Text(
                 (uiState as UiState.Error).message,
                 color = MaterialTheme.colorScheme.error
             )
-
             is UiState.Success -> {
                 Text(
                     "✅ Logged in successfully!",
@@ -93,7 +90,6 @@ fun LoginScreen(
 
             else -> {}
         }
-    }
-}
+    } }
 
 }

@@ -172,6 +172,7 @@ fun ProfileScreen(
         }
         // 3. Other States
         else {
+
             Text(
                 "Session is inactive. Please log in.",
                 style = MaterialTheme.typography.titleMedium,

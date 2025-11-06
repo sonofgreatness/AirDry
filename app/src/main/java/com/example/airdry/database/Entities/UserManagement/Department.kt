@@ -23,13 +23,13 @@ data class Department(
     @ColumnInfo("displayname")
     val displayName: String,
     @ColumnInfo(name = "organization_id")
-    val organizationId : UUID,
+    val organizationId : UUID?,
     @ColumnInfo(name = "created_at")
-    val createdAt : Timestamp = Timestamp(System.currentTimeMillis()),
+    val createdAt : Timestamp? = Timestamp(System.currentTimeMillis()),
     @ColumnInfo(name = "updated_at")
-    val updatedAt : Timestamp = Timestamp(System.currentTimeMillis()),
+    val updatedAt : Timestamp? = Timestamp(System.currentTimeMillis()),
     @ColumnInfo(name ="created_by")
-    val createdBy : UUID,
+    val createdBy : UUID?,
     @ColumnInfo("updated_by")
-    val updatedBy: UUID,
+    val updatedBy: UUID?,
 )

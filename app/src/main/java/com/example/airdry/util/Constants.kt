@@ -47,7 +47,16 @@ class Constants {
         const val WORK_DONE_EDIT_GRACE_PERIOD = 7
         const val WORK_DONE_EDIT_GRACE_PERIOD_CAPTURER = 2
         const val  DEFAULT_PAGE_SIZE =20
+        const val  DEFAULT_PAGE_SIZE_BIG =50
         const val  DEFAULT_PAGE =1
+        const val DOWNLOAD_USERS_DONE ="Downloaded workers"
+        const val DOWNLOAD_USERS_FAILED ="Failed to download workers"
+        const val DOWNLOAD_USER_TYPES_DONE ="Downloaded user types"
+        const val DOWNLOAD_USER_TYPES_FAILED ="Failed to download user types"
+        const val DOWNLOAD_DEPARTMENTS_DONE ="Downloaded departments"
+        const val DOWNLOAD_DEPARTMENTS_FAILED ="Failed to download departments"
+        const val DOWNLOAD_SECTIONS_DONE ="Downloaded sections"
+        const val DOWNLOAD_SECTIONS_FAILED ="Failed to download sections"
 
 
     }

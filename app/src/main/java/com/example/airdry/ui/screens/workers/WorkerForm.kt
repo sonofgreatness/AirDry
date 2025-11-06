@@ -46,7 +46,8 @@ fun WorkerForm(
         userTypeId = null,
         organizationId = null,
         departmentId = null,
-        sectionId = null
+        sectionId = null,
+        email = ""
     ),
     onSubmit: (AppUser) -> Unit
 ) {
@@ -155,6 +156,7 @@ fun WorkerForm(
                         organizationId = null,
                         departmentId = null,
                         sectionId = null,
+                        email= ""
                     )
                 )
             } else{

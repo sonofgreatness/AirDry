@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Index
+import com.example.airdry.data.dto.User.UserRegisterRequest
 import com.example.airdry.database.Entities.UserManagement.Department
 import com.example.airdry.database.Entities.UserManagement.Organization
 import com.example.airdry.database.Entities.UserManagement.Section
@@ -49,6 +50,10 @@ data class AppUser (
     @ColumnInfo(name = "phone_number") val phoneNumber: String?,
     @ColumnInfo(name = "is_active")
     val isActive: Boolean? = false,
+    @ColumnInfo(name = "is_pending_insert")
+    val isPendingInsert : Boolean? = false,
+    @ColumnInfo(name = "email")
+    val email :String,
     @ColumnInfo(name = "is_approved")
     val isApproved  : Boolean? = false,
     @ColumnInfo(name = "created_at")
@@ -76,4 +81,24 @@ data class AppUser (
         return "$name  $surname"
 
     }
+
+
+    fun toUserRegisterRequest(): UserRegisterRequest{
+
+        return  UserRegisterRequest(
+            id = id,
+            name =name.toString(),
+            surname = surname.toString(),
+            phoneNumber = phoneNumber.toString(),
+            secondaryPhoneNumber = secondaryPhone,
+            email = email,
+            isActive = isActive ==true,
+            isApproved = isActive == true,
+            userTypeId = userTypeId,
+            organizationId =organizationId ,
+            departmentId = departmentId,
+            sectionId =sectionId
+        )
+    }
+
 }

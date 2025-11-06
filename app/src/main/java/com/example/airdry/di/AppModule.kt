@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 import com.example.airdry.ConnectivityObserver
 import com.example.airdry.auth.SessionExpiryRepository
 import com.example.airdry.auth.SessionManager
-import com.example.airdry.database.Daos.UserManagement.EmployeeDao
+import com.example.airdry.database.Daos.UserManagement.UserManagementDao
 import com.example.airdry.database.Daos.ProducKeyDao
 import com.example.airdry.database.Daos.StackDao
 import com.example.airdry.database.Daos.WorkDoneDao
@@ -49,7 +49,7 @@ object AppModule {
      ************************************************/
     @Provides
     @Singleton //to ensure single instance
-    fun providesEmployeeDao(app: Application): EmployeeDao {
+    fun providesEmployeeDao(app: Application): UserManagementDao {
         return MainDatabase.getDatabase(app).getEmployeeDao()
     }
 
@@ -76,8 +76,8 @@ object AppModule {
 
     @Provides
     @Singleton //to ensure single instance
-    fun providesEmployeeRepository(employeeDao: EmployeeDao): UserRepository {
-        return UserRepositoryImpl(employeeDao)
+    fun providesEmployeeRepository(userManagementDao: UserManagementDao): UserRepository {
+        return UserRepositoryImpl(userManagementDao)
 
     }
     @Provides

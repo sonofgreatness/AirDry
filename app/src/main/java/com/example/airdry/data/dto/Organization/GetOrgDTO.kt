@@ -1,5 +1,6 @@
 package com.example.airdry.data.dto.Organization
 
+import com.example.airdry.database.Entities.UserManagement.Organization
 import kotlinx.serialization.Serializable
 import org.montigny.client.dto.Common.ByteArrayBase64Serializer
 import org.montigny.client.dto.Common.UUIDSerializer
@@ -34,6 +35,13 @@ data class GetOrgDTO(
         return CreateOrgDTO(
             id = this.id,
             displayName = this.displayName!!,
+        )
+    }
+    fun toOrganization(): Organization{
+        return  Organization(
+            id = id ?: UUID.randomUUID(),
+            displayName = displayName!!,
+            logo = logo,
         )
     }
 }

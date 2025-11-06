@@ -7,7 +7,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.airdry.database.Daos.UserManagement.EmployeeDao
+import com.example.airdry.database.Daos.UserManagement.UserManagementDao
 import com.example.airdry.database.Daos.ProducKeyDao
 import com.example.airdry.database.Daos.StackDao
 import com.example.airdry.database.Daos.WorkDoneDao
@@ -43,7 +43,7 @@ import java.util.UUID
     EnumConverters::class)
 abstract class MainDatabase :RoomDatabase() {
 
-    abstract fun getEmployeeDao(): EmployeeDao
+    abstract fun getEmployeeDao(): UserManagementDao
     abstract fun getStackDao(): StackDao
     abstract fun getWorkDoneDao(): WorkDoneDao
     abstract  fun getProducKeyDao(): ProducKeyDao

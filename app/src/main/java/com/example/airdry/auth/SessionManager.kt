@@ -50,20 +50,16 @@ class SessionManager(
     }
 
     fun decodeJwtTokenPublic(token: String?): Boolean {
-        Log.d("decode","token : $token")
         if (token.isNullOrBlank()) return false
         return try {
             val decoded = JWT.decode(token)
             val expiry = decoded.expiresAt ?: return false
-            Log.d("decode","token : claim")
             // Save claims persistently
             decoded.getClaim("userId").asString()?.let { settings.putString("user_id", it) }
             decoded.getClaim("userTypeId").asString()?.let { settings.putString("user_type_id", it) }
             expiry.after(Date())
 
         } catch (e: JWTDecodeException) {
-            Log.d("decode","token : claim00000")
-            Log.d("Login JWT","JWTDecodeException: ${e.message}")
             false
         }
     }
@@ -72,8 +68,6 @@ class SessionManager(
         return try {
             val decoded = JWT.decode(token)
             val expiry = decoded.expiresAt ?: return false
-
-            // Save claims persistently
             decoded.getClaim("userId").asString()?.let { settings.putString("user_id", it) }
             decoded.getClaim("userTypeId").asString()?.let { settings.putString("user_type_id", it) }
 
@@ -83,11 +77,8 @@ class SessionManager(
             false
         }
     }
-
     init {
-        // initialize _isLoggedIn from stored token safely
         _isLoggedIn.value = decodeJwtToken(settings.getStringOrNull("jwt_token"))
-        // OPTIONAL: monitor expiry every 5 minutes
         CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
                 println("session manager Logged in ")
@@ -96,7 +87,6 @@ class SessionManager(
                 if (_isLoggedIn.value != valid) {
                     _isLoggedIn.value = valid
                 }
-                println("session manager Logged in __${_isLoggedIn.value}")
                 delay(1 * 60 * 1000L) // every 5 minutes
             }
         }
