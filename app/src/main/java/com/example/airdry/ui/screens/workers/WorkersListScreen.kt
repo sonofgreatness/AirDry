@@ -60,12 +60,9 @@ fun WorkersListScreen(
         viewModel.getAllEmployees()
     }
     val workers by viewModel.allEmployees.observeAsState(emptyList())
-
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Employees", style = Typography.titleLarge)
-
         Spacer(Modifier.height(16.dp))
-
         Button(
             onClick = { navController.navigate(Screen.CreateWorker.route) },
             modifier = Modifier.fillMaxWidth()
@@ -154,6 +151,11 @@ fun WorkerCard(
                 }
              }
             }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "National ID: ${worker.appUser.nationalId}",
+                style = MaterialTheme.typography.bodyMedium
+            )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Phone: ${worker.appUser.phoneNumber}",

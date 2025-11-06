@@ -9,6 +9,7 @@ import com.example.airdry.database.Entities.UserManagement.Profile
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.UserType
 import com.example.airdry.domain.repository.interfaces.UserRepository
+import com.example.airdry.util.Constants.Companion.CASUAL_NAME
 import java.util.UUID
 import javax.inject.Inject
 
@@ -29,6 +30,8 @@ class UserRepositoryImpl @Inject constructor(val userManagementDao : UserManagem
     override suspend fun  getAllCachedEmployees():List<AppUser>? = userManagementDao.getAllCachedEmployees()
     override suspend fun createUserType(entity: UserType) =userManagementDao.createUserType(entity)
     override suspend fun deleteAllUserTypes() = userManagementDao.deleteAllUserTypes()
+    override suspend fun getCasualUserType(casual:String):List<UserType>? = userManagementDao.getCasualUserType()
+    override  suspend fun getOganization(): Organization? = userManagementDao.getOganization()
     //====ORGANIZATION MANAGEMENT====
     override suspend fun  createOrganization(entity: Organization) = userManagementDao.createOrganization(entity)
     override suspend fun  deleteAllOrganizations() =userManagementDao.deleteAllOrganizations()

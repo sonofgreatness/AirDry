@@ -6,10 +6,6 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Index
 import com.example.airdry.data.dto.User.UserRegisterRequest
-import com.example.airdry.database.Entities.UserManagement.Department
-import com.example.airdry.database.Entities.UserManagement.Organization
-import com.example.airdry.database.Entities.UserManagement.Section
-import com.example.airdry.database.Entities.UserManagement.UserType
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -46,7 +42,7 @@ data class AppUser (
     @PrimaryKey val id: UUID = UUID.randomUUID(),
     @ColumnInfo(name = "name") val name: String?,
     @ColumnInfo(name = "surname") val surname: String?,
-    @ColumnInfo(name = "secondary_phone_number") val secondaryPhone: String?,
+    @ColumnInfo(name = "national_id") val nationalId: String?,
     @ColumnInfo(name = "phone_number") val phoneNumber: String?,
     @ColumnInfo(name = "is_active")
     val isActive: Boolean? = false,
@@ -90,7 +86,7 @@ data class AppUser (
             name =name.toString(),
             surname = surname.toString(),
             phoneNumber = phoneNumber.toString(),
-            secondaryPhoneNumber = secondaryPhone,
+            nationalId = nationalId,
             email = email,
             isActive = isActive ==true,
             isApproved = isActive == true,

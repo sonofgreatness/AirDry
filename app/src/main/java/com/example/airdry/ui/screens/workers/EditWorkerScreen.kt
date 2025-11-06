@@ -18,7 +18,7 @@ import java.util.UUID
 fun EditWorkerScreen(
     navController: NavController,
     employeeId: String,
-    viewModel: EmployeeViewModel
+    viewModel: EmployeeViewModel,
 ) {
     val appUserState = remember { mutableStateOf<AppUser?>(null) }
 
@@ -31,15 +31,15 @@ fun EditWorkerScreen(
 
     if (employee != null) {
         WorkerForm(
-            title = "Edit Worker",
+            title = "View Worker Details",
             worker = employee,
             onSubmit = { updatedEmployee ->
-                viewModel.editEmployee(updatedEmployee)
                 navController.popBackStack()
-            }
+            },
+            viewModel,
+            isEditMode = true
         )
     } else {
-        // Loading indicator while data is being fetched
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

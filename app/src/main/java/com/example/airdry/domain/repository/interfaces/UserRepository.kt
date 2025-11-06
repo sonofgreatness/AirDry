@@ -9,6 +9,7 @@ import com.example.airdry.database.Entities.UserManagement.Organization
 import com.example.airdry.database.Entities.UserManagement.Profile
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.UserType
+import com.example.airdry.util.Constants.Companion.CASUAL_NAME
 import java.util.UUID
 
 interface UserRepository {
@@ -27,6 +28,9 @@ interface UserRepository {
     suspend fun  getAllNestedEmployees():List<NestedAppUser>
     suspend fun  deleteEmployee(entity: AppUser)
     suspend fun  getAllCachedEmployees():List<AppUser>?
+    suspend fun getCasualUserType(casual:String  = CASUAL_NAME):List<UserType>?
+    suspend fun getOganization(): Organization?
+
     //====ORGANIZATION MANAGEMENT====
     suspend fun  createOrganization(entity: Organization)
     suspend fun  deleteAllOrganizations()

@@ -9,7 +9,7 @@ data class UserRegisterRequest(
     val name: String = "John",
     val surname: String = "Doe",
     val phoneNumber: String = "76000000",
-    val secondaryPhoneNumber: String? = "79000000",
+    val nationalId: String? = "79000000",
     @Serializable(with = UUIDSerializer::class)
     val userTypeId: UUID? = null,
     @Serializable(with = UUIDSerializer::class)
@@ -30,7 +30,7 @@ data class UserRegisterRequest(
             updated_name = name,
             updated_surname = surname,
             updated_phoneNumber = phoneNumber,
-            updated_secondaryPhoneNumber = secondaryPhoneNumber,
+            updated_secondaryPhoneNumber = nationalId,
             updated_password = password,
             updated_sectionId = sectionId,
             updated_userTypeId = userTypeId,
@@ -46,7 +46,7 @@ data class UserRegisterRequest(
             name = name,
             surname = surname,
             phoneNumber = phoneNumber,
-            secondaryPhoneNumber = secondaryPhoneNumber,
+            nationalId = nationalId,
             email = email,
             isActive = isActive,
             isApproved = isApproved,

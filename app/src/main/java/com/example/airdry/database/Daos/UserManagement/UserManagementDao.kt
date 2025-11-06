@@ -13,6 +13,7 @@ import com.example.airdry.database.Entities.UserManagement.Organization
 import com.example.airdry.database.Entities.UserManagement.Profile
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.UserType
+import com.example.airdry.util.Constants.Companion.CASUAL_NAME
 import java.util.UUID
 
 @Dao
@@ -35,10 +36,8 @@ interface UserManagementDao {
     @Query("SELECT * FROM app_user WHERE is_pending_insert =1")
     suspend fun  getAllCachedEmployees():List<AppUser>?
 
-
-
-     @Query("SELECT * FROM app_user WHERE id = :id LIMIT 1")
-     suspend  fun getById(id: UUID): AppUser
+    @Query("SELECT * FROM app_user WHERE id = :id LIMIT 1")
+    suspend  fun getById(id: UUID): AppUser
     @Query("SELECT * FROM app_user WHERE name LIKE '%' || :searchTerm || '%' OR  surname LIKE '%' || :searchTerm || '%'")
     suspend fun  getFilteredEmployees(searchTerm : String): List<AppUser>
     @Query("DELETE FROM app_user")
@@ -47,11 +46,15 @@ interface UserManagementDao {
     suspend fun createUserType(entity: UserType)
     @Query ("DELETE FROM user_type")
     suspend fun deleteAllUserTypes()
+    @Query("SELECT * FROM user_type WHERE displayname LIKE '%' || :casual ||'%'")
+    suspend fun getCasualUserType(casual:String  = CASUAL_NAME):List<UserType>?
     //====ORGANIZATION MANAGEMENT====
     @Insert
     suspend fun  createOrganization(entity: Organization)
    @Query("DELETE FROM organization")
    suspend fun  deleteAllOrganizations()
+    @Query("SELECT * FROM organization LIMIT 1")
+    suspend fun getOganization(): Organization?
     @Insert
     suspend fun  createDepartment(entity: Department)
     @Query("DELETE FROM department")

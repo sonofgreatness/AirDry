@@ -57,7 +57,7 @@ class Constants {
         const val DOWNLOAD_DEPARTMENTS_FAILED ="Failed to download departments"
         const val DOWNLOAD_SECTIONS_DONE ="Downloaded sections"
         const val DOWNLOAD_SECTIONS_FAILED ="Failed to download sections"
-
+       const val CASUAL_NAME = "casual"
 
     }
 }

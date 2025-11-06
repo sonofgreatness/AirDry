@@ -63,7 +63,6 @@ class UserApiImpl(private val client: HttpClient,
             Log.d("Login","res : ${response.bodyAsText()}")
             val token = response.body<AuthResponse>()
             sessionManager.jwtToken = token.token
-            Log.d("IMX", token.token)
             sessionManager.decodeJwtTokenPublic(token.token)
             sessionExpiryRepository.setLastLoginTimestamp(Clock.System.now().toEpochMilliseconds())
             true
@@ -102,11 +101,14 @@ class UserApiImpl(private val client: HttpClient,
     }
     override suspend fun createUser(user: UserRegisterRequest): ApiResponse {
         return try {
-            val response: IdResponse = client.post("$API_BASE_URL$API_URL_USER_REGISTER") {
+            val response = client.post("$API_BASE_URL$API_URL_USER_REGISTER") {
                 contentType(ContentType.Application.Json)
                 setBody(user)
-            }.body()
-            ApiResponse.Created(response.id)
+            }
+            if (response.status.isSuccess())
+                  ApiResponse.Success
+            else
+            ApiResponse.Error(response.status.value, "failed to create user: ${response.bodyAsText()}")
         } catch (e: Exception) {
             logger.error("Failed to create user: ${e.message}")
             ApiResponse.Error(code = 500, message = "Failed to create user: ${e.message}")

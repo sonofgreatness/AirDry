@@ -1,10 +1,12 @@
 package com.example.airdry.domain.use_cases
 
+import android.util.Log
 import com.example.airdry.data.dto.User.UserRegisterRequest
 import com.example.airdry.data.dto.User.UserResponse
 import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.domain.REST_API.interfaces.UserApi
 import com.example.airdry.domain.repository.interfaces.UserRepository
+import com.example.airdry.util.operational_states.ApiResponse
 import com.example.airdry.util.operational_states.DownloadState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,8 +25,22 @@ class UploadCachedUsers @Inject constructor(
             emit(DownloadState.Loading)
             fetchAllCachedUsers()
             _cachedUsers.value?.forEach {
-                userApi.createUser(it.toUserRegisterRequest())
-                userRepository.editEmployee(it.copy(isPendingInsert = false))
+                Log.d("forcedUpload", "Uploading cached user: ${it.name}")
+                val resp =userApi.createUser(it.toUserRegisterRequest())
+                when (resp)
+                {
+                    is ApiResponse.Created -> {
+                        Log.d("forcedUpload", "Uploaded cached user: ${it.name}")
+                    }
+                    is ApiResponse.Error -> {
+                        Log.d("forcedUpload", "Failed to upload cached user: ${it.name} ${resp.message}")
+                    }
+                    ApiResponse.Success -> {
+                        Log.d("forcedUpload", "Uploaded cached user: ${it.name}")
+                        userRepository.editEmployee(it.copy(isPendingInsert = false))
+                    }
+                }
+
             }
             emit(DownloadState.Success("Uploaded cached users successfully"))
         }catch (e: Exception){

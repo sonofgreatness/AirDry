@@ -4,7 +4,6 @@ package com.example.airdry.data.dto.User
 import com.example.airdry.database.Entities.UserManagement.AppUser
 import kotlinx.serialization.Serializable
 import org.montigny.client.dto.Common.UUIDSerializer
-import java.sql.Timestamp
 import java.util.UUID
 
 
@@ -15,7 +14,7 @@ data class UserResponse(
     val name: String,
     val surname: String,
     val phoneNumber: String,
-    val secondaryPhoneNumber: String?,
+    val nationalId: String?,
     val email: String?,
     val isActive: Boolean,
     val isApproved: Boolean,
@@ -31,7 +30,7 @@ data class UserResponse(
             id = id ?: UUID.randomUUID(),
             name = name,
             surname = surname,
-            secondaryPhone = secondaryPhoneNumber,
+            nationalId = this@UserResponse.nationalId,
             phoneNumber = phoneNumber,
             isActive = isActive,
             isPendingInsert = false,

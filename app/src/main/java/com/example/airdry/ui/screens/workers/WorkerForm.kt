@@ -1,19 +1,27 @@
 package com.example.airdry.ui.screens.workers
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.ui.theme.AirDryTheme
+import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import java.util.UUID
 
 @Composable
@@ -37,31 +46,67 @@ fun WorkerForm(
         surname = null,
         phoneNumber = "",
         isActive = true,
-        secondaryPhone = null,
+        nationalId = null,
         isApproved = null,
         createdAt = null,
         updatedAt = null,
         createdBy = null,
         updatedBy = null,
-        userTypeId = null,
+        userTypeId =null,
         organizationId = null,
         departmentId = null,
         sectionId = null,
         email = ""
     ),
-    onSubmit: (AppUser) -> Unit
+    onSubmit: (AppUser) -> Unit,
+    viewModel : EmployeeViewModel,
+    isEditMode: Boolean = false
 ) {
     var name by remember { mutableStateOf(worker.name) }
     var surname by remember { mutableStateOf(worker.surname ?: "") }
-    var nationalId by remember { mutableStateOf(worker.secondaryPhone) }
+    var nationalId by remember { mutableStateOf(worker.nationalId ?: "") }
     var phoneNumber by remember { mutableStateOf(worker.phoneNumber) }
     var isActive by remember { mutableStateOf(worker.isActive) }
-    val isNationalIdValid = nationalId!!.length == 13 && nationalId!!.all { it.isDigit() }
-    val showIdError = nationalId!!.isNotEmpty() && !isNationalIdValid
+    var email by remember { mutableStateOf(worker.email)}
+    var userTypeId  by remember {mutableStateOf(worker.userTypeId)}
+    var departmentId by remember { mutableStateOf(worker.departmentId)}
+    var sectionId by remember { mutableStateOf(worker.sectionId) }
+    val organizationId =  viewModel.organization.collectAsState().value?.id
+
+    val isNationalIdValid = nationalId?.length == 13 && nationalId?.all { it.isDigit() } == true
+    val showIdError = nationalId.isNotEmpty() && !isNationalIdValid
     val isPhoneNumberValid = phoneNumber!!.length == 8 && phoneNumber!!.all { it.isDigit() }
+    val isEmailValid  = email.isNotEmpty()
     val showPhoneNumberError = phoneNumber!!.isNotEmpty() && !isPhoneNumberValid
+    val showEmailError = email.isEmpty()
+
     val context  = LocalContext.current
-    Column(Modifier.padding(16.dp)) {
+
+    val userTypes by viewModel.useTypes.collectAsState()
+    val departments by viewModel.departments.collectAsState()
+    val sections by viewModel.sections.collectAsState()
+
+    var expandedUserType by remember { mutableStateOf(false) }
+    var expandedDepartment by remember { mutableStateOf(false) }
+    var expandedSection by remember { mutableStateOf(false) }
+
+    val selectedUserType by remember(userTypeId, userTypes) {
+        derivedStateOf { userTypes.find { it.id == userTypeId } }
+    }
+    val selectedDepartment by remember(departmentId, departments) {
+        derivedStateOf { departments.find { it.id == departmentId }}
+    }
+    val selectedSection by remember(sectionId, sections) {
+        derivedStateOf { sections.find { it.id == sectionId }}
+    }
+    val scrollState = rememberScrollState()
+    LaunchedEffect(Unit) {
+        viewModel.populateDropDowns()
+    }
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .verticalScroll(scrollState)
+        .padding(16.dp)) {
         Text(text = title, style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
 
@@ -69,7 +114,8 @@ fun WorkerForm(
             value = name!!,
             onValueChange = { name = it.trim() },
             label = { Text("First Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+          enabled =!isEditMode
         )
 
         Spacer(Modifier.height(8.dp))
@@ -78,13 +124,10 @@ fun WorkerForm(
             value = surname,
             onValueChange = { surname = it.trim() },
             label = { Text("Surname") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+          enabled =!isEditMode
         )
-
         Spacer(Modifier.height(8.dp))
-
-
-
         OutlinedTextField(
             value = nationalId.toString(),
             onValueChange = {
@@ -99,7 +142,8 @@ fun WorkerForm(
                 if (showIdError) Text("National ID must be exactly 13 digits.")
             },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+          enabled =!isEditMode
         )
 
         Spacer(Modifier.height(8.dp))
@@ -116,8 +160,47 @@ fun WorkerForm(
                 if (showPhoneNumberError) Text("Phone number must be exactly 8 digits.")
             },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+          enabled =!isEditMode
         )
+        Spacer(Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = email.toString(),
+            isError = showEmailError,
+            onValueChange = {
+                if (it.isNotEmpty()){
+                    email = it
+                }},
+            label = { Text("Email") },
+            supportingText = {
+                if (showEmailError) Text("email must not be empty")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+          enabled =!isEditMode
+        )
+
+        Spacer(Modifier.height(8.dp))
+        Column{
+
+            DropdownFields(       selectedUserType, selectedDepartment, selectedSection,
+                expandedUserType, { expandedUserType = it },
+                expandedDepartment, { expandedDepartment = it },
+                expandedSection, { expandedSection = it },
+                userTypes, departments, sections, {
+                   userTypeId = it
+                }, { departmentId=it
+                    sectionId = null
+                    viewModel.reloadSectionsByDepartment(it)
+                   },
+                {sectionId = it},
+                isEditMode)
+
+
+        }
+        Spacer(Modifier.height(8.dp))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -127,18 +210,16 @@ fun WorkerForm(
             Text("Is Active", modifier = Modifier.weight(1f))
             Switch(
                 checked = isActive == true,
-                onCheckedChange = { isActive = it }
+                onCheckedChange = { isActive = it },
+              enabled =!isEditMode
             )
         }
-
         Spacer(Modifier.height(8.dp))
-
-
         Spacer(Modifier.height(16.dp))
-
         Button(
             onClick = {
-                if (isNationalIdValid && isPhoneNumberValid){
+                if (isNationalIdValid && isPhoneNumberValid
+                    &&isEmailValid){
                 onSubmit(
                     AppUser(
                         id = worker.id,
@@ -146,34 +227,32 @@ fun WorkerForm(
                         surname = if (surname.isBlank()) null else surname,
                         phoneNumber = phoneNumber,
                         createdAt = worker.createdAt,
-                        secondaryPhone =null,
-                        isActive = null,
-                        isApproved = null,
+                        nationalId =nationalId,
+                        isActive = isActive,
+                        isApproved = false,
                         updatedAt = null,
+                        isPendingInsert =true,
                         createdBy = null,
                         updatedBy = null,
-                        userTypeId = null,
-                        organizationId = null,
-                        departmentId = null,
-                        sectionId = null,
-                        email= ""
+                        userTypeId = userTypeId,
+                        organizationId = organizationId,
+                        departmentId = departmentId,
+                        sectionId = sectionId,
+                        email= email
                     )
                 )
             } else{
                     Toast.makeText(context, "Invalid National ID or Phone Number", Toast.LENGTH_SHORT).show()
             }
                       },
-            enabled = isNationalIdValid && isPhoneNumberValid,
+            enabled = isNationalIdValid && isPhoneNumberValid && isEmailValid,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save")
+            Text(if(!isEditMode)
+                "Save"
+            else
+                "Exit")
         }
     }
-}
-@Preview(showBackground = true)
-@Composable
-fun WorkerFormPreview() {
-    AirDryTheme {
-        WorkerForm(title = "Create Worker", onSubmit = {})
-    }
+
 }
