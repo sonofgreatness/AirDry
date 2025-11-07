@@ -4,9 +4,11 @@ import com.example.airdry.BuildConfig
 import com.example.airdry.auth.SessionExpiryRepository
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.domain.REST_API.implementation.OrganizationApiImpl
+import com.example.airdry.domain.REST_API.implementation.StackApiImpl
 import com.example.airdry.domain.REST_API.implementation.UserApiImpl
 import com.example.airdry.domain.REST_API.interfaces.GithubApi
 import com.example.airdry.domain.REST_API.interfaces.OrganizationApi
+import com.example.airdry.domain.REST_API.interfaces.StackApi
 import com.example.airdry.domain.REST_API.interfaces.UserApi
 import com.example.airdry.util.Constants.Companion.GITHUB_API
 import dagger.Module
@@ -111,6 +113,11 @@ object NetworkModule {
   @Singleton
   fun provideOrganizationApi(client: HttpClient, logger: org.slf4j.Logger) : OrganizationApi{
       return OrganizationApiImpl(client,logger)
+  }
+  @Provides
+  @Singleton
+  fun provideStackApi(client: HttpClient, logger: org.slf4j.Logger) : StackApi{
+      return StackApiImpl(client = client,logger = logger)
   }
 }
 @Qualifier

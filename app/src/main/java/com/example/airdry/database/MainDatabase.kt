@@ -7,25 +7,24 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.airdry.database.Daos.UserManagement.UserManagementDao
 import com.example.airdry.database.Daos.ProducKeyDao
 import com.example.airdry.database.Daos.StackDao
+import com.example.airdry.database.Daos.UserManagement.UserManagementDao
 import com.example.airdry.database.Daos.WorkDoneDao
-import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.ProductKey
-import com.example.airdry.database.Entities.Stack
+import com.example.airdry.database.Entities.Stack.Stack
+import com.example.airdry.database.Entities.Stack.StackCode
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.UserManagement.Department
-import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.Organization
 import com.example.airdry.database.Entities.UserManagement.Profile
+import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.UserType
 import com.example.airdry.database.Entities.WorkDone
 import com.example.airdry.database.typeConverters.EnumConverters
 import com.example.airdry.database.typeConverters.TimestampConverter
 import com.example.airdry.database.typeConverters.UUIDConverter
 import com.example.airdry.util.Constants
-import com.example.airdry.util.Enums
-import java.util.UUID
 
 @Database
     (
@@ -34,8 +33,8 @@ import java.util.UUID
         WorkDone::class,ProductKey::class,
         Organization::class,
         Department::class,Section::class,
-        UserType::class, Profile::class
-               ]
+        UserType::class, Profile::class,
+        StackCode::class]
     , version = 1,
     exportSchema = false
 )
@@ -57,7 +56,6 @@ abstract class MainDatabase :RoomDatabase() {
             if (tempInstance != null) {
                 return tempInstance
             }
-
             synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
@@ -65,7 +63,6 @@ abstract class MainDatabase :RoomDatabase() {
                     Constants.LOCAL_DATABASE_NAME
 
                 )
-
                     .addCallback(
                         callback()
                     )
@@ -82,7 +79,7 @@ abstract class MainDatabase :RoomDatabase() {
 private fun callback(): RoomDatabase.Callback = object : RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
-
+/*
         // Insert initial stack data here
         db.beginTransaction()
         try {
@@ -107,5 +104,6 @@ private fun callback(): RoomDatabase.Callback = object : RoomDatabase.Callback()
         } finally {
             db.endTransaction()
         }
+        */
     }
 }

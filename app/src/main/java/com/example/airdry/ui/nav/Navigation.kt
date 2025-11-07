@@ -58,6 +58,7 @@ import com.example.airdry.ui.viewmodels.AuthViewModel
 import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.ProfileViewModel
+import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import java.util.UUID
 
@@ -68,7 +69,8 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                authViewModel: AuthViewModel,
                sessionManager: SessionManager,
                connectivityObserver: ConnectivityObserver,
-               profileViewModel: ProfileViewModel
+               profileViewModel: ProfileViewModel,
+               stackViewModel: StackViewModel
                ) {
     val isServerUp by  connectivityObserver.isServerReachable.collectAsState()
     val isUserLoggedIn  by sessionManager.isLoggedInFlow.collectAsState()
@@ -190,13 +192,9 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
 
                         workViewModel.loadAllStacks()
                     }
-                    ManageStacksScreen(stacks, navController)
+                    ManageStacksScreen(stackViewModel, navController)
                 }
                 composable(Screen.ManageUpdates.route) { ManageUpdatesScreen(connectionsViewModel) }
-
-                composable(Screen.CreateStack.route) {
-                    CreateStackScreen(navController, workViewModel)
-                }
 
                 composable(
                     route = Screen.EditStack.route + "/{stackId}",
@@ -210,7 +208,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                     EditStackScreen(
                         navController = navController,
                         stackId = id.toString(),
-                        viewModel = workViewModel
+                        viewModel = stackViewModel
                     )
                 }
                 composable (Screen.ViewExcel.route){

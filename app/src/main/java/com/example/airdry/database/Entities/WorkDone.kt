@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.airdry.database.Entities.Stack.Stack
 import com.example.airdry.database.Entities.UserManagement.AppUser
 import java.sql.Timestamp
 import java.util.UUID

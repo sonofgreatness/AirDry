@@ -5,51 +5,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.example.airdry.database.Entities.Stack
-import com.example.airdry.ui.viewmodels.WorkViewModel
-import java.util.UUID
+import com.example.airdry.ui.viewmodels.StackViewModel
+import com.example.airdry.util.UtilityFunctions.Companion.toUUID
 
 @Composable
 fun EditStackScreen(
 
     navController: NavController,
     stackId: String,
-    viewModel: WorkViewModel
-
-
-) {
-    val stackState = remember { mutableStateOf<Stack?>(null) }
-
+    viewModel: StackViewModel)
+{
+    val stackState by viewModel.loadedStack.collectAsState()
     LaunchedEffect(stackId) {
-        val result = viewModel.getStackById(UUID.fromString(stackId))
-        stackState.value = result
+        viewModel.loadStackById(stackId.toUUID())
     }
-
-    val stack = stackState.value
-
+    val stack = stackState?.stack
+    val stackCode  = stackState?.stackCode
     if (stack!= null) {
         StackForm(
-            title = "Edit Stack",
+            title = "Stack Details",
             stack = stack,
-            onSubmit = { updatedStack ->
-                viewModel.editStack(updatedStack)
-                navController.popBackStack()
+            stackCode =stackCode,
+            onSubmit = {
+               navController.popBackStack()
             }
-            ,
-            onDelete = {
-                stack ->
-                viewModel.deleteStack(stack)
-                navController.popBackStack()
-            },
-            showDeleteButton = true
         )
     } else {
-        // Loading indicator while data is being fetched
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

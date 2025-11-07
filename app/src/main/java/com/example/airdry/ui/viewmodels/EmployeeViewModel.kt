@@ -16,10 +16,10 @@ import com.example.airdry.database.Entities.UserManagement.Organization
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.UserType
 import com.example.airdry.domain.repository.interfaces.UserRepository
-import com.example.airdry.domain.use_cases.DownloadAndInserCasualUsers
-import com.example.airdry.domain.use_cases.DownloadAndInsertDepartments
-import com.example.airdry.domain.use_cases.DownloadAndInsertSections
-import com.example.airdry.domain.use_cases.DownloadAndInsertUserTypes
+import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInserCasualUsers
+import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertDepartments
+import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertSections
+import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertUserTypes
 import com.example.airdry.domain.use_cases.UploadCachedUsers
 import com.example.airdry.util.operational_states.DownloadState
 import com.example.airdry.util.operational_states.UiState

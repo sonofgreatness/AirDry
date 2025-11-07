@@ -5,7 +5,6 @@ import com.example.airdry.auth.SessionExpiryRepository
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.data.dto.Auth.AuthRequest
 import com.example.airdry.data.dto.Auth.AuthResponse
-import com.example.airdry.data.dto.Common.IdResponse
 import com.example.airdry.data.dto.Common.PaginatedResponse
 import com.example.airdry.data.dto.Common.SimpleResponse
 import com.example.airdry.data.dto.User.UserRegisterRequest
@@ -13,7 +12,6 @@ import com.example.airdry.data.dto.User.UserResponse
 import com.example.airdry.data.dto.User.UserTypesDTO
 import com.example.airdry.data.dto.WorkDataFiltersDTO
 import com.example.airdry.domain.REST_API.interfaces.UserApi
-import com.example.airdry.ui.screens.auth.LoginScreen
 import com.example.airdry.util.Constants.Companion.API_BASE_URL
 import com.example.airdry.util.Constants.Companion.QUERY_PAGE
 import com.example.airdry.util.Constants.Companion.QUERY_PAGE_SIZE
@@ -43,8 +41,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.logging.Logger
-import kotlin.time.Clock
 import java.util.UUID
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class UserApiImpl(private val client: HttpClient,
@@ -108,7 +106,7 @@ class UserApiImpl(private val client: HttpClient,
             if (response.status.isSuccess())
                   ApiResponse.Success
             else
-            ApiResponse.Error(response.status.value, "failed to create user: ${response.bodyAsText()}")
+                 ApiResponse.Error(response.status.value, "failed to create user: ${response.bodyAsText()}")
         } catch (e: Exception) {
             logger.error("Failed to create user: ${e.message}")
             ApiResponse.Error(code = 500, message = "Failed to create user: ${e.message}")

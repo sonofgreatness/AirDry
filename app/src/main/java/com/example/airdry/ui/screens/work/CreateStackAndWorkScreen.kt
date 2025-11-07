@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.airdry.database.Entities.UserManagement.AppUser
-import com.example.airdry.database.Entities.Stack
+import com.example.airdry.database.Entities.Stack.Stack
 import com.example.airdry.database.Entities.WorkDone
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 
@@ -55,7 +55,7 @@ fun CreateStackAndWorkScreen(
             items = allStacks,
             selectedItem = selectedType,
             onItemSelected = { selectedType = it },
-            label = { it?.type ?: "no stacks found" }
+            label = { it?.displayName ?: "no stacks found" }
         )
 
         Spacer(Modifier.height(16.dp))

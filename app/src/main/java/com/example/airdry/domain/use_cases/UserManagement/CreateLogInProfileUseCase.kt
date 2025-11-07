@@ -1,4 +1,4 @@
-package com.example.airdry.domain.use_cases
+package com.example.airdry.domain.use_cases.UserManagement
 
 import android.app.Application
 import android.util.Log
@@ -16,7 +16,7 @@ class CreateLogInProfileUseCase@Inject constructor(
     private val app : Application,
     private val userRepository: UserRepository,
     private val userApi: UserApi,
-   private val organizationApi: OrganizationApi,
+    private val organizationApi: OrganizationApi,
     private val sessionManager: SessionManager
 ){
 
@@ -38,11 +38,11 @@ class CreateLogInProfileUseCase@Inject constructor(
                     id = user.id!!,
                     name = user.name,
                     surname = user.surname,
-                    section = user.section?.displayName?:"",
-                    department = user.department?.displayName?:"",
-                    organization = user.organization?.displayName?:"",
-                    userType = user.userType?.displayName?:"",
-                    logo =myLogo,
+                    section = user.section?.displayName ?: "",
+                    department = user.department?.displayName ?: "",
+                    organization = user.organization?.displayName ?: "",
+                    userType = user.userType?.displayName ?: "",
+                    logo = myLogo,
                     email = user.email!!,
                 )
                 userRepository.createProfile(profile)

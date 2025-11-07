@@ -21,7 +21,6 @@ sealed
     object ViewExcel : Screen("view_excel", "View Excel", null)
     object ManageUpdates:Screen("manage_updates", "Manage Updates",null )
     object ManageStacks:Screen("manage_stacks", "Manage Stacks", null)
-    object CreateStack: Screen ("stacks/save", "New Stack", null)
     object EditStack:Screen("stacks/edit", "Edit Stack", null)
     object  About :Screen("about", "About App", null)
     object Login : Screen("login","Login Screen", null)

@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.airdry.ConnectivityObserver
 import com.example.airdry.domain.REST_API.interfaces.UserApi
-import com.example.airdry.domain.use_cases.CreateLogInProfileUseCase
+import com.example.airdry.domain.use_cases.UserManagement.CreateLogInProfileUseCase
 import com.example.airdry.util.Constants.Companion.FAILED_LOGIN
 import com.example.airdry.util.operational_states.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -90,7 +90,7 @@ fun AboutScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            androidx.compose.material3.Icon(
+                            Icon(
                                 painterResource(R.drawable.info_24), contentDescription = "Purpose", modifier = Modifier.size(24.dp)
                             )
                             Spacer(Modifier.width(8.dp))

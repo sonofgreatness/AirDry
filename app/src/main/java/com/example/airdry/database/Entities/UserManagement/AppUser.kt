@@ -35,7 +35,8 @@ import java.util.UUID
         onDelete = ForeignKey.Companion.RESTRICT
     )],
         indices = [Index("department_id"),Index("organization_id"),
-    Index("section_id"),Index("user_type_id") ]
+    Index("section_id"),Index("user_type_id"),
+            Index(value = ["email"], unique = true)]
 
 )
 data class AppUser (

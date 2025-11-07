@@ -280,12 +280,12 @@ class FileGenerationUtil  (
             
             row.createCell(0).setCellValue(employee?.printFullname() ?: "Unknown")
             row.createCell(1).setCellValue(formatReportDate_(item.workDone.dateWorked.toString()))
-            row.createCell(2).setCellValue(item.stack.type)
+            row.createCell(2).setCellValue(item.stack.displayName)
             row.createCell(3).setCellValue(item.workDone.amount.toDouble())
             row.createCell(4).setCellValue(roundedPercentage)
             row.createCell(5).setCellValue(item.stack.height.toDouble())
-            row.createCell(6).setCellValue(item.stack.breadth.toDouble())
-            row.createCell(7).setCellValue(item.stack.width.toDouble())
+            row.createCell(6).setCellValue(item.stack.thickness.toDouble())
+            row.createCell(7).setCellValue(item.stack.length.toDouble())
             row.createCell(8).setCellValue(item.stack.numberOfPieces.toDouble())
             row.createCell(9).setCellValue(item.getCubes())
         }

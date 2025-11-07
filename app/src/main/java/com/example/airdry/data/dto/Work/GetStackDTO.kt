@@ -1,5 +1,6 @@
 package com.example.airdry.data.dto.Work
 
+import com.example.airdry.database.Entities.Stack.Stack
 import kotlinx.serialization.Serializable
 import org.montigny.client.dto.Common.UUIDSerializer
 import java.text.DecimalFormat
@@ -50,7 +51,19 @@ data class GetStackDTO(
         return stackCode.displayName
         }
     }
+    fun toStack():Stack{
+        return  Stack(
+            id = id?: UUID.randomUUID(),
+            length = length,
+            height = height,
+            thickness = thickness,
+            numberOfPieces = numberOfPieces,
+            displayName = displayName,
+            stackCodeId = stackCode.id!!,
+            volume = volume
+        )
     }
+}
 @Serializable
 data class StackEntityResponse(
     @Serializable(with = UUIDSerializer::class)

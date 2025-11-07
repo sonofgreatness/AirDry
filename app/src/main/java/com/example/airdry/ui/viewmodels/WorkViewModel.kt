@@ -11,7 +11,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.airdry.database.Entities.UserManagement.AppUser
-import com.example.airdry.database.Entities.Stack
+import com.example.airdry.database.Entities.Stack.Stack
 import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
@@ -70,9 +70,9 @@ class WorkViewModel @Inject constructor(
 
      fun loadAllStacks() {
         viewModelScope.launch{
-            stackRepo.getAllStacks().let{
+            /*stackRepo.getAllStacks().let{
                 _allStacks.postValue(it)
-            }
+            }*/
         }
     }
 
@@ -129,7 +129,7 @@ class WorkViewModel @Inject constructor(
     fun editStack(entity:Stack){
 
         viewModelScope.launch {
-            stackRepo.editStack(entity)
+          //  stackRepo.editStack(entity)
             Toast.makeText(app.applicationContext
                 ,"Stack edited", Toast.LENGTH_SHORT).show()
         }
@@ -138,7 +138,8 @@ class WorkViewModel @Inject constructor(
 
     suspend fun  getStackById(id :UUID) : Stack?{
 
-        return stackRepo.getStackById(id)
+        return null
+    //    stackRepo.getStackById(id)
     }
 
 
@@ -146,7 +147,7 @@ class WorkViewModel @Inject constructor(
     fun deleteStack(stack: Stack){
         viewModelScope.launch {
             try{
-                stackRepo.deleteStack(stack)
+              //  stackRepo.deleteStack(stack)
                 Toast.makeText(app.applicationContext, "Stack deleted"
                     ,Toast.LENGTH_SHORT).show()
             }

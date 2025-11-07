@@ -18,6 +18,7 @@ import com.example.airdry.ui.viewmodels.AuthViewModel
 import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.ProfileViewModel
+import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
     private val mConnectionsViewModel : ConnectionsViewModel by viewModels()
     private  val mAuthViewModel : AuthViewModel by viewModels()
     private  val mProfileViewModel: ProfileViewModel by viewModels()
+    private  val mStackViewModel: StackViewModel by viewModels()
     @Inject
     lateinit var sessionManager: SessionManager
     @Inject
@@ -66,7 +68,9 @@ class MainActivity : ComponentActivity() {
                 mConnectionsViewModel,
                 mAuthViewModel,
                 sessionManager,
-                connectivityObserver,mProfileViewModel)
+                connectivityObserver,
+                mProfileViewModel,
+                stackViewModel=mStackViewModel)
             ///ProductKeyScreen(mConnectionsViewModel)
         }
     }
