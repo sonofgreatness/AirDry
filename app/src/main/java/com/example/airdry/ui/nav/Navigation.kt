@@ -54,10 +54,12 @@ import com.example.airdry.ui.screens.settings.*
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
 import com.example.airdry.ui.screens.workers.WorkersListScreen
+import com.example.airdry.ui.theme.ThemeManager
 import com.example.airdry.ui.viewmodels.AuthViewModel
 import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.ProfileViewModel
+import com.example.airdry.ui.viewmodels.SettingsViewModel
 import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import java.util.UUID
@@ -70,7 +72,9 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                sessionManager: SessionManager,
                connectivityObserver: ConnectivityObserver,
                profileViewModel: ProfileViewModel,
-               stackViewModel: StackViewModel
+               stackViewModel: StackViewModel,
+               settingsViewModel: SettingsViewModel,
+               themeManager: ThemeManager
                ) {
     val isServerUp by  connectivityObserver.isServerReachable.collectAsState()
     val isUserLoggedIn  by sessionManager.isLoggedInFlow.collectAsState()
@@ -83,6 +87,10 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
         Screen.SelectEmployee.route,
         Screen.Settings.route,
         Screen.Login.route)
+ val darkTheme  by themeManager.isDarkThemeEnabled.collectAsState()
+
+
+
     Scaffold(
         modifier = Modifier
             .windowInsetsPadding(WindowInsets.navigationBars),
@@ -126,7 +134,9 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                 }
                 composable(Screen.Settings.route) {
 
-                    Settings(navController)
+                    Settings(navController, settingsViewModel
+                    , darkThemeEnabled = darkTheme,
+                  onToggleTheme = { themeManager.setDarkTheme(it) })
                 }
 
 
@@ -224,11 +234,10 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                 }
                 composable(Screen.Login.route) {
                     LoginScreen(
-                        authViewModel,
-                        {
-                            navController.navigate(Screen.ManageUpdates.route)
-                        }
-                    )
+                        authViewModel
+                    ) {
+                        navController.navigate(Screen.ManageUpdates.route)
+                    }
                 }
                 composable(Screen.Profile.route) {
                     ProfileScreen(profileViewModel,sessionManager=sessionManager, navController = navController)

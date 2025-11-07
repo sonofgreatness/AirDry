@@ -1,20 +1,23 @@
 package com.example.airdry.ui.screens.settings
 
-import android.annotation.SuppressLint
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,19 +29,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.airdry.database.Entities.Stack.NestedStack
 import com.example.airdry.ui.nav.Screen
-import com.example.airdry.ui.theme.Typography
 import com.example.airdry.ui.viewmodels.StackViewModel
-
+import java.util.Locale
 
 @Composable
 fun ManageStacksScreen(
-    viewModel:StackViewModel,
+    viewModel: StackViewModel,
     navController: NavController,
-    ) {
+) {
+    // ... (Existing code for viewModel, LaunchedEffects, Context) ...
     val allStacks by viewModel.allStack.collectAsState()
     val context = LocalContext.current
 
@@ -50,30 +54,28 @@ fun ManageStacksScreen(
     LaunchedEffect(Unit) {
         viewModel.getAllStacks()
     }
+
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)) {
 
         Text(
-            "Current Stacks",
-            style = Typography.titleLarge,
+            "Stack Library", // New title
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
-        GreenDivider()
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 8.dp)
-                .border(
-                    BorderStroke(1.dp, Color.Gray),
-                    shape = RoundedCornerShape(4.dp)
-                )
+        GreenDivider() // Assuming you have this composable
+
+        // 👇 Using LazyVerticalGrid for a "gallery" or "library shelf" look
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2), // Two cards per row, like an open book
+            contentPadding = PaddingValues(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
         ) {
-            item {
-                HeaderRow()
-            }
-            items(allStacks) { stack ->
-                StackItem(stack , onClick = {
+            itemsIndexed (allStacks) { index,stack ->
+                StackDetailsCard(stack = stack, onClick = {
                     navController.navigate(Screen.EditStack.withArgs(stack.stack.id.toString()))
                 })
             }
@@ -81,59 +83,87 @@ fun ManageStacksScreen(
     }
 }
 @Composable
-fun HeaderRow() {
-    Row(
+fun StackDetailsCard(stack: NestedStack, onClick: () -> Unit) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .padding(8.dp),
+            .clickable(onClick = onClick), // Card is clickable
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            // Primary Identification (The "Title" of the Book)
+            Text(
+                text = stack.stack.displayName,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Secondary Identification (The "Subtitle" or "Edition")
+            Text(
+                text = "${stack.stackCode.displayName} (${stack.stackCode.displayCode})",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+
+            // --- Divider for visual break ---
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+
+            // Key Metrics - Presented as a comfortable, readable list
+            KeyMetricRow(label = "Pieces", value = stack.stack.numberOfPieces.toString())
+            KeyMetricRow(label = "Cubes (m³)", value = String.format(Locale.getDefault(), "%.3f", stack.stack.volume ?: 0.0))
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Dimensions - Grouped together
+            DimensionRow(
+                label = "Dims",
+                height = stack.stack.height.toString(),
+                length = stack.stack.length.toString(),
+                thickness = stack.stack.thickness.toString()
+            )
+        }
+    }
+}
+@Composable
+fun KeyMetricRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        TableText("Type", true)
-        TableText("Height", true)
-        TableText("Length", true)
-        TableText("Thickness", true)
-        TableText("# Pieces", true)
-        TableText("Cubes", true)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
-@SuppressLint("DefaultLocale")
 @Composable
-fun StackItem(stack: NestedStack? , onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .border(BorderStroke(0.5.dp, Color.LightGray))
-            .clickable{
-                onClick()
-            },
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        TableText("${stack?.stack?.displayName} -${stack?.stackCode?.displayName} -${stack?.stackCode?.displayCode}",onClick = {onClick()})
-        TableText(stack?.stack?.height.toString(),onClick = {onClick()})
-        TableText(stack?.stack?.length.toString(),onClick = {onClick()})
-        TableText(stack?.stack?.thickness.toString(),onClick = {onClick()})
-        TableText(stack?.stack?.numberOfPieces.toString(),onClick = {onClick()})
-        TableText(String.format("%.3f", stack?.stack?.volume ?: 0.0),onClick = {onClick()})
+fun DimensionRow(label: String, height: String, length: String, thickness: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "$label (H x L x T)",
+            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 2.dp)
+        )
+        Text(
+            text = "$height x $length x $thickness",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
-
-@Composable
-fun TableText(text: String, isHeader: Boolean = false, onClick: () -> Unit ={}) {
-    Text(
-        text = text,
-        modifier = Modifier
-            .padding(horizontal = 4.dp),
-        style = if (isHeader)
-            MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-        else
-            MaterialTheme.typography.bodyMedium,
-        maxLines = 1
-    )
-}
-
-
-
-

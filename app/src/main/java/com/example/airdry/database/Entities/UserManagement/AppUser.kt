@@ -26,13 +26,13 @@ import java.util.UUID
         entity = Section::class,
         parentColumns = ["id"],
         childColumns = ["section_id"],
-        onDelete = ForeignKey.Companion.RESTRICT
+        onDelete = ForeignKey.Companion.CASCADE
     ),
     ForeignKey(
         entity = UserType::class,
         parentColumns = ["id"],
         childColumns = ["user_type_id"],
-        onDelete = ForeignKey.Companion.RESTRICT
+        onDelete = ForeignKey.Companion.CASCADE
     )],
         indices = [Index("department_id"),Index("organization_id"),
     Index("section_id"),Index("user_type_id"),

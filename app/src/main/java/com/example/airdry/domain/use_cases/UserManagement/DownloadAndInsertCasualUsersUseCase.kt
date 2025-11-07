@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class DownloadAndInserCasualUsers @Inject constructor(
+class DownloadAndInsertCasualUsersUseCase @Inject constructor(
     private val userApi: UserApi,
     private val userRepository: UserRepository
 )

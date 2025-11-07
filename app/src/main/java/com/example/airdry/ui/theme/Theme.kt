@@ -44,7 +44,7 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun AirDryTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {

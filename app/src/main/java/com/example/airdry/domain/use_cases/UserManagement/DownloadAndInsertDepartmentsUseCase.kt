@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class DownloadAndInsertDepartments
+class DownloadAndInsertDepartmentsUseCase
     @Inject constructor(
         private val organizationApi: OrganizationApi,
         private val userRepository: UserRepository,
@@ -30,10 +30,11 @@ class DownloadAndInsertDepartments
             _departments.value = emptyList()
             val userId = sessionManager.userId
             val user = userId?.let { userApi.findUserResponseById(it.toUUID()) }
+
             insertOrganization(user)
             fetchAllDepartments()
             //***
-            userRepository.deleteAllUsers()
+            userRepository.deleteAllDepartments()
             //***
             _departments.value.forEach {
                 var entity = it.toDepartment()
@@ -54,13 +55,11 @@ class DownloadAndInsertDepartments
         }
     }
    private suspend  fun  insertOrganization(user: UserResponse?){
-      Log.d("org", "insert org")
        user?.organization?.id?.let {
            Log.d("org", "insert before")
            val org = organizationApi.getOrgById(it)
            userRepository.deleteAllOrganizations()
            userRepository.createOrganization(org.toOrganization())
-           Log.d("org", "insert after")
        }
    }
 }

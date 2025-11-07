@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class DownloadAndInsertUserTypes @Inject constructor(
+class DownloadAndInsertUserTypesUseCase @Inject constructor(
     private val userRepository: UserRepository,
     private  val userApi: UserApi
 ){
@@ -21,7 +21,7 @@ class DownloadAndInsertUserTypes @Inject constructor(
             _userTypes.value = emptyList()
             fetchAllUserTypes()
             //***
-            userRepository.deleteAllUsers()
+            userRepository.deleteAllUserTypes()
             //***
             _userTypes.value.forEach {
                 val entity = it.toUserType()

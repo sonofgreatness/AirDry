@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class DownloadStackData @Inject constructor(
+class DownloadStackDataUseCase @Inject constructor(
     private  val stackApi: StackApi,
     private  val stackRepository: StackRepository
 ) {
@@ -18,8 +18,12 @@ class DownloadStackData @Inject constructor(
         try {
           val allStackCode :List<StackCode> =  getStackCodes()
           val allStacks : List<Stack> = getStacks()
-          Log.d("downloadStackData", "before insert sizes : ${allStackCode.size} ${allStacks.size}")
           emit(DownloadState.Loading)
+            val equalityCheck = allStacks.size == allStackCode.size
+            if ((allStackCode.isNotEmpty() && allStacks.isNotEmpty()) && equalityCheck)
+            {
+                stackRepository.deleteAllStackCodesAndStack()
+            }
           allStackCode.forEach {
               stackRepository.createStackCode(it)
           }

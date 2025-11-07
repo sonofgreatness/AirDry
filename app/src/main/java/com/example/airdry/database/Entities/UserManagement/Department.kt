@@ -14,7 +14,7 @@ import androidx.room.Index
             entity = Organization::class,
             parentColumns = ["id"],
             childColumns = ["organization_id"],
-            onDelete = ForeignKey.Companion.RESTRICT
+            onDelete = ForeignKey.Companion.CASCADE
         )],
     indices = [Index("organization_id")])
 data class Department(

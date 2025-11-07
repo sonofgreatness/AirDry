@@ -58,6 +58,6 @@ class Constants {
         const val DOWNLOAD_SECTIONS_DONE ="Downloaded sections"
         const val DOWNLOAD_SECTIONS_FAILED ="Failed to download sections"
        const val CASUAL_NAME = "casual"
-
+        const val  THEME_KEY = "dark_mode_key"
     }
 }

@@ -14,10 +14,12 @@ import com.example.airdry.ui.nav.Navigation
 import com.example.airdry.ui.nav.Screen
 import com.example.airdry.ui.screens.auth.LoginScreen
 import com.example.airdry.ui.theme.AirDryTheme
+import com.example.airdry.ui.theme.ThemeManager
 import com.example.airdry.ui.viewmodels.AuthViewModel
 import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.ProfileViewModel
+import com.example.airdry.ui.viewmodels.SettingsViewModel
 import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,22 +35,26 @@ class MainActivity : ComponentActivity() {
     private  val mAuthViewModel : AuthViewModel by viewModels()
     private  val mProfileViewModel: ProfileViewModel by viewModels()
     private  val mStackViewModel: StackViewModel by viewModels()
+    private val mSettingsViewModel: SettingsViewModel by viewModels()
     @Inject
     lateinit var sessionManager: SessionManager
     @Inject
     lateinit var  connectivityObserver: ConnectivityObserver
+    @Inject
+    lateinit var themeManager: ThemeManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AirDryTheme {
+
                 val isServerUp by  connectivityObserver.isServerReachable.collectAsState()
                 val isUserLoggedIn  by sessionManager.isLoggedInFlow.collectAsState()
                 val bool = shouldMoveToLoginScreen(isUserLoggedIn, isServerUp)
                 AppContent(bool)
-            }
+
         }
     }
     private fun shouldMoveToLoginScreen(isUserLoggedIn: Boolean, isServerUp: Boolean): Boolean{
@@ -56,22 +62,25 @@ class MainActivity : ComponentActivity() {
         println("isServerUp $isServerUp , isUserLoggedIn $isUserLoggedIn")
         return isServerUp && !isUserLoggedIn
     }
-
     @Composable
     fun AppContent(shouldMoveToLoginScreen: Boolean) {
-
+        val  isDarkThemeEnabled by themeManager.isDarkThemeEnabled.collectAsState(initial = false)
         if (shouldMoveToLoginScreen == true) {
             val navController = rememberNavController()
-            LoginScreen(mAuthViewModel) { navController.navigate(Screen.SelectEmployee.route) }
+            AirDryTheme(isDarkThemeEnabled) {LoginScreen(mAuthViewModel) { navController.navigate(Screen.SelectEmployee.route) } }
+
         } else {
+            AirDryTheme(isDarkThemeEnabled) {
             Navigation(mEmployeeViewModel, mWorkViewModel,
                 mConnectionsViewModel,
                 mAuthViewModel,
                 sessionManager,
                 connectivityObserver,
                 mProfileViewModel,
-                stackViewModel=mStackViewModel)
-            ///ProductKeyScreen(mConnectionsViewModel)
+                stackViewModel=mStackViewModel,
+                mSettingsViewModel,
+                themeManager)
+        }
         }
     }
 }

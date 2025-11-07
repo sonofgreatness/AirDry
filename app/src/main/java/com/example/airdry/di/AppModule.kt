@@ -22,6 +22,7 @@ import com.example.airdry.domain.repository.interfaces.ProductKeyRepository
 import com.example.airdry.domain.repository.interfaces.ReportConfigRepository
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
+import com.example.airdry.ui.theme.ThemeManager
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import dagger.Module
@@ -130,6 +131,10 @@ object AppModule {
                                      logger: Logger) : ConnectivityObserver{
         return ConnectivityObserver(userApi,logger)
     }
-
+    @Provides
+    @Singleton
+    fun providesThemeManager(settings: Settings): ThemeManager{
+        return ThemeManager(settings)
+    }
 
 }

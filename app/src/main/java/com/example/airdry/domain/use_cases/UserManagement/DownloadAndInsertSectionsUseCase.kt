@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class DownloadAndInsertSections
+class DownloadAndInsertSectionsUseCase
     @Inject constructor(
         private val organizationApi: OrganizationApi,
         private val userRepository: UserRepository
@@ -21,10 +21,9 @@ class DownloadAndInsertSections
         try {
             emit(DownloadState.Loading)
             _sections.value = emptyList()
-            Log.d("yini", "kangaka")
             fetchAllSections()
             //***
-            userRepository.deleteAllUsers()
+            userRepository.deleteAllSections()
             //***
             _sections.value.forEach {
                 val entity = it.toSection()
@@ -37,7 +36,6 @@ class DownloadAndInsertSections
         }
     }
     private suspend fun fetchAllSections() {
-        Log.d("yini", "fetch all sections")
         val res = organizationApi.getAllSect()
         res.let {
             _sections.value = it

@@ -14,7 +14,7 @@ import java.util.UUID
             entity = Department::class,
             parentColumns = ["id"],
             childColumns = ["department_id"],
-            onDelete = ForeignKey.Companion.RESTRICT
+            onDelete = ForeignKey.Companion.CASCADE
         )],
     indices = [Index("department_id")]
 )

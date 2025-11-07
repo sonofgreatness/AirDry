@@ -56,7 +56,6 @@ fun WorkersListScreen(
         }
     }
     LaunchedEffect(Unit) {
-        viewModel.superWork()
         viewModel.getAllEmployees()
     }
     val workers by viewModel.allEmployees.observeAsState(emptyList())
