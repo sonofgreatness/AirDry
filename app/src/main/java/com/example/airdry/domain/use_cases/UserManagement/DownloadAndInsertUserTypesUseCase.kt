@@ -20,13 +20,10 @@ class DownloadAndInsertUserTypesUseCase @Inject constructor(
             emit(DownloadState.Loading)
             _userTypes.value = emptyList()
             fetchAllUserTypes()
-            //***
-            userRepository.deleteAllUserTypes()
-            //***
-            _userTypes.value.forEach {
-                val entity = it.toUserType()
-                userRepository.createUserType(entity)
-            }
+            userRepository.replaceAllUserTypesInTransaction(_userTypes.value.map {
+                it.toUserType()
+            })
+
             emit(DownloadState.Success(Constants.Companion.DOWNLOAD_USER_TYPES_DONE))
         } catch (e: Exception) {
             emit(DownloadState.Error("${Constants.Companion.DOWNLOAD_USER_TYPES_FAILED} ${e.message}"))

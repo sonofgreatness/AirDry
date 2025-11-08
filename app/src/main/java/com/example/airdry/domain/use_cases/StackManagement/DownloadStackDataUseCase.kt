@@ -30,7 +30,7 @@ class DownloadStackDataUseCase @Inject constructor(
           allStacks.forEach {
               stackRepository.createStack(it)
           }
-          emit(DownloadState.Success("Download  Stack Data Complete"))
+          emit(DownloadState.Success("download  stack data complete"))
         }catch (e:Exception){
             emit(DownloadState.Error("failed to download stack data ${e.message}"))
         }

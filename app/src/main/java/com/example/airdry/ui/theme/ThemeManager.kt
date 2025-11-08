@@ -10,7 +10,8 @@ class ThemeManager(private val settings: Settings) {
 
     private fun getTheme() : Boolean {
         val systemSetting = settings.getBoolean(THEME_KEY, false)
-        return  systemSetting
+
+        return  systemSetting?:false
     }
   init {
       _isDarkThemeEnabled.value = getTheme()

@@ -6,10 +6,12 @@ import com.example.airdry.auth.SessionManager
 import com.example.airdry.domain.REST_API.implementation.OrganizationApiImpl
 import com.example.airdry.domain.REST_API.implementation.StackApiImpl
 import com.example.airdry.domain.REST_API.implementation.UserApiImpl
+import com.example.airdry.domain.REST_API.implementation.WorkApiImpl
 import com.example.airdry.domain.REST_API.interfaces.GithubApi
 import com.example.airdry.domain.REST_API.interfaces.OrganizationApi
 import com.example.airdry.domain.REST_API.interfaces.StackApi
 import com.example.airdry.domain.REST_API.interfaces.UserApi
+import com.example.airdry.domain.REST_API.interfaces.WorkApi
 import com.example.airdry.util.Constants.Companion.GITHUB_API
 import dagger.Module
 import dagger.Provides
@@ -119,6 +121,11 @@ object NetworkModule {
   fun provideStackApi(client: HttpClient, logger: org.slf4j.Logger) : StackApi{
       return StackApiImpl(client = client,logger = logger)
   }
+    @Provides
+    @Singleton
+    fun providesWorkApi(client: HttpClient) :WorkApi{
+        return  WorkApiImpl(client)
+    }
 }
 @Qualifier
 @Retention(AnnotationRetention.BINARY)

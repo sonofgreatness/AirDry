@@ -1,7 +1,6 @@
 package com.example.airdry.database
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -20,7 +19,9 @@ import com.example.airdry.database.Entities.UserManagement.Organization
 import com.example.airdry.database.Entities.UserManagement.Profile
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.UserType
-import com.example.airdry.database.Entities.WorkDone
+import com.example.airdry.database.Entities.Work.WorkDone
+import com.example.airdry.database.Entities.Work.WorkDoneStack
+import com.example.airdry.database.Entities.Work.WorkDoneUser
 import com.example.airdry.database.typeConverters.EnumConverters
 import com.example.airdry.database.typeConverters.TimestampConverter
 import com.example.airdry.database.typeConverters.UUIDConverter
@@ -30,10 +31,15 @@ import com.example.airdry.util.Constants
     (
     entities = [AppUser::class,
         Stack::class,
-        WorkDone::class,ProductKey::class,
+        WorkDone::class,
+        ProductKey::class,
+        WorkDoneStack::class,
+        WorkDoneUser::class,
         Organization::class,
-        Department::class,Section::class,
-        UserType::class, Profile::class,
+        Department::class,
+        Section::class,
+        UserType::class,
+        Profile::class,
         StackCode::class]
     , version = 1,
     exportSchema = false
@@ -51,7 +57,6 @@ abstract class MainDatabase :RoomDatabase() {
         @Volatile
         private var INSTANCE: MainDatabase? = null
         fun getDatabase(context: Context): MainDatabase {
-            Log.d("Database", "Database instance created")
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance

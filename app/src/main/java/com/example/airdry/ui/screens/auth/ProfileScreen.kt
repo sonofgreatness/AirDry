@@ -67,7 +67,7 @@ fun ProfileScreen(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is ProfileUiEvent.ShowToast -> {
-                    Toast.makeText(localContext, event.message, Toast.LENGTH_SHORT).show()
+                  //  Toast.makeText(localContext, event.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }

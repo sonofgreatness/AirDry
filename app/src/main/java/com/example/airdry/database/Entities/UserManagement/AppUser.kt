@@ -14,25 +14,25 @@ import java.util.UUID
         entity = Organization::class,
         parentColumns = ["id"],
         childColumns = ["organization_id"],
-        onDelete = ForeignKey.Companion.RESTRICT
+        onDelete = ForeignKey.Companion.SET_NULL
     ),
     ForeignKey(
         entity = Department::class,
         parentColumns = ["id"],
         childColumns = ["department_id"],
-        onDelete = ForeignKey.Companion.RESTRICT
+        onDelete = ForeignKey.Companion.SET_NULL
     ),
     ForeignKey(
         entity = Section::class,
         parentColumns = ["id"],
         childColumns = ["section_id"],
-        onDelete = ForeignKey.Companion.CASCADE
+        onDelete = ForeignKey.Companion.SET_NULL
     ),
     ForeignKey(
         entity = UserType::class,
         parentColumns = ["id"],
         childColumns = ["user_type_id"],
-        onDelete = ForeignKey.Companion.CASCADE
+        onDelete = ForeignKey.Companion.SET_NULL
     )],
         indices = [Index("department_id"),Index("organization_id"),
     Index("section_id"),Index("user_type_id"),

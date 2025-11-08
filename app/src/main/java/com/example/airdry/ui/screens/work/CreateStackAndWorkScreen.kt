@@ -23,21 +23,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.airdry.database.Entities.Stack.NestedStack
 import com.example.airdry.database.Entities.UserManagement.AppUser
-import com.example.airdry.database.Entities.Stack.Stack
-import com.example.airdry.database.Entities.WorkDone
+import com.example.airdry.database.Entities.Work.WorkDone
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 
 @Composable
 fun CreateStackAndWorkScreen(
-    allStacks :List<Stack?>,
+    allStacks :List<NestedStack?>,
     viewModel: EmployeeViewModel,
     defaultAppUser: AppUser,
     onSubmit: (List<WorkDone>) -> Unit
 ) {
     val context = LocalContext.current
 
-    var selectedType by remember { mutableStateOf<Stack?>(null) }
+    var selectedType by remember { mutableStateOf<NestedStack?>(null) }
     var amount by remember { mutableStateOf("") }
     var isShared by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
@@ -55,7 +55,7 @@ fun CreateStackAndWorkScreen(
             items = allStacks,
             selectedItem = selectedType,
             onItemSelected = { selectedType = it },
-            label = { it?.displayName ?: "no stacks found" }
+            label = { it?.stack?.displayName ?: "no stacks found" }
         )
 
         Spacer(Modifier.height(16.dp))
@@ -129,12 +129,7 @@ fun CreateStackAndWorkScreen(
                     val employees = if (isShared) selectedAppUsers else listOf(defaultAppUser)
 
                     val workList = employees.map { emp ->
-                        WorkDone(
-                            employeeId = emp.id,
-                            stackId = stack!!.id,
-                            amount = (amount.toDoubleOrNull() ?: 0.0),
-                            ownershipFraction = fraction
-                        )
+                        WorkDone()
                     }
 
                     onSubmit(workList)

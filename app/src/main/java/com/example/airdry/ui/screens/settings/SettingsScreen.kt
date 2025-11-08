@@ -14,10 +14,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -27,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -55,6 +61,8 @@ fun Settings(
     val context = LocalContext.current
     val syncStatus by viewModel.syncStatus.collectAsState()
     val isSyncing = syncStatus is SyncStatus.Working
+    val offsetMonths by viewModel.offsetMonths.collectAsState()
+    val oldestRecordDateString by viewModel.oldestRecordDateString.collectAsState()
 
     val scrollState = rememberScrollState()
 
@@ -99,6 +107,12 @@ fun Settings(
                     },
                     isWorking = isSyncing,
                     onClick = viewModel::synchronizeData
+                )
+                GreenDivider()
+                OffsetSettingItem(
+                    currentOffset = offsetMonths,
+                    oldestRecordDate = oldestRecordDateString,
+                    onUpdateOffset = viewModel::onUpdateOffsetMonths
                 )
                 GreenDivider()
                 SettingItem(
@@ -231,6 +245,91 @@ private fun SettingItem(
         if (trailing != null) {
             Spacer(Modifier.width(8.dp))
             trailing()
+        }
+    }
+}
+@Composable
+fun OffsetSettingItem(
+    currentOffset: Long,
+    oldestRecordDate: String,
+    onUpdateOffset: (Long) -> Unit
+) {
+    val context = LocalContext.current
+    val isExpanded = remember { mutableStateOf(false) }
+    val monthsOptions = (1..6).toList() // Options: 1, 2, 3, 4, 5, 6
+
+    // Calculate the human-readable description for the offset
+    val offsetDescription = remember(currentOffset) {
+        "Data is downloaded for the last $currentOffset month${if (currentOffset > 1) "s" else ""}."
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isExpanded.value = true } // Open dropdown on click
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.DateRange, // Or another relevant icon
+            contentDescription = null,
+            tint = ForestGreen,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                "Data History Offset",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+            )
+            Text(
+                offsetDescription,
+                style = MaterialTheme.typography.labelMedium
+            )
+            // Display the oldest record date using the provided utility function
+            Text(
+                "Oldest record date: $oldestRecordDate",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        // Trailing Composable: Dropdown for month selection
+        Box {
+            // Display current value with a dropdown arrow
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = currentOffset.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Select Offset"
+                )
+            }
+
+            // Dropdown Menu
+            DropdownMenu(
+                expanded = isExpanded.value,
+                onDismissRequest = { isExpanded.value = false }
+            ) {
+                monthsOptions.forEach { month ->
+                    DropdownMenuItem(
+                        text = {
+                            Text("$month month${if (month > 1) "s" else ""}")
+                        },
+                        onClick = {
+                            onUpdateOffset(month.toLong())
+                            isExpanded.value = false
+                            Toast.makeText(context, "Data offset set to $month months", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
         }
     }
 }

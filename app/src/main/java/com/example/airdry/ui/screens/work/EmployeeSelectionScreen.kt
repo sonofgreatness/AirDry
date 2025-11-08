@@ -1,6 +1,6 @@
 package com.example.airdry.ui.screens.work
 
-import androidx.compose.foundation.Image
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,75 +15,56 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.airdry.R
 import com.example.airdry.database.Entities.UserManagement.AppUser
-import com.example.airdry.database.Entities.WorkWithStack
+import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
-import com.example.airdry.util.toLocalDateTime
 import java.time.LocalDate
 
 @Composable
 fun EmployeeSelectionScreen(
     viewModel: WorkViewModel,
     employeeViewModel: EmployeeViewModel,
-    onMovetoGenerateExcel: () -> Unit,
     onSelected: () -> Unit,
 
 ) {
 
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
     LaunchedEffect(Unit) {
         employeeViewModel.getAllEmployees()
         employeeViewModel.updateFilteredEmployees("")
-        viewModel.loadWorkDoneWithStack()
+        viewModel.loadWorkDoneWithUsersAndStacks()
     }
-
-
     val searchTerm = remember { mutableStateOf("") }
-
-
     val employees by employeeViewModel.filteredEmployees.observeAsState(emptyList())
-    val workMap = viewModel.workDoneWithStack.observeAsState(emptyMap()).value
+    val nestedWork = viewModel.workDoneWithUsersAndStack.observeAsState(emptyList()).value
     val today = remember { LocalDate.now() }
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "Select Worker , Save work done",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f)
-            )
-
-            // ✅ Clickable Excel Icon
-            Image(
-                painter = painterResource(id =
-                    R.drawable.excel_logo),
-                contentDescription = "Generate Excel",
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onMovetoGenerateExcel()}
-                    .padding(start = 8.dp)
-            )
-        }
-
         Spacer(Modifier.height(16.dp))
 
         Row(
@@ -134,9 +115,7 @@ fun EmployeeSelectionScreen(
         else{
         LazyColumn {
             itemsIndexed(employees) { index, employee ->
-                val workGroups = workMap[employee.id]?.groupBy {
-                    it.workDone.dateWorked.toLocalDateTime().toLocalDate()
-                } ?: emptyMap()
+                val workGroups = emptyMap<LocalDate, List<WorkDoneWithUsersAndStacks>>()
 
                 SelectEmployeeCreateStackCard(
                     viewModel = viewModel,
@@ -150,13 +129,11 @@ fun EmployeeSelectionScreen(
     }
     }
 }
-
-
 @Composable
 private fun SelectEmployeeCreateStackCard(
     viewModel: WorkViewModel,
     appUser: AppUser,
-    workGroups: Map<LocalDate, List<WorkWithStack>>,
+    workGroups: Map<LocalDate, List<WorkDoneWithUsersAndStacks>>,
     today: LocalDate,
     onSelected: () -> Unit
 ) {
@@ -185,9 +162,9 @@ private fun SelectEmployeeCreateStackCard(
                         )
                         if (workList.isNotEmpty()) {
                             workList.forEach { workWithStack ->
-                                val stackType = workWithStack.stack.displayName
-                                val amount = workWithStack.workDone.amount
-                                val fraction = workWithStack.workDone.ownershipFraction
+                                val stackType = "workWithStack.stacks"
+                                val amount = 0
+                                val fraction = 0.6
                                 Text(" - $stackType | Amount: $amount | %Owned: ${String.format("%.2f", (fraction * 100.0))}%", style = MaterialTheme.typography.bodySmall)
                             }
                         } else {

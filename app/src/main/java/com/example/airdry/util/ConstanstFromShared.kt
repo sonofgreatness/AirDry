@@ -1,4 +1,4 @@
-package com.example.airdry.util.operational_states
+package com.example.airdry.util
 
 class ConstanstFromShared {
     companion object{

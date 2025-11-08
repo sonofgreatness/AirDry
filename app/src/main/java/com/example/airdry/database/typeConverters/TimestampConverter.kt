@@ -2,7 +2,6 @@ package com.example.airdry.database.typeConverters
 
 import androidx.room.TypeConverter
 import java.sql.Timestamp
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

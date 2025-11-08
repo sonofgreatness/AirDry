@@ -1,5 +1,6 @@
 package com.example.airdry.database.Daos.UserManagement
 
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -24,7 +25,6 @@ interface UserManagementDao {
     suspend fun editEmployee(entity: AppUser)
     @Query("""
         SELECT * FROM  app_user WHERE is_active =1
-        
     """)
     suspend fun getAllEmployees() :List<AppUser>
 
@@ -46,6 +46,20 @@ interface UserManagementDao {
     suspend fun createUserType(entity: UserType)
     @Query ("DELETE FROM user_type")
     suspend fun deleteAllUserTypes()
+
+
+    @Transaction // <-- THIS IS THE KEY ANNOTATION
+    suspend fun replaceAllUserTypesInTransaction(userTypes: List<UserType>) {
+       try {
+           Log.d("deleteUserTypes", "Deleting all user types")
+           deleteAllUserTypes()
+           Log.d("deleteUserTypes", "Deleted all user types")
+           userTypes.forEach { createUserType(it) } // Inserts new records
+       }catch (e : Exception){
+           Log.d("deleteUserTypes", "Failed to delete all user types ${e.message}")
+       }
+    }
+
     @Query("SELECT * FROM user_type WHERE displayname LIKE '%' || :casual ||'%'")
     suspend fun getCasualUserType(casual:String  = CASUAL_NAME):List<UserType>?
     //====ORGANIZATION MANAGEMENT====
@@ -77,7 +91,4 @@ interface UserManagementDao {
     suspend fun deleteProfiles()
     @Query("SELECT * FROM user_profile WHERE id =:userId LIMIT 1")
     suspend fun getProfileById(userId: UUID): Profile?
-
-
-
 }

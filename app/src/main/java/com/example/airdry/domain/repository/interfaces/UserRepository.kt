@@ -25,6 +25,7 @@ interface UserRepository {
     suspend fun  deleteAllUsers()
     suspend fun createUserType(entity: UserType)
     suspend fun deleteAllUserTypes()
+    suspend fun replaceAllUserTypesInTransaction(userTypes: List<UserType>)
     suspend fun  getAllNestedEmployees():List<NestedAppUser>
     suspend fun  deleteEmployee(entity: AppUser)
     suspend fun  getAllCachedEmployees():List<AppUser>?

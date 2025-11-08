@@ -1,20 +1,31 @@
 package com.example.airdry.domain.repository.interfaces
 
-import com.example.airdry.database.Entities.WorkDone
-import com.example.airdry.database.Entities.WorkWithStack
-import java.time.LocalDate
+import com.example.airdry.database.Entities.Work.WorkDone
+import com.example.airdry.database.Entities.Work.WorkDoneStack
+import com.example.airdry.database.Entities.Work.WorkDoneUser
+import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
+import java.sql.Timestamp
 import java.util.UUID
 
 interface WorkDoneRepository {
 
     suspend fun createWork(workDone: WorkDone)
     suspend fun updateWork(workDone: WorkDone)
-    suspend fun getWorkById(id: UUID): WorkDone?
-    suspend fun getAllWork(): List<WorkDone>
-    suspend fun getWorkByEmployeeId(employeeId: UUID): List<WorkWithStack>
-    suspend fun getWorkWithStack(): List<WorkWithStack>
-    suspend fun getWorkWithStackBetweenDates(startDate: String, endDate: String): List<WorkWithStack>
-
+    suspend fun deleteWork(workDone: WorkDone)
+    suspend fun deleteAllWork()
+    suspend fun createWorkDoneUser(entity: WorkDoneUser)
+    suspend fun updateWorkDoneUser(entity: WorkDoneUser)
+    suspend fun  createWorkDoneStack(entity: WorkDoneStack)
+    suspend fun updateWorkDoneStack(entity: WorkDoneStack)
+    suspend fun getWorkDoneWithUsersAndStacksById(id: UUID): WorkDoneWithUsersAndStacks?
+    suspend fun  getAllWorkDoneWithUsersAndStack():List<WorkDoneWithUsersAndStacks>
+    suspend fun  getAllWorkDoneWithUsersAndStackBetweenDates(
+        startDate: Timestamp,
+        endDate: Timestamp
+    ):List<WorkDoneWithUsersAndStacks>
+    suspend fun getWorkDoneWithUsersAndStacksByUserId(
+        userId: UUID
+    ): List<WorkDoneWithUsersAndStacks>
 
 
 }

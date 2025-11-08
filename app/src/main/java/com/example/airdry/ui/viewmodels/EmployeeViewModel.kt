@@ -18,7 +18,7 @@ import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertCasua
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertDepartmentsUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertSectionsUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertUserTypesUseCase
-import com.example.airdry.domain.use_cases.UploadCachedUsers
+import com.example.airdry.domain.use_cases.UserManagement.UploadCachedUsersUseCase
 import com.example.airdry.util.operational_states.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -37,7 +37,7 @@ class EmployeeViewModel
                         private  val downloadAndInsertDepartmentsUseCase: DownloadAndInsertDepartmentsUseCase,
                         private  val downloadAndInsertSectionsUseCase: DownloadAndInsertSectionsUseCase,
                         private  val downloadAndInsertUserTypesUseCase: DownloadAndInsertUserTypesUseCase,
-                        private val uploadCachedUsers: UploadCachedUsers):
+                        private val uploadCachedUsersUseCase: UploadCachedUsersUseCase):
     ViewModel() {
     private val _allEmployees = MutableLiveData<List<NestedAppUser>>()
     val allEmployees: LiveData<List<NestedAppUser>>
@@ -145,7 +145,7 @@ class EmployeeViewModel
     }
     fun forcedUpload(){
         viewModelScope.launch {
-            uploadCachedUsers().collect{
+            uploadCachedUsersUseCase().collect{
                 when(it){
                     is DownloadState.Error -> {
                         _uiEvent.send(it.message)

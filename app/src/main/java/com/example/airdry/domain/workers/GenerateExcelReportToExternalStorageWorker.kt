@@ -1,7 +1,6 @@
 package com.example.airdry.domain.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -13,7 +12,6 @@ import com.example.airdry.util.Constants.Companion.GENERATE_FILE_CHANNEL
 import com.example.airdry.util.Constants.Companion.GENERATE_FILE_NOTIFICATION_DESCRIPTION
 import com.example.airdry.util.Constants.Companion.GENERATE_FILE_NOTIFICATION_TITLE
 import com.example.airdry.util.Constants.Companion.NOTIFICATION_ID
-import com.example.airdry.util.FileGenerationUtil
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -34,25 +32,11 @@ class GenerateExcelReportToExternalStorageWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         startForegroundService()
-        val generator =  FileGenerationUtil(appContext
-            ,employeeRepo, workRepo
-        )
-
-
         val startDate = params.inputData.getString("startDate").toString()
         val endDate = params.inputData.getString("endDate").toString()
-        generator.writeExternalWorkBook(startDate, endDate)
         return Result.success()
-
     }
-
-
-
-
-
-
     private suspend fun startForegroundService() {
-        Log.d("met", "startForegroundService called ")
         setForeground(
             ForegroundInfo(
                 NOTIFICATION_ID,

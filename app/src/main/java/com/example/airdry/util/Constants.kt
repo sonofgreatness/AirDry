@@ -15,11 +15,11 @@ class Constants {
         const val STACKTYPE_T3_5 = "1976x76  1.5 metre"
 
         const val  NOTIFICATION_ID = 1001
-       const val  DOWNLOAD_NOTIFICATION_ID= 1002
+        const val  DOWNLOAD_NOTIFICATION_ID= 1002
         const val REQUEST_FILE_PERMISSION = 101
         const val GENERATE_FILE_CHANNEL_DESCRIPTION = "Report generated"
         const val GENERATE_FILE_CHANNEL = "generate_file_channel"
-       const val GENERATE_FILE_NOTIFICATION_TITLE = "Generating Excel File"
+        const val GENERATE_FILE_NOTIFICATION_TITLE = "Generating Excel File"
 
 
         const val DOWNLOAD_FILE_CHANNEL = "Download app update channel"
@@ -30,7 +30,7 @@ class Constants {
 
         const val GITHUB_API = "https://api.github.com/"
         const val GITHUB_REPO_URL = "repos/sonofgreatness/AirDry/releases"
-       const val API_BASE_URL = "http://10.185.121.27:$SERVER_PORT"
+        const val API_BASE_URL = "http://10.185.121.27:$SERVER_PORT"
         const val PRODUCT_KEY = "si_sonofgreatness"
         const val  PRODUCT_KEY_PRODUCT_KEY= "key"
         const val  FAILED_LOGIN = "Failed to login, check credentials"
@@ -57,7 +57,13 @@ class Constants {
         const val DOWNLOAD_DEPARTMENTS_FAILED ="Failed to download departments"
         const val DOWNLOAD_SECTIONS_DONE ="Downloaded sections"
         const val DOWNLOAD_SECTIONS_FAILED ="Failed to download sections"
-       const val CASUAL_NAME = "casual"
+        const val CASUAL_NAME = "casual"
         const val  THEME_KEY = "dark_mode_key"
+        const val FILTER_DATE_FORMAT = "yyyy-MM-dd"
+        const val OFFSETMONTH_KEY = "off_set_month_key"
+         const val DEFAULT_OFFSETMONTH_VALUE = 6L
+      const val HUMAN_READABLE_FORMAT_NUMERIC = "EEEE dd/MM/yyyy"
+        const val HUMAN_READABLE_FORMAT_TEXT = "EEEE dd MMM yyyy"
+
     }
 }

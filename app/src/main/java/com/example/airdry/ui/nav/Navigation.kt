@@ -45,12 +45,13 @@ import com.example.airdry.ui.AirDryTopAppBar
 import com.example.airdry.ui.screens.auth.LoginScreen
 import com.example.airdry.ui.screens.auth.ProfileScreen
 import com.example.airdry.ui.screens.protection.ProductKeyScreen
-
-import com.example.airdry.ui.screens.reports.GenerateExcelScreen
-import com.example.airdry.ui.screens.reports.ViewExcelScreen
+import com.example.airdry.ui.screens.settings.AboutScreen
+import com.example.airdry.ui.screens.settings.EditStackScreen
+import com.example.airdry.ui.screens.settings.ManageStacksScreen
+import com.example.airdry.ui.screens.settings.ManageUpdatesScreen
+import com.example.airdry.ui.screens.settings.Settings
 import com.example.airdry.ui.screens.work.CreateStackAndWorkScreen
 import com.example.airdry.ui.screens.work.EmployeeSelectionScreen
-import com.example.airdry.ui.screens.settings.*
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
 import com.example.airdry.ui.screens.workers.WorkersListScreen
@@ -143,9 +144,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                 composable(Screen.SelectEmployee.route) {
                     EmployeeSelectionScreen(
                         viewModel = workViewModel,
-                        employeeViewModel = employeeViewModel, onMovetoGenerateExcel = {
-                            navController.navigate(Screen.GenerateExcel.route)
-                        }) {
+                        employeeViewModel = employeeViewModel) {
                         val selectedId = workViewModel.selectedAppUser.value?.id
                         if (selectedId != null) {
                             navController.navigate(Screen.CreateStackAndWork.withArgs(selectedId.toString()))
@@ -178,7 +177,6 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                             employeeViewModel,
                             defaultAppUser = appUser!!,
                             onSubmit = { workDoneList ->
-                                workViewModel.saveStackAndWork(workDoneList)
                                 navController.navigate(Screen.SelectEmployee.route)
                             }
                         )
@@ -186,14 +184,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                     }
                 }
 
-                composable(Screen.GenerateExcel.route) {
-                    GenerateExcelScreen(
-                        workViewModel,
-                        onMoveToNextScreen = {
-                            navController.navigate(Screen.ViewExcel.route)
-                        }
-                    )
-                }
+
                 composable(Screen.ManageStacks.route) {
 
                     val stacks by workViewModel.allStacks.observeAsState(emptyList())
@@ -221,10 +212,6 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                         viewModel = stackViewModel
                     )
                 }
-                composable (Screen.ViewExcel.route){
-                    ViewExcelScreen(workViewModel)
-                }
-
                 composable(Screen.About.route)
                 {
                     AboutScreen()

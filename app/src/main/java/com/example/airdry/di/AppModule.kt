@@ -137,4 +137,5 @@ object AppModule {
         return ThemeManager(settings)
     }
 
+
 }
