@@ -35,11 +35,10 @@ interface UserManagementDao {
     suspend fun  deleteEmployee(entity: AppUser)
     @Query("SELECT * FROM app_user WHERE is_pending_insert =1")
     suspend fun  getAllCachedEmployees():List<AppUser>?
-
     @Query("SELECT * FROM app_user WHERE id = :id LIMIT 1")
-    suspend  fun getById(id: UUID): AppUser
+    suspend  fun getById(id: UUID): NestedAppUser
     @Query("SELECT * FROM app_user WHERE name LIKE '%' || :searchTerm || '%' OR  surname LIKE '%' || :searchTerm || '%'")
-    suspend fun  getFilteredEmployees(searchTerm : String): List<AppUser>
+    suspend fun  getFilteredEmployees(searchTerm : String): List<NestedAppUser>
     @Query("DELETE FROM app_user")
     suspend fun  deleteAllUsers()
     @Insert

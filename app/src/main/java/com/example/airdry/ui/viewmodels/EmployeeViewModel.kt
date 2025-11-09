@@ -33,17 +33,13 @@ import javax.inject.Inject
 class EmployeeViewModel
     @Inject constructor(private val application: Application,
                         private val repository: UserRepository,
-                        private val  downloadAndInsertCasualUsersUseCase: DownloadAndInsertCasualUsersUseCase,
-                        private  val downloadAndInsertDepartmentsUseCase: DownloadAndInsertDepartmentsUseCase,
-                        private  val downloadAndInsertSectionsUseCase: DownloadAndInsertSectionsUseCase,
-                        private  val downloadAndInsertUserTypesUseCase: DownloadAndInsertUserTypesUseCase,
                         private val uploadCachedUsersUseCase: UploadCachedUsersUseCase):
     ViewModel() {
     private val _allEmployees = MutableLiveData<List<NestedAppUser>>()
     val allEmployees: LiveData<List<NestedAppUser>>
         get() = _allEmployees
-    private val _filteredEmployees = MutableLiveData<List<AppUser>>()
-    val filteredEmployees :LiveData<List<AppUser>>
+    private val _filteredEmployees = MutableLiveData<List<NestedAppUser>>()
+    val filteredEmployees :LiveData<List<NestedAppUser>>
         get() = _filteredEmployees
     private val _uiEvent = Channel<String>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -135,7 +131,7 @@ class EmployeeViewModel
             Log.d("loadEmployees", " loadEmployees called size -> ${all.size}")
         }
     }
-    suspend fun getEmployeeById(id: UUID): AppUser? {
+    suspend fun getEmployeeById(id: UUID): NestedAppUser? {
         return repository.getById(id)
     }
      fun  deleteEmployee(worker: AppUser){

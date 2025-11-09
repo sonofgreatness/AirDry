@@ -41,6 +41,7 @@ import androidx.navigation.navArgument
 import com.example.airdry.ConnectivityObserver
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.database.Entities.UserManagement.AppUser
+import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.ui.AirDryTopAppBar
 import com.example.airdry.ui.screens.auth.LoginScreen
 import com.example.airdry.ui.screens.auth.ProfileScreen
@@ -51,7 +52,7 @@ import com.example.airdry.ui.screens.settings.ManageStacksScreen
 import com.example.airdry.ui.screens.settings.ManageUpdatesScreen
 import com.example.airdry.ui.screens.settings.Settings
 import com.example.airdry.ui.screens.work.CreateStackAndWorkScreen
-import com.example.airdry.ui.screens.work.EmployeeSelectionScreen
+import com.example.airdry.ui.screens.work.WorkListScreen
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
 import com.example.airdry.ui.screens.workers.WorkersListScreen
@@ -88,7 +89,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
         Screen.SelectEmployee.route,
         Screen.Settings.route,
         Screen.Login.route)
- val darkTheme  by themeManager.isDarkThemeEnabled.collectAsState()
+    val darkTheme  by themeManager.isDarkThemeEnabled.collectAsState()
 
 
 
@@ -142,7 +143,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
 
 
                 composable(Screen.SelectEmployee.route) {
-                    EmployeeSelectionScreen(
+                    WorkListScreen(
                         viewModel = workViewModel,
                         employeeViewModel = employeeViewModel) {
                         val selectedId = workViewModel.selectedAppUser.value?.id
@@ -160,7 +161,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                         UUID.fromString(backStackEntry.arguments?.getString("employeeId"))
 
                     // State to hold the data
-                    var appUser by remember { mutableStateOf<AppUser?>(null) }
+                    var appUser by remember { mutableStateOf<NestedAppUser?>(null) }
                     val stacks by workViewModel.allStacks.observeAsState(emptyList())
 
                     // Launch coroutine to fetch data
@@ -169,7 +170,6 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                         employeeViewModel.getAllEmployees()
                         workViewModel.loadAllStacks()
                     }
-
 
                     if (appUser != null) {
                         CreateStackAndWorkScreen(

@@ -28,29 +28,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.airdry.database.Entities.UserManagement.AppUser
+import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 
 @Composable
 fun MultiSelectDialog(
     viewModel: EmployeeViewModel,
-    selectedItems: List<AppUser>,
+    selectedItems: List<NestedAppUser>,
     onDismiss: () -> Unit,
-    onConfirm: (List<AppUser>) -> Unit,
-    defaultAppUser: AppUser
+    onConfirm: (List<NestedAppUser>) -> Unit,
+    defaultAppUser: NestedAppUser
 ) {
     val selected = remember {
-        mutableStateListOf<AppUser>().apply {
-            // Ensure defaultEmployee is always included
+        mutableStateListOf<NestedAppUser>().apply {
             addAll(selectedItems)
             if (defaultAppUser !in this) add(defaultAppUser)
         }
     }
-
     val searchTerm = remember { mutableStateOf("") }
     val allItems by viewModel.filteredEmployees.observeAsState(emptyList())
-
-
-
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -67,10 +63,6 @@ fun MultiSelectDialog(
         title = { Text("Select Workers Sharing") },
         text = {
             Column {
-
-
-
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -102,10 +94,6 @@ fun MultiSelectDialog(
                                 searchTerm.value = ""
                                 viewModel.updateFilteredEmployees("")
                             })}
-
-
-
-
                 allItems.forEach { item ->
                     val isChecked = item in selected
                     val isDefault = item == defaultAppUser

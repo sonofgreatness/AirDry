@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.airdry.database.Entities.Stack.NestedStack
 import com.example.airdry.database.Entities.UserManagement.AppUser
+import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.UserRepository
@@ -60,7 +61,7 @@ class WorkViewModel @Inject constructor(
     fun selectEmployee(appUser: AppUser) {
         _selectedAppUser.value = appUser
     }
-    suspend fun getEmployeeById(id: UUID): AppUser? {
+    suspend fun getEmployeeById(id: UUID): NestedAppUser? {
         return employeeRepo.getById(id)
     }
 

@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.airdry.database.Entities.Stack.NestedStack
-import com.example.airdry.database.Entities.UserManagement.AppUser
+import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.database.Entities.Work.WorkDone
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 
@@ -32,7 +32,7 @@ import com.example.airdry.ui.viewmodels.EmployeeViewModel
 fun CreateStackAndWorkScreen(
     allStacks :List<NestedStack?>,
     viewModel: EmployeeViewModel,
-    defaultAppUser: AppUser,
+    defaultAppUser: NestedAppUser,
     onSubmit: (List<WorkDone>) -> Unit
 ) {
     val context = LocalContext.current
@@ -42,7 +42,7 @@ fun CreateStackAndWorkScreen(
     var isShared by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedAppUsers by remember {
-        mutableStateOf(listOf<AppUser>(defaultAppUser))
+        mutableStateOf(listOf<NestedAppUser>(defaultAppUser))
     }
 
     Column(Modifier.padding(16.dp)) {
@@ -83,14 +83,14 @@ fun CreateStackAndWorkScreen(
         if (isShared) {
             Text("Select Employees Sharing the Work", style = MaterialTheme.typography.labelMedium)
             OutlinedTextField(
-                value = selectedAppUsers.joinToString { it.name!! },
+                value = selectedAppUsers.joinToString { it.appUser.name!! },
                 onValueChange = {},
                 label = { Text("Selecting Workers Sharing...") },
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth()
             )
         } else {
-            Text("Assigned to: ${defaultAppUser.name}", style = MaterialTheme.typography.bodyMedium)
+            Text("Assigned to: ${defaultAppUser.appUser.name}", style = MaterialTheme.typography.bodyMedium)
         }
 
         if (showDialog) {
