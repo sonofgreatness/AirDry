@@ -140,17 +140,8 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                     , darkThemeEnabled = darkTheme,
                   onToggleTheme = { themeManager.setDarkTheme(it) })
                 }
-
-
                 composable(Screen.SelectEmployee.route) {
-                    WorkListScreen(
-                        viewModel = workViewModel,
-                        employeeViewModel = employeeViewModel) {
-                        val selectedId = workViewModel.selectedAppUser.value?.id
-                        if (selectedId != null) {
-                            navController.navigate(Screen.CreateStackAndWork.withArgs(selectedId.toString()))
-                        }
-                    }
+                    WorkListScreen(viewModel = workViewModel,navController)
                 }
                 composable(
                     route = Screen.CreateStackAndWork.route + "/{employeeId}",

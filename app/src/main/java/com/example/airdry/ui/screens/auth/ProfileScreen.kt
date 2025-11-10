@@ -1,6 +1,7 @@
 package com.example.airdry.ui.screens.auth
 
 import android.graphics.BitmapFactory
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -72,8 +73,6 @@ fun ProfileScreen(
             }
         }
     }
-
-
     LaunchedEffect(loggedInState) {
         if (loggedInState == LoggedInState.LoggedIn) {
             val userIdString = sessionManager.userId
@@ -99,7 +98,8 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        if (loggedInState == LoggedInState.Loading || loggedInState == LoggedInState.Idle) {
+        val check =loggedInState == LoggedInState.Loading || loggedInState == LoggedInState.Idle
+        if (check) {
             CircularProgressIndicator(Modifier.padding(top = 64.dp))
             Text(
                 "Checking status...",

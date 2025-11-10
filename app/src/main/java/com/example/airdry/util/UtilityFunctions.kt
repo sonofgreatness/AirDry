@@ -2,6 +2,8 @@ package com.example.airdry.util
 
 import android.util.Log
 import com.example.airdry.util.Constants.Companion.FILTER_DATE_FORMAT
+import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT
+import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.*
@@ -57,10 +59,26 @@ class UtilityFunctions {
                 "-"
             }
         }
+        fun formatReadableDateTEXT(isoString: String?): String {
+            return try {
+                if (isoString.isNullOrBlank()) return "-"
+                val instant = Instant.parse(isoString)
+                val formatter = DateTimeFormatter.ofPattern(HUMAN_READABLE_FORMAT_TEXT)
+                    .withLocale(Locale.getDefault())
+                    .withZone(ZoneOffset.UTC)
+                formatter.format(instant)
+            } catch (e: Exception) {
+                Log.e("UtilityFunctions", "formatReadableDate failed for $isoString", e)
+                "-"
+            }
+        }
 
         /** Common date formatters */
-        private val customApiFormatter: DateTimeFormatter =
+        val customApiFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("EEEE dd/MM/yyyy HH:mm", Locale.getDefault())
+
+         val customApiFormatterTEXT: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE, Locale.getDefault())
 
         private val datePickerFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern(FILTER_DATE_FORMAT, Locale.getDefault())
@@ -87,8 +105,10 @@ class UtilityFunctions {
                 .trim()
             val possibleFormats = listOf(
                 DateTimeFormatter.ofPattern("EEEE dd/MM/yyyy HH:mm", Locale.getDefault()),
-                DateTimeFormatter.ofPattern("EEEE dd/MM/yyyy", Locale.getDefault())
-            )
+                DateTimeFormatter.ofPattern("EEEE dd/MM/yyyy", Locale.getDefault()),
+                DateTimeFormatter.ofPattern(HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE, Locale.getDefault()),
+                DateTimeFormatter.ofPattern(HUMAN_READABLE_FORMAT_TEXT, Locale.getDefault())
+                )
             for (fmt in possibleFormats) {
                 try {
                     Log.d("parser", "Trying pattern: $fmt")
@@ -113,5 +133,14 @@ class UtilityFunctions {
             val targetDate = LocalDate.now(utcZoneId).minusMonths(offsetMonths)
             return targetDate.format(datePickerFormatter)
         }
+
+        fun isWorkDateMatchingFilter(workDate: Timestamp, filterDate: String?): Boolean {
+            if (filterDate.isNullOrBlank()) return true
+            val start = parseStringFromDatePickerToTimeStamp(filterDate)
+            val end = Timestamp(start.time + 24 * 60 * 60 * 1000)
+            return workDate in start..end
+        }
+
+
     }
 }

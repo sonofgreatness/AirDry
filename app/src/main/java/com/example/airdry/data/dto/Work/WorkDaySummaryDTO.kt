@@ -41,10 +41,25 @@ data class WorkSummaryDTO(
             isPendingInsert = false,
             isPendingUpdate = false,
             capturedAt = parseNullableStringToTimestamp(capturedAt),
-            capturedBy = capturedBy.toUUIDOrNull(),
+            capturedBy = extractFullNameFromApiString(capturedBy),
             updatedAt = parseNullableStringToTimestamp(updatedAt),
-            updatedBy = updatedBy.toUUIDOrNull()
+            updatedBy = extractFullNameFromApiString(updatedBy),
+            captureById = extractUUIDFromApiString(capturedBy)
         )
+    }
+
+    private fun extractUUIDFromApiString(loaded: String?): UUID? {
+        if (loaded.isNullOrBlank()) return null
+        val uuidString = loaded.substringBefore(";").trim()
+        return try {
+            UUID.fromString(uuidString)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+    private fun extractFullNameFromApiString(loaded: String?): String {
+        if (loaded.isNullOrBlank()) return ""
+        return loaded.substringAfter(";", "").trim()
     }
     private fun parseNullableStringToTimestamp(dateString : String?) :Timestamp?{
         dateString?.let{

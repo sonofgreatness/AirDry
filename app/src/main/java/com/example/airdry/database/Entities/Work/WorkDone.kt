@@ -24,6 +24,9 @@ data class WorkDone(
     @ColumnInfo(name = "updated_at")
     val updatedAt : Timestamp?=null,
     @ColumnInfo(name = "captured_by")
-    val  capturedBy: UUID?=null,
+    val  capturedBy:String?=null,
     @ColumnInfo(name = "updated_by")
-    val updatedBy: UUID?=null)
+    val updatedBy: String?=null,
+    @ColumnInfo(name = "captured_by_id")
+    val captureById:UUID?=null,)
+

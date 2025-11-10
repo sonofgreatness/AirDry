@@ -1,11 +1,16 @@
 package com.example.airdry.domain.repository.implementations
 
+import com.example.airdry.data.dto.Common.PaginatedResponse
+import com.example.airdry.data.dto.Work.WorkDaySummaryDTO
+import com.example.airdry.data.dto.WorkDataFiltersDTO
 import com.example.airdry.database.Daos.WorkDoneDao
 import com.example.airdry.database.Entities.Work.WorkDone
 import com.example.airdry.database.Entities.Work.WorkDoneStack
 import com.example.airdry.database.Entities.Work.WorkDoneUser
 import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
+import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE
+import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import java.sql.Timestamp
 import java.util.UUID
 import javax.inject.Inject
@@ -47,5 +52,11 @@ class WorkDoneRepositoryImpl
         userId: UUID
     ): List<WorkDoneWithUsersAndStacks> =
         workDoneDao.getWorkDoneWithUsersAndStacksByUserId(userId)
-
+    override suspend fun getDailyWorkSummaries(
+        page: Int,
+        pageSize: Int,
+        filters: WorkDataFiltersDTO
+    ): PaginatedResponse<WorkDaySummaryDTO>? {
+        android.util.Log.d("nigga give it back", "3")
+        return workDoneDao.getDailyWorkSummaries(page,pageSize,filters)}
 }

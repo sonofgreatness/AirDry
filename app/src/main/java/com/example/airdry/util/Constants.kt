@@ -64,6 +64,7 @@ class Constants {
          const val DEFAULT_OFFSETMONTH_VALUE = 6L
       const val HUMAN_READABLE_FORMAT_NUMERIC = "EEEE dd/MM/yyyy"
         const val HUMAN_READABLE_FORMAT_TEXT = "EEEE dd MMM yyyy"
+        const val HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE =  "EEEE dd MMM yyyy HH:mm"
 
     }
 }

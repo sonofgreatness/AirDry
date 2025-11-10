@@ -41,6 +41,7 @@ class ProfileViewModel @Inject constructor(
     ) { isLoggedIn, isNetwork ->
         when {
             isLoggedIn && isNetwork -> LoggedInState.LoggedIn
+            isLoggedIn && !isNetwork -> LoggedInState.LoggedIn
             !isLoggedIn && isNetwork -> LoggedInState.LoggedOutServerActive
             !isLoggedIn && !isNetwork -> LoggedInState.LoggedOutNoServer
             else -> LoggedInState.Idle
@@ -53,6 +54,7 @@ class ProfileViewModel @Inject constructor(
  private val _uiEvent = Channel<ProfileUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
     fun loadProfile(userId: UUID) {
+        Log.d("ProfileViewModel", "loadProfile called logged in State : ${loggedInState.value}isLoggeIn ${sessionManager.isLoggedInFlow.value} network ${connectivityObserver.isServerReachable.value}")
         viewModelScope.launch {
             _uiEvent.send(ProfileUiEvent.ShowToast("Loading profile..."))
             _profile.value = null
