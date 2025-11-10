@@ -238,7 +238,7 @@ interface  WorkDoneDao {
                     ok = ok && user.phoneNumber?.contains(it) == true
                 }
                 filters.includeOtherStaffRecords?.let{
-                    if(it == true){
+                    if(it == false){
                         val profile = getAuthUser()
                         profile?.let { profile ->
                             ok = ok && checkIfWorkDoneBelongsToUser(relation.workDone.captureById, profile)

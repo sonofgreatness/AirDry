@@ -143,9 +143,9 @@ class WorkViewModel @Inject constructor(
                    _filterDto.value = _filterDto.value.copy(includeOtherStaffRecords = state.newValue)
                    populateDailyWorkSummaries()
                    val message = if (state.newValue)
-                       "chosen see MY records only "
-                   else
                        "chosen see all staff records"
+                   else
+                       "chosen see MY records only "
                    _uiEvent.send(message)
                }
            }

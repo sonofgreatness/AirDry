@@ -185,7 +185,7 @@ fun FilterModalContent(
     val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
     val openDialog = remember { mutableStateOf(false) }
     val dateState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
-    var selectedMe by remember{ mutableStateOf(false) }
+    var selectedMe  = filtersDTO.includeOtherStaffRecords
 
     // Expanded state for dropdowns in the modal
     var expandedDepartment by remember { mutableStateOf(false) }
@@ -271,25 +271,23 @@ fun FilterModalContent(
                 androidx.compose.material3.RadioButton(
                     selected = selectedMe, // Assuming non-null means current user filter
                     onClick = {
-                        val oldeSelectMe = selectedMe
-                        selectedMe = !oldeSelectMe
-
+                        val oldSelectMe = selectedMe
                         viewModel.onChangeFilter(WorkDataFiltersDTOState.FilterForMeOnly(selectedMe),"")
-
+                        selectedMe = !oldSelectMe
                     }
                 )
-                Text("Me", style = MaterialTheme.typography.bodyMedium)
+                Text("All Staff Records", style = MaterialTheme.typography.bodyMedium)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.material3.RadioButton(
                     selected = !selectedMe,
                     onClick = {
-                        val oldSelectedMe = !selectedMe
+                        val oldSelectedMe = selectedMe
+                        viewModel.onChangeFilter(WorkDataFiltersDTOState.FilterForMeOnly(!selectedMe), "")
                         selectedMe = !oldSelectedMe
-                        viewModel.onChangeFilter(WorkDataFiltersDTOState.FilterForMeOnly(selectedMe), "")
                     }
                 )
-                Text("All Staff Records", style = MaterialTheme.typography.bodyMedium)
+                Text("Me Only", style = MaterialTheme.typography.bodyMedium)
             }
         }
         // 3. Department and Section Dropdowns (Using your existing UI style)
