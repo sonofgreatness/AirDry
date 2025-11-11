@@ -1,5 +1,6 @@
 package com.example.airdry.domain.repository.interfaces
 
+import androidx.room.Transaction
 import com.example.airdry.data.dto.Common.PaginatedResponse
 import com.example.airdry.data.dto.Work.WorkDaySummaryDTO
 import com.example.airdry.data.dto.WorkDataFiltersDTO
@@ -40,4 +41,6 @@ interface WorkDoneRepository {
     suspend fun deleteWorkDoneChildren(workDoneId : UUID)
     suspend  fun deleteWorkById(workDoneId: UUID)
     suspend fun unCacheForInsertAllWork()
+    suspend fun getCachedUpdateWork():List<WorkDoneWithUsersAndStacks>
+    suspend fun unCacheForUpdateAllWork()
 }

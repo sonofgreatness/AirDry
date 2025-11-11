@@ -9,6 +9,7 @@ import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertSecti
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertUserTypesUseCase
 import com.example.airdry.domain.use_cases.UserManagement.UploadCachedUsersUseCase
 import com.example.airdry.domain.use_cases.WorkManagement.DownloadAndInsertWorkDataUseCase
+import com.example.airdry.domain.use_cases.WorkManagement.WriteWorkUpdatesUseCase
 import com.example.airdry.util.Constants.Companion.DEFAULT_OFFSETMONTH_VALUE
 import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT
 import com.example.airdry.util.Constants.Companion.OFFSETMONTH_KEY
@@ -38,7 +39,8 @@ class SettingsViewModel @Inject constructor(
     private val uploadCachedUsersUseCase: UploadCachedUsersUseCase,
     private val downloadAndInsertWorkDataUseCase: DownloadAndInsertWorkDataUseCase,
     private val settings: Settings,
-    private val uploadWorkDataUseCase: UploadCachedUsersUseCase
+    private val uploadWorkDataUseCase: UploadCachedUsersUseCase,
+    private  val writeWorkUpdatesUseCase: WriteWorkUpdatesUseCase
 )
     : ViewModel()  {
 
@@ -62,14 +64,13 @@ class SettingsViewModel @Inject constructor(
             try {
                 forcedUpload()
                 uploadCachedWork()
-
+                writeCacheUpdateForWork()
                 getUserTypes()
                 getDepartments()
                 getSections()
                 downloadStackData()
                 getUsers()
                 getWorkData()
-
                 _syncStatus.value = SyncStatus.Complete
             } catch (e: Exception) {
                 _syncStatus.value = SyncStatus.Error("Synchronization failed: ${e.localizedMessage}")
@@ -192,5 +193,16 @@ class SettingsViewModel @Inject constructor(
                 }
 
             }
+    }
+
+    private suspend fun writeCacheUpdateForWork(){
+        writeWorkUpdatesUseCase().collect{
+            when(it){
+                is DownloadState.Error -> {_uiEvent.send(it.message)}
+                DownloadState.Loading -> {_uiEvent.send("about to update work data... ")}
+                is DownloadState.Success -> {_uiEvent.send(it.message)}
+            }
+
+        }
     }
 }

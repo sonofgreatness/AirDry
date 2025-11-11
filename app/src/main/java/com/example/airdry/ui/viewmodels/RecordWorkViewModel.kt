@@ -267,6 +267,10 @@ class RecordWorkViewModel @Inject constructor(
  fun updateExistingWork(state: WorkFormState){
  viewModelScope.launch {
     try {
+        var profile : Profile? =null
+        val profileId = sessionManager.userId?.toUUID()
+        if (profileId!=null)
+            profile = userManagementRepo.getProfileById(profileId)
         val listOfStacks: List<NestedStack> = state.selectedStacks.map {
             it.stack
         }
@@ -274,10 +278,12 @@ class RecordWorkViewModel @Inject constructor(
             id = state.id,
             workDate = Timestamp(state.workDate),
             isPendingUpdate = true,
+            isPendingInsert = _updateWorkDone.value?.isPendingInsert ==true,
             capturedAt = _updateWorkDone.value?.capturedAt,
             capturedBy = _updateWorkDone.value?.capturedBy,
+            captureById = _updateWorkDone.value?.captureById,
             updatedAt = Timestamp(System.currentTimeMillis()),
-            updatedBy = _updateWorkDone.value?.updatedBy
+            updatedBy = "${profile?.name} ${profile?.surname}"
         )
         val workDoneUsers = generateWorkDoneUsers(state.selectedUsers,workDone.id)
         val workDoneStacks = generateWorkDoneStacks(listOfStacks, workDone.id)

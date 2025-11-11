@@ -51,9 +51,6 @@ data class WorkDoneWithUsersAndStacks(
             workersList = listOf(userDto),
             stacksList = listOf(stacksDto),
         )
-
-
-
     }
 }
 

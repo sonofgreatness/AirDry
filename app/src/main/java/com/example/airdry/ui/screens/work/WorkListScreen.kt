@@ -113,6 +113,9 @@ fun WorkListScreen(
     val expandedDays = remember { mutableStateMapOf<String, Boolean>() }
     var showFilterModal by remember { mutableStateOf(false) } // State for modal visibility
     val sheetState = rememberModalBottomSheetState()
+    var viewOnlyMode by remember { mutableStateOf(false) }
+
+
 
     LaunchedEffect(Unit) {
         viewModel.populateDailyWorkSummaries(pageSize = pageSize)
@@ -201,7 +204,7 @@ fun WorkListScreen(
                         onToggleExpand = { expanded ->
                             expandedDays[daySummary.dayLabel] = expanded
                         },
-                        navigator
+                        navigator,viewOnlyMode
                     )
                 }
                 if (isMoreDataAvailable) {
@@ -407,7 +410,8 @@ private fun WorkDaySummaryCard(
     summary: WorkDaySummaryDTO,
     expanded: Boolean,
     onToggleExpand: (Boolean) -> Unit,
-    navigator: NavController
+    navigator: NavController,
+    viewOnlyMode: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -432,7 +436,7 @@ private fun WorkDaySummaryCard(
                 Spacer(Modifier.height(12.dp))
                 Column(modifier = Modifier.fillMaxWidth()) {
                     summary.workList.forEach { work ->
-                        WorkSummaryItem(work, navigator = navigator)
+                        WorkSummaryItem(work, navigator = navigator, viewOnlyMode)
                         Divider(modifier = Modifier.padding(vertical = 8.dp))
                     }
                 }
@@ -457,7 +461,7 @@ fun StatInline(label: String, value: String) {
 /** ✅ WORK SUMMARY ITEM — Enhanced UI **/
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController) {
+private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController, viewOnlyMode:Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -502,7 +506,7 @@ private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController) {
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
                         val daysPassed = java.time.Duration.between(updatedInstant,Instant.now()).toDays()
-                        showEditButton = daysPassed <  WORK_DONE_EDIT_GRACE_PERIOD_CAPTURER
+                        showEditButton = (daysPassed <  WORK_DONE_EDIT_GRACE_PERIOD_CAPTURER) && !viewOnlyMode
                     }
                     if(showEditButton){
                         IconButton(

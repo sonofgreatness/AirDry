@@ -281,6 +281,17 @@ interface  WorkDoneDao {
             updateWork(it.workDone.copy(isPendingInsert = false))
         }
     }
+    @Query("SELECT * FROM work_done WHERE is_pending_update = 1")
+    suspend fun getCachedUpdateWork():List<WorkDoneWithUsersAndStacks>
+
+    @Transaction
+    suspend fun unCacheForUpdateAllWork(){
+        val  cached = getCachedUpdateWork()
+        cached.forEach {
+            updateWork(it.workDone.copy(isPendingUpdate = false))
+        }
+    }
+
 }
 
 

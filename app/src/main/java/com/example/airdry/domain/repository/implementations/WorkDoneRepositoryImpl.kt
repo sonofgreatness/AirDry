@@ -64,5 +64,6 @@ override      suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
    override suspend fun deleteWorkDoneChildren(workDoneId : UUID) = workDoneDao.deleteWorkDoneChildren(workDoneId)
    override suspend   fun deleteWorkById(workDoneId: UUID) = workDoneDao.deleteWorkById(workDoneId)
    override suspend fun unCacheForInsertAllWork() = workDoneDao.unCacheForInsertAllWork()
-
+   override suspend fun getCachedUpdateWork():List<WorkDoneWithUsersAndStacks> = workDoneDao.getCachedUpdateWork()
+   override suspend fun unCacheForUpdateAllWork() = workDoneDao.unCacheForUpdateAllWork()
 }

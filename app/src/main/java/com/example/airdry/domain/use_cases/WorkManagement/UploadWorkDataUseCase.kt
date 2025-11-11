@@ -38,9 +38,7 @@ class UploadWorkDataUseCase @Inject constructor(
                it.generateCreateWorkDoneDTO()
            }
 
-
         }catch (e: Exception){
-            Log.d("upload work", "get Cache exception")
             Log.d("getCachedWork", "failed to get cached work ${e.message}")
             return emptyList()
         }
