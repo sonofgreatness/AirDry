@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.ui.nav.Navigation
@@ -19,6 +20,7 @@ import com.example.airdry.ui.viewmodels.AuthViewModel
 import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.ProfileViewModel
+import com.example.airdry.ui.viewmodels.RecordWorkViewModel
 import com.example.airdry.ui.viewmodels.SettingsViewModel
 import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
     private  val mProfileViewModel: ProfileViewModel by viewModels()
     private  val mStackViewModel: StackViewModel by viewModels()
     private val mSettingsViewModel: SettingsViewModel by viewModels()
+    private   val mRecordWorkViewModel: RecordWorkViewModel by viewModels()
     @Inject
     lateinit var sessionManager: SessionManager
     @Inject
@@ -79,7 +82,8 @@ class MainActivity : ComponentActivity() {
                 mProfileViewModel,
                 stackViewModel=mStackViewModel,
                 mSettingsViewModel,
-                themeManager)
+                mRecordWorkViewModel,
+                themeManager,)
         }
         }
     }

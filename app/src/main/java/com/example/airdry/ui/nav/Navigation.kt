@@ -51,7 +51,8 @@ import com.example.airdry.ui.screens.settings.EditStackScreen
 import com.example.airdry.ui.screens.settings.ManageStacksScreen
 import com.example.airdry.ui.screens.settings.ManageUpdatesScreen
 import com.example.airdry.ui.screens.settings.Settings
-import com.example.airdry.ui.screens.work.CreateStackAndWorkScreen
+import com.example.airdry.ui.screens.work.RecordWorkScreen
+
 import com.example.airdry.ui.screens.work.WorkListScreen
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
@@ -61,6 +62,7 @@ import com.example.airdry.ui.viewmodels.AuthViewModel
 import com.example.airdry.ui.viewmodels.ConnectionsViewModel
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 import com.example.airdry.ui.viewmodels.ProfileViewModel
+import com.example.airdry.ui.viewmodels.RecordWorkViewModel
 import com.example.airdry.ui.viewmodels.SettingsViewModel
 import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
@@ -76,6 +78,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                profileViewModel: ProfileViewModel,
                stackViewModel: StackViewModel,
                settingsViewModel: SettingsViewModel,
+               recordWorkViewModel: RecordWorkViewModel,
                themeManager: ThemeManager
                ) {
     val isServerUp by  connectivityObserver.isServerReachable.collectAsState()
@@ -143,37 +146,7 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                 composable(Screen.SelectEmployee.route) {
                     WorkListScreen(viewModel = workViewModel,navController)
                 }
-                composable(
-                    route = Screen.CreateStackAndWork.route + "/{employeeId}",
-                    arguments = listOf(navArgument("employeeId") { type = NavType.StringType })
-                ) { backStackEntry ->
 
-                    val employeeId =
-                        UUID.fromString(backStackEntry.arguments?.getString("employeeId"))
-
-                    // State to hold the data
-                    var appUser by remember { mutableStateOf<NestedAppUser?>(null) }
-                    val stacks by workViewModel.allStacks.observeAsState(emptyList())
-
-                    // Launch coroutine to fetch data
-                    LaunchedEffect(employeeId) {
-                        appUser = workViewModel.getEmployeeById(employeeId)
-                        employeeViewModel.getAllEmployees()
-                        workViewModel.loadAllStacks()
-                    }
-
-                    if (appUser != null) {
-                        CreateStackAndWorkScreen(
-                            allStacks = stacks,
-                            employeeViewModel,
-                            defaultAppUser = appUser!!,
-                            onSubmit = { workDoneList ->
-                                navController.navigate(Screen.SelectEmployee.route)
-                            }
-                        )
-
-                    }
-                }
 
 
                 composable(Screen.ManageStacks.route) {
@@ -219,6 +192,9 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                 }
                 composable(Screen.Profile.route) {
                     ProfileScreen(profileViewModel,sessionManager=sessionManager, navController = navController)
+                }
+                composable(Screen.RecordWork.route) {
+                    RecordWorkScreen(recordWorkViewModel,navController)
                 }
             }
         }

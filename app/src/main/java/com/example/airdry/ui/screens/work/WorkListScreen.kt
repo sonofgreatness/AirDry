@@ -21,18 +21,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
@@ -76,6 +80,7 @@ import com.example.airdry.data.dto.Work.WorkSummaryDTO
 import com.example.airdry.data.dto.WorkDataFiltersDTO
 import com.example.airdry.database.Entities.UserManagement.Department
 import com.example.airdry.database.Entities.UserManagement.Section
+import com.example.airdry.ui.nav.Screen
 import com.example.airdry.ui.screens.workers.DropDownFieldsNoUserTypes
 import com.example.airdry.ui.screens.workers.DropdownFields
 import com.example.airdry.ui.viewmodels.WorkViewModel
@@ -99,16 +104,24 @@ fun WorkListScreen(
     val departments by viewModel.departments.collectAsState()
     val sections by viewModel.sections.collectAsState()
 
+    val totalPages by viewModel.totalPages.collectAsState()
+    val currentPage by viewModel.currentPage.collectAsState()
+    val isMoreDataAvailable = currentPage < totalPages
     val pageSize = DEFAULT_PAGE_SIZE
 
     val expandedDays = remember { mutableStateMapOf<String, Boolean>() }
     var showFilterModal by remember { mutableStateOf(false) } // State for modal visibility
     val sheetState = rememberModalBottomSheetState()
 
-
     LaunchedEffect(Unit) {
         viewModel.populateDailyWorkSummaries(pageSize = pageSize)
         viewModel.populateDepartmentsAndSections()
+    }
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
     }
 
     Surface(
@@ -118,8 +131,10 @@ fun WorkListScreen(
         Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
 
             // --- Header Row with Filter Button ---
+
+
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -128,8 +143,34 @@ fun WorkListScreen(
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    // --- NEW WORK BUTTON ---
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary) // Primary background color
+                            .size(34.dp)
+                            .padding(8.dp)
+                            .clickable {
+                              navigator.navigate(Screen.RecordWork.route)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Record New Work",
+                            // Use the color that contrasts with the primary background
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(34.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(8.dp))
                     IconButton(onClick = { showFilterModal = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Show Filters")
+                        Icon(Icons.Default.FilterList,
+                            contentDescription = "Show Filters",
+                            tint =  MaterialTheme.colorScheme.primary)
                     }
                     Spacer(Modifier.width(8.dp))
                 }
@@ -140,7 +181,19 @@ fun WorkListScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(workSummaries) { daySummary ->
+                if (workSummaries.isEmpty()){
+                    item {
+                        Text("No work data to show")
+                    }
+                }
+
+                itemsIndexed(workSummaries) {index, daySummary ->
+
+                    if (index == workSummaries.lastIndex && isMoreDataAvailable) {
+                        LaunchedEffect(index) {
+                            viewModel.loadNextPage(pageSize)
+                        }
+                    }
                     WorkDaySummaryCard(
                         summary = daySummary,
                         expanded = expandedDays[daySummary.dayLabel] == true,
@@ -150,10 +203,25 @@ fun WorkListScreen(
                         navigator
                     )
                 }
+                if (isMoreDataAvailable) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Show a progress indicator while fetching the next page
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(32.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
             }
         }
-
-        // --- Filter Modal Implementation ---
         if (showFilterModal) {
             ModalBottomSheet(
                 onDismissRequest = { showFilterModal = false },
@@ -176,8 +244,8 @@ fun WorkListScreen(
 @Composable
 fun FilterModalContent(
     filtersDTO: WorkDataFiltersDTO,
-    departments: List<Department>, // Assuming you have Department model
-    sections: List<Section>, // Assuming you have Section model
+    departments: List<Department>,
+    sections: List<Section>,
     viewModel: WorkViewModel,
     onApply: () -> Unit,
     onClear: () -> Unit
@@ -216,8 +284,6 @@ fun FilterModalContent(
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
         )
         Divider()
-
-        // 1. Date Filter
         OutlinedTextField(
             value = filtersDTO.filterDate ?: "",
             onValueChange = {},
@@ -258,15 +324,12 @@ fun FilterModalContent(
                 DatePicker(state = dateState, modifier = Modifier.padding(8.dp))
             }
         }
-
-        // 2. Created By Filter (Me / Other Staff Member)
-        // Note: The server filters by userId. We'll use filterUserId here.
         Text("Filter by:", style = MaterialTheme.typography.labelLarge)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Option 1: Current User (Simulated for filterUserId = CurrentUser's ID)
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.material3.RadioButton(
                     selected = selectedMe, // Assuming non-null means current user filter

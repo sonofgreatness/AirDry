@@ -15,4 +15,6 @@ interface StackRepository {
    suspend fun deleteAllStackCodesAndStack()
    suspend fun getAllNestedStacks(): List<NestedStack>?
    suspend fun getNestedStackById(id: UUID): List<NestedStack>?
+   suspend fun  getFilteredStacks(searchTerm: String): List<NestedStack>?
+
 }

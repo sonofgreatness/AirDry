@@ -35,9 +35,7 @@ class EmployeeViewModel
                         private val repository: UserRepository,
                         private val uploadCachedUsersUseCase: UploadCachedUsersUseCase):
     ViewModel() {
-    private val _allEmployees = MutableLiveData<List<NestedAppUser>>()
-    val allEmployees: LiveData<List<NestedAppUser>>
-        get() = _allEmployees
+
     private val _filteredEmployees = MutableLiveData<List<NestedAppUser>>()
     val filteredEmployees :LiveData<List<NestedAppUser>>
         get() = _filteredEmployees
@@ -57,7 +55,6 @@ class EmployeeViewModel
     val  organization : StateFlow<Organization?> = _organization
     init {
         loadAllEmployees()
-        getAllEmployees()
         getOrganization()
         populateDropDowns()
 
@@ -97,12 +94,6 @@ class EmployeeViewModel
            }
        }
     }
-
-     fun getAllEmployees() {
-        viewModelScope.launch {
-          _allEmployees.value = repository.getAllNestedEmployees().toList()
-        }
-    }
      fun createEmployee(entity: AppUser) {
         viewModelScope.launch {
             Toast.makeText(application, "Employee Created", Toast.LENGTH_SHORT).show()
@@ -113,7 +104,6 @@ class EmployeeViewModel
         viewModelScope.launch {
             Toast.makeText(application, "Employee Edited", Toast.LENGTH_SHORT).show()
             repository.editEmployee(entity)
-            getAllEmployees()
         }
     }
     fun updateFilteredEmployees(searchTerm :String){

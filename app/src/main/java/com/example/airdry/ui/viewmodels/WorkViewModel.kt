@@ -15,16 +15,16 @@ import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.UserManagement.Department
 import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.database.Entities.UserManagement.Section
-import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.domain.REST_API.interfaces.OrganizationApi
 import com.example.airdry.domain.REST_API.interfaces.WorkApi
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
+import com.example.airdry.domain.use_cases.WorkManagement.UploadWorkDataUseCase
 import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE
 import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import com.example.airdry.util.UtilityFunctions.Companion.toUUIDOrNull
-import com.example.airdry.util.operational_states.ExcelReportUiState
+import com.example.airdry.util.operational_states.DownloadState
 import com.example.airdry.util.operational_states.WorkDataFiltersDTOState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -44,7 +44,8 @@ class WorkViewModel @Inject constructor(
     private val connectivityObserver: ConnectivityObserver,
     private val sessionManager: SessionManager,
     private val workApi: WorkApi,
-    private val organizationApi: OrganizationApi
+    private val organizationApi: OrganizationApi,
+    private  val uploadWorkDataUseCase: UploadWorkDataUseCase
 ) : ViewModel()
 {
 
@@ -54,11 +55,6 @@ class WorkViewModel @Inject constructor(
     private val _allStacks = MutableLiveData<List<NestedStack?>>()
     val allStacks : LiveData<List<NestedStack?>>  get() = _allStacks
 
-    private val _uiState = MutableLiveData(ExcelReportUiState())
-    val uiState: LiveData<ExcelReportUiState> get() = _uiState
-
-    private val _workDoneWithUsersAndStack = MutableLiveData<List<WorkDoneWithUsersAndStacks>>()
-    val workDoneWithUsersAndStack: LiveData<List<WorkDoneWithUsersAndStacks>> = _workDoneWithUsersAndStack
 
     private val _dailyWorkSummaries = MutableStateFlow<List<WorkDaySummaryDTO>>(emptyList())
     val  dailyWorkSummaries: StateFlow<List<WorkDaySummaryDTO>> = _dailyWorkSummaries
@@ -94,7 +90,6 @@ class WorkViewModel @Inject constructor(
     }
 
     fun clearAllFilters(){
-        println("clear filters called")
         _filterDto.value = WorkDataFiltersDTO()
         _totalPages.value = DEFAULT_PAGE
         _currentPage.value = DEFAULT_PAGE // <-- RESET CURRENT PAGE
@@ -104,6 +99,8 @@ class WorkViewModel @Inject constructor(
 
     fun onChangeFilter(state : WorkDataFiltersDTOState, newValue: String) {
        viewModelScope.launch {
+           _currentPage.value = DEFAULT_PAGE
+           _totalPages.value =DEFAULT_PAGE
            when(state) {
                is WorkDataFiltersDTOState.IncludeInactiveWorkers -> {
                    _filterDto.value = _filterDto.value.copy(includeInactiveWorkers = state.newValue)
@@ -112,6 +109,7 @@ class WorkViewModel @Inject constructor(
                is WorkDataFiltersDTOState.FilterDepartment ->{
                    _filterDto.value = _filterDto.value.copy(filterDepartmentId = newValue.toUUIDOrNull())
                    populateSections(UUID.fromString(newValue))
+
                    populateDailyWorkSummaries()
                }
                is WorkDataFiltersDTOState.FilterDate ->{
@@ -166,20 +164,16 @@ class WorkViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            Log.d("nigga give it right back", " network ${isNetworkAvailable.value}    online : ${isOnlineLoggedIn.value}")
             if (isNetworkAvailable.value && isOnlineLoggedIn.value)
             {
-                Log.d("nigga give it right back", "1")
             getDataFromServer(page, pageSize)
             }else{
-                Log.d("nigga give it right back", "2")
                 getDataLocally(page, pageSize)
             }
         }
     }
 
     private suspend fun getDataFromServer(page: Int, pageSize: Int) {
-        println("getDailyWorkSummaries called with date ${filterDto.value.filterDate}")
         val resp = workApi.getDailyWorkSummaries(page, pageSize, filterDto.value)
         resp?.let {
             _totalPages.value = it.totalPages
@@ -193,13 +187,7 @@ class WorkViewModel @Inject constructor(
      private suspend fun getDataLocally(page: Int, pageSize: Int){
 
       try {
-
-          val  test  = workDoneRepo.getAllWorkDoneWithUsersAndStack()
-          Log.d("nigga give it right back", "1.9 filter ${test}")
-
-          Log.d("nigga give it right back", "2 filter ${filterDto.value}")
           val resp = workDoneRepo.getDailyWorkSummaries(page, pageSize, filterDto.value)
-          Log.d("nigga give it right back", "2 res ${resp?.items?.size} page : $page . pageSize: $pageSize")
           resp?.let {
               _totalPages.value = it.totalPages
               if (page <= 1) {
@@ -210,7 +198,7 @@ class WorkViewModel @Inject constructor(
           }
 
       }catch (e: Exception){
-          Log.d("nigga give it back 3.1", "failed ${e.message}")
+          Log.d("getDataLocally", "failed ${e.message}")
       }
 
      }
@@ -221,7 +209,6 @@ class WorkViewModel @Inject constructor(
     private fun populateDepartments(){
         viewModelScope.launch {
             try {
-                Log.d("workViewModel", "Populating departments")
                 pickDepartmentDataSource(isNetworkAvailable.value,isOnlineLoggedIn.value)
             }catch (e: Exception) {
                 Log.e("workViewModel", "failed to populate departments Error ${e.message}")
@@ -270,7 +257,5 @@ class WorkViewModel @Inject constructor(
             Log.d("populate sections", "exception ${e.message}")
         }
     }
-    suspend  fun getEmployeeById(employeeId: UUID): NestedAppUser? {
-        return userManagementRepo.getById(employeeId)
-    }
+
 }

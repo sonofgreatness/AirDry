@@ -3,8 +3,10 @@ package com.example.airdry.database.Entities.Work
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.example.airdry.data.dto.Work.CreateWorkDoneDTO
 import com.example.airdry.database.Entities.Stack.Stack
 import com.example.airdry.database.Entities.UserManagement.AppUser
+import java.util.UUID
 
 data class WorkDoneWithUsersAndStacks(
     @Embedded val workDone: WorkDone,
@@ -29,3 +31,31 @@ data class WorkDoneWithUsersAndStacks(
     )
     val stacks: List<Stack>
 )
+{
+    fun generateCreateWorkDoneDTO() : CreateWorkDoneDTO{
+        val workersList :List<UUID> = users.map {
+         it.id
+        }
+        val userDto:CreateWorkDoneDTO.WorkDoneUsersDTO =CreateWorkDoneDTO.WorkDoneUsersDTO(
+            id = UUID.randomUUID(),
+            workersList)
+        val stacksList :List<UUID> = stacks.map { it.id }
+        val stacksDto : CreateWorkDoneDTO.WorkDoneStacksDTO = CreateWorkDoneDTO.WorkDoneStacksDTO(
+            id = UUID.randomUUID(),
+            stacksList
+        )
+
+        return CreateWorkDoneDTO(
+            id = workDone.id,
+            workDate = workDone.workDate,
+            workersList = listOf(userDto),
+            stacksList = listOf(stacksDto),
+        )
+
+
+
+    }
+}
+
+
+

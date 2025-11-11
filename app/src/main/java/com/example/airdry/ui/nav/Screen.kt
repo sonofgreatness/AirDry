@@ -16,7 +16,6 @@ sealed
     object CreateWorker : Screen("workers/create", "New Worker", Icons.Default.Add)
     object EditWorker : Screen("workers/edit", "Edit Worker", Icons.Default.Edit)
     object SelectEmployee : Screen("select_employee", "Select", Icons.Default.Person)
-    object CreateStackAndWork : Screen("create_stack", "Create Stack",null)
     object ManageUpdates:Screen("manage_updates", "Manage Updates",null )
     object ManageStacks:Screen("manage_stacks", "Manage Stacks", null)
     object EditStack:Screen("stacks/edit", "Edit Stack", null)
@@ -24,6 +23,8 @@ sealed
     object Login : Screen("login","Login Screen", null)
     object ProductKey: Screen("product key", "Product Key", null )
     object  Profile:Screen("profile","Profile Screen",null)
+    object RecordWork: Screen("work/record", "Record Work", null)
+    object EditWork:Screen("work/edit", "Edit Work", null)
     fun withArgs(vararg args: String): String {
         return if (args.isNotEmpty()) {
             buildString {

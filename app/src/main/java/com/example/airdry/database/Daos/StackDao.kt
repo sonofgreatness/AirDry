@@ -23,4 +23,18 @@ interface StackDao {
     @Transaction
     @Query("SELECT * FROM stack WHERE id =:id")
     suspend fun getNestedStackById(id: UUID): List<NestedStack>?
+
+    @Transaction
+    @Query(
+        """
+        SELECT s.* FROM stack AS s
+        INNER JOIN stack_code AS sc ON s.stack_code_id = sc.id
+        WHERE LOWER(s.display_name) LIKE LOWER('%' || :searchTerm || '%')
+           OR LOWER(sc.display_name) LIKE LOWER('%' || :searchTerm || '%')
+           OR LOWER(sc.display_code) LIKE LOWER('%' || :searchTerm || '%')
+        ORDER BY s.display_name COLLATE NOCASE ASC
+        """
+    )
+    suspend fun getFilteredStacks(searchTerm: String): List<NestedStack>?
+
 }

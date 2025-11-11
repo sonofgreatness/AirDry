@@ -36,5 +36,6 @@ interface WorkDoneRepository {
         pageSize: Int = DEFAULT_PAGE_SIZE,
         filters: WorkDataFiltersDTO
     ): PaginatedResponse<WorkDaySummaryDTO>?
+    suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
 
 }

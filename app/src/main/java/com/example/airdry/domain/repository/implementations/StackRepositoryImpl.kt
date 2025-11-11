@@ -15,4 +15,7 @@ class StackRepositoryImpl @Inject constructor(val stackDao: StackDao) : StackRep
    override suspend fun deleteAllStackCodesAndStack() = stackDao.deleteAllStackCodesAndStack()
    override suspend fun getAllNestedStacks(): List<NestedStack>? = stackDao.getAllNestedStacks()
    override suspend fun getNestedStackById(id: UUID): List<NestedStack>? =stackDao.getNestedStackById(id)
+
+   override suspend fun  getFilteredStacks(searchTerm: String): List<NestedStack>?=
+      stackDao.getFilteredStacks(searchTerm)
 }

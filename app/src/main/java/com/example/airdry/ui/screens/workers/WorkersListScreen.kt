@@ -64,7 +64,7 @@ fun WorkersListScreen(
         }
     }
     LaunchedEffect(Unit) {
-        viewModel.getAllEmployees()
+
         viewModel.updateFilteredEmployees("")
     }
 
@@ -172,7 +172,7 @@ fun WorkerCard(
                         employeeViewModel.deleteEmployee(worker.appUser)
                         //show loader
                         //reload  list
-                        employeeViewModel.getAllEmployees()
+                        employeeViewModel.loadAllEmployees()
                     },
                 ) {
                     Icon(
@@ -188,7 +188,7 @@ fun WorkerCard(
                         employeeViewModel.forcedUpload()
                         //show loader
                         //reload  list
-                        employeeViewModel.getAllEmployees()
+                        employeeViewModel.loadAllEmployees()
                     },
                     enabled = worker.appUser.isPendingInsert==true
                 ) {

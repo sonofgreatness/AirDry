@@ -37,7 +37,8 @@ class SettingsViewModel @Inject constructor(
     private val downloadAndInsertUserTypesUseCase: DownloadAndInsertUserTypesUseCase,
     private val uploadCachedUsersUseCase: UploadCachedUsersUseCase,
     private val downloadAndInsertWorkDataUseCase: DownloadAndInsertWorkDataUseCase,
-    private val settings: Settings
+    private val settings: Settings,
+    private val uploadWorkDataUseCase: UploadCachedUsersUseCase
 )
     : ViewModel()  {
 
@@ -60,6 +61,8 @@ class SettingsViewModel @Inject constructor(
             _syncStatus.value = SyncStatus.Working("Starting synchronization...")
             try {
                 forcedUpload()
+                uploadCachedWork()
+
                 getUserTypes()
                 getDepartments()
                 getSections()
@@ -179,5 +182,15 @@ class SettingsViewModel @Inject constructor(
         val formatter = DateTimeFormatter.ofPattern(HUMAN_READABLE_FORMAT_TEXT)
             .withLocale(Locale.getDefault())
         return targetDate.format(formatter)
+    }
+    private suspend fun uploadCachedWork(){
+            uploadWorkDataUseCase().collect{
+                when(it){
+                    is DownloadState.Error -> {_uiEvent.send(it.message)}
+                    DownloadState.Loading -> {_uiEvent.send("about to upload... ")}
+                    is DownloadState.Success -> {_uiEvent.send(it.message)}
+                }
+
+            }
     }
 }

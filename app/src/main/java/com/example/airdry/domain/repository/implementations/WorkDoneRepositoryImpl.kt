@@ -59,4 +59,8 @@ class WorkDoneRepositoryImpl
     ): PaginatedResponse<WorkDaySummaryDTO>? {
         android.util.Log.d("nigga give it back", "3")
         return workDoneDao.getDailyWorkSummaries(page,pageSize,filters)}
+override      suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
+= workDoneDao.getCachedWork()
+
+
 }
