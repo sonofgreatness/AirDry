@@ -115,7 +115,7 @@ fun WorkerForm(
             onValueChange = { name = it.trim() },
             label = { Text("First Name") },
             modifier = Modifier.fillMaxWidth(),
-          enabled =!isEditMode
+          readOnly =isEditMode
         )
 
         Spacer(Modifier.height(8.dp))
@@ -125,7 +125,7 @@ fun WorkerForm(
             onValueChange = { surname = it.trim() },
             label = { Text("Surname") },
             modifier = Modifier.fillMaxWidth(),
-          enabled =!isEditMode
+          readOnly=isEditMode
         )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
@@ -143,7 +143,7 @@ fun WorkerForm(
             },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth(),
-          enabled =!isEditMode
+          readOnly=isEditMode
         )
 
         Spacer(Modifier.height(8.dp))
@@ -161,7 +161,7 @@ fun WorkerForm(
             },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-          enabled =!isEditMode
+          readOnly=isEditMode
         )
         Spacer(Modifier.height(8.dp))
 
@@ -178,7 +178,7 @@ fun WorkerForm(
             },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
-          enabled =!isEditMode
+          readOnly=isEditMode
         )
 
         Spacer(Modifier.height(8.dp))
@@ -211,7 +211,7 @@ fun WorkerForm(
             Switch(
                 checked = isActive == true,
                 onCheckedChange = { isActive = it },
-              enabled =!isEditMode
+              enabled = !isEditMode
             )
         }
         Spacer(Modifier.height(8.dp))

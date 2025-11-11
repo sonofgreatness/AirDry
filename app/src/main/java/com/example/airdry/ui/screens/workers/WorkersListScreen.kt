@@ -223,7 +223,6 @@ fun WorkerCard(
             Text(
                 text = if (worker.appUser.isActive == true) "Active" else "Inactive",
                 style = MaterialTheme.typography.labelSmall,
-                color = if (worker.appUser.isActive == true) Color.Green else Color.Red,
                 fontWeight = FontWeight.Bold
             )
         }
