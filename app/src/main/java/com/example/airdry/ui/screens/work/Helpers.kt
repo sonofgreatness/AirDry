@@ -116,7 +116,7 @@ fun StackDropdown(
                 //onSearch(it)
                 },
             label = { Text("Select Stack") },
-            readOnly = selectedStack != null,
+            readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor().fillMaxWidth()
         )

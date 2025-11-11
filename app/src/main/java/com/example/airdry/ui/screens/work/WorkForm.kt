@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -33,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -43,7 +45,8 @@ import androidx.navigation.NavController
 import com.example.airdry.ui.nav.Screen
 import com.example.airdry.ui.viewmodels.RecordWorkViewModel
 import com.example.airdry.ui.viewmodels.WorkFormState
-
+const val WORKERS_INDEX = 1
+const val STACKS_INDEX = 2
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkForm(
@@ -61,6 +64,11 @@ fun WorkForm(
     var showDatePicker by remember { mutableStateOf(false) }
     var showAlertDialog by remember { mutableStateOf(false) }
 
+    val listState = rememberLazyListState() // State for the LazyColumn
+    val scope = rememberCoroutineScope() // Coroutine scope for scrolling
+
+
+
     val context =LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect {
@@ -71,6 +79,7 @@ fun WorkForm(
     LaunchedEffect(Unit) {
         viewModel.populateStacksAndWorkerLists()
     }
+
 
     // Use a Surface or Column as the main container
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -107,7 +116,8 @@ fun WorkForm(
                     WorkDetailsSection(
                         formState = formState,
                         onUpdateDate = { viewModel.updateWorkDate(it) },
-                        onShowDatePicker = { showDatePicker = it }
+                        onShowDatePicker = {shouldShow ->
+                            showDatePicker = shouldShow }
                     )
                 }
                 item {
