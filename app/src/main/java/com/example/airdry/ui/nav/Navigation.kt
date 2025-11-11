@@ -51,6 +51,7 @@ import com.example.airdry.ui.screens.settings.EditStackScreen
 import com.example.airdry.ui.screens.settings.ManageStacksScreen
 import com.example.airdry.ui.screens.settings.ManageUpdatesScreen
 import com.example.airdry.ui.screens.settings.Settings
+import com.example.airdry.ui.screens.work.EditWorkScreen
 import com.example.airdry.ui.screens.work.RecordWorkScreen
 
 import com.example.airdry.ui.screens.work.WorkListScreen
@@ -66,6 +67,7 @@ import com.example.airdry.ui.viewmodels.RecordWorkViewModel
 import com.example.airdry.ui.viewmodels.SettingsViewModel
 import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
+import com.example.airdry.util.UtilityFunctions.Companion.toUUID
 import java.util.UUID
 
 @Composable
@@ -146,9 +148,6 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                 composable(Screen.SelectEmployee.route) {
                     WorkListScreen(viewModel = workViewModel,navController)
                 }
-
-
-
                 composable(Screen.ManageStacks.route) {
 
                     val stacks by workViewModel.allStacks.observeAsState(emptyList())
@@ -195,6 +194,19 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                 }
                 composable(Screen.RecordWork.route) {
                     RecordWorkScreen(recordWorkViewModel,navController)
+                }
+                composable(route =Screen.EditWork.route +"/{workId}",
+                    arguments = listOf(
+                        navArgument("workId") {
+                            type = NavType.StringType
+                        },)
+                ){
+                    val workId = it.arguments?.getString("workId").toString()
+                    EditWorkScreen(
+                        navController = navController,
+                        viewModel = recordWorkViewModel,
+                        workDoneId = workId.toUUID()
+                    )
                 }
             }
         }

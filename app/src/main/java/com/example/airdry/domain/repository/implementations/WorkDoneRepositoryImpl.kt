@@ -57,10 +57,12 @@ class WorkDoneRepositoryImpl
         pageSize: Int,
         filters: WorkDataFiltersDTO
     ): PaginatedResponse<WorkDaySummaryDTO>? {
-        android.util.Log.d("nigga give it back", "3")
         return workDoneDao.getDailyWorkSummaries(page,pageSize,filters)}
 override      suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
 = workDoneDao.getCachedWork()
 
+   override suspend fun deleteWorkDoneChildren(workDoneId : UUID) = workDoneDao.deleteWorkDoneChildren(workDoneId)
+   override suspend   fun deleteWorkById(workDoneId: UUID) = workDoneDao.deleteWorkById(workDoneId)
+   override suspend fun unCacheForInsertAllWork() = workDoneDao.unCacheForInsertAllWork()
 
 }

@@ -85,6 +85,7 @@ import com.example.airdry.ui.screens.workers.DropDownFieldsNoUserTypes
 import com.example.airdry.ui.screens.workers.DropdownFields
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import com.example.airdry.util.ConstanstFromShared.Companion.WORK_DONE_EDIT_GRACE_PERIOD
+import com.example.airdry.util.ConstanstFromShared.Companion.WORK_DONE_EDIT_GRACE_PERIOD_CAPTURER
 import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import com.example.airdry.util.UtilityFunctions
 import com.example.airdry.util.operational_states.WorkDataFiltersDTOState
@@ -444,7 +445,12 @@ private fun WorkDaySummaryCard(
 fun StatInline(label: String, value: String) {
     Column(horizontalAlignment = Alignment.Start, modifier = Modifier.padding(end = 8.dp)) {
         Text(label, style = MaterialTheme.typography.labelSmall)
-        Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+        val d = if(value =="null")
+                 ""
+            else
+                value
+
+        Text(d, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
     }
 }
 
@@ -485,7 +491,7 @@ private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController) {
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         work.updatedBy?.let { StatInline("🔄 Updated by", it) }
-                        if (work.capturedAt != work.updatedAt) {
+                        if (work.capturedAt != work.updatedAt && work.updatedAt != "null") {
                             work.updatedAt?.let { StatInline("⏱ Updated at", it) }
                         }
                     }
@@ -496,12 +502,12 @@ private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController) {
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
                         val daysPassed = java.time.Duration.between(updatedInstant,Instant.now()).toDays()
-                        showEditButton = daysPassed < WORK_DONE_EDIT_GRACE_PERIOD
+                        showEditButton = daysPassed <  WORK_DONE_EDIT_GRACE_PERIOD_CAPTURER
                     }
                     if(showEditButton){
                         IconButton(
                             onClick = {
-                                //Navigate to edit work
+                                navigator.navigate(Screen.EditWork.withArgs(work.id.toString()))
                             },
                             modifier = Modifier.size(40.dp)
                         ) {

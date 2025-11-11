@@ -37,5 +37,7 @@ interface WorkDoneRepository {
         filters: WorkDataFiltersDTO
     ): PaginatedResponse<WorkDaySummaryDTO>?
     suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
-
+    suspend fun deleteWorkDoneChildren(workDoneId : UUID)
+    suspend  fun deleteWorkById(workDoneId: UUID)
+    suspend fun unCacheForInsertAllWork()
 }

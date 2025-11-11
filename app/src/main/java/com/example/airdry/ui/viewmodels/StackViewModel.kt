@@ -47,5 +47,19 @@ class StackViewModel @Inject constructor(
             }
         }
     }
+    fun updateFilteredStacks(searchTerm: String)
+    {
+        viewModelScope.launch {
+            stackRepo.getFilteredStacks(searchTerm).let{
+                if(it==null){
+                    getAllStacks()
+                }
+                else{_allStacks.value =it}
+
+
+            }
+
+        }
+    }
 
 }

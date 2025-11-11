@@ -59,7 +59,9 @@ fun StacksSelectionSection(
                     onValueChange = {
                         searchText = it
                         viewModel.updateFilteredStacks(it)
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 1
 
                 )
                 Spacer(Modifier.height(8.dp))

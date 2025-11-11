@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.database.Entities.Stack.NestedStack
 import com.example.airdry.database.Entities.UserManagement.NestedAppUser
@@ -13,12 +12,11 @@ import com.example.airdry.database.Entities.UserManagement.Profile
 import com.example.airdry.database.Entities.Work.WorkDone
 import com.example.airdry.database.Entities.Work.WorkDoneStack
 import com.example.airdry.database.Entities.Work.WorkDoneUser
+import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
-import com.example.airdry.domain.use_cases.WorkManagement.UploadWorkDataUseCase
 import com.example.airdry.util.UtilityFunctions.Companion.toUUID
-import com.example.airdry.util.operational_states.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +50,8 @@ class RecordWorkViewModel @Inject constructor(
 
     private val _uiEvent = Channel<String>()
     val uiEvent = _uiEvent.receiveAsFlow()
+    private  val _updateWorkDone = MutableStateFlow<WorkDone?>(null)
+
 
 
     fun populateStacksAndWorkerLists(){
@@ -106,10 +106,8 @@ class RecordWorkViewModel @Inject constructor(
         _formState.update { current ->
             val isSelected = current.selectedUsers.any { it.appUser.id == user.appUser.id }
             val newUsers = if (isSelected) {
-                // Remove user
                 current.selectedUsers.filter { it.appUser.id != user.appUser.id }
             } else {
-                // Add user
                 current.selectedUsers + user
             }
             current.copy(selectedUsers = newUsers)
@@ -120,7 +118,6 @@ class RecordWorkViewModel @Inject constructor(
      * Adds a new stack entry with a specific volume to the list.
      * Sends a UI event if the volume is invalid.
      * @param stack The stack to add.
-     * @param volumeString The volume as a string, which must be parsed to Double.
      */
     fun addStackSelection(stack: NestedStack) {
 
@@ -184,7 +181,6 @@ class RecordWorkViewModel @Inject constructor(
 
     private  fun generateWorkDoneUsers(selectedUsers: List<NestedAppUser>,
                                            workDoneId: UUID):List<WorkDoneUser>{
-
         return selectedUsers.map{
             WorkDoneUser(
                 id = UUID.randomUUID(),
@@ -221,15 +217,105 @@ class RecordWorkViewModel @Inject constructor(
     fun clearFormState() {
         _formState.value = WorkFormState()
     }
+    fun loadWorkForEdit(workDoneId: UUID?) {
+        viewModelScope.launch {
+            workDoneId?.let {
+                val workDone = workDoneRepo.getWorkDoneWithUsersAndStacksById(it)
+                _updateWorkDone.value = workDone?.workDone
+                workDone?.let {
+                    populateFormState(it)
+                }
+        }
+    }
+  }
+  private suspend fun  populateFormState(workDone : WorkDoneWithUsersAndStacks){
 
+      val selectedUser  = getSelectedUsers(workDone)
+      val selectedStacks = getSelectedStacks(workDone)
 
+      _formState.value = WorkFormState(
+          id = workDone.workDone.id,
+          workDate = workDone.workDone.workDate.time,
+          isEditMode = true,
+          selectedUsers = selectedUser,
+          selectedStacks =selectedStacks
+      )
+  }
+  private  suspend fun getSelectedUsers(workDone: WorkDoneWithUsersAndStacks):List<NestedAppUser>{
+      try {
+          val  ok =  workDone.users.map {
+              userManagementRepo.getById(it.id)!!
+          }
+          return ok
+      }catch (e: Exception){
+          Log.d("getSelectedUsers", "failed due to ${e.message}")
+          return emptyList()
+      }
+  }
+  private  suspend fun getSelectedStacks(workDone: WorkDoneWithUsersAndStacks) :List<SelectedStackItem>{
+      try {
+          val ok :List<SelectedStackItem> = workDone.stacks.map {
+              val stack = stackRepo.getNestedStackById(it.id)?.get(0)
+              SelectedStackItem(stack = stack!!)
+          }
+          return  ok
+      }catch (e: Exception){
+          Log.d("getSelectedStacks", "failed due to ${e.message}")
+         return emptyList()
+      }
+  }
+ fun updateExistingWork(state: WorkFormState){
+ viewModelScope.launch {
+    try {
+        val listOfStacks: List<NestedStack> = state.selectedStacks.map {
+            it.stack
+        }
+        val workDone = WorkDone(
+            id = state.id,
+            workDate = Timestamp(state.workDate),
+            isPendingUpdate = true,
+            capturedAt = _updateWorkDone.value?.capturedAt,
+            capturedBy = _updateWorkDone.value?.capturedBy,
+            updatedAt = Timestamp(System.currentTimeMillis()),
+            updatedBy = _updateWorkDone.value?.updatedBy
+        )
+        val workDoneUsers = generateWorkDoneUsers(state.selectedUsers,workDone.id)
+        val workDoneStacks = generateWorkDoneStacks(listOfStacks, workDone.id)
+        updateWork(workDone, workDoneUsers, workDoneStacks)
+    }catch (e: Exception){
+        Log.d("updateExistingWork", "failed due to ${e.message}")
+    }
+    }
+  }
 
-
+    private suspend fun updateWork(
+        workDone: WorkDone,
+        workDoneUsers: List<WorkDoneUser>,
+        workDoneStacks: List<WorkDoneStack>
+    ) {
+        try {
+            Log.d("updateWork","start users ${workDoneUsers.size} stacks ${workDoneStacks.size}")
+            workDoneRepo.updateWork(workDone)
+            workDoneRepo.deleteWorkDoneChildren(workDone.id)
+            workDoneUsers.forEach {
+                workDoneRepo.createWorkDoneUser(it)
+            }
+            workDoneStacks.forEach {
+                workDoneRepo.createWorkDoneStack(it)
+            }
+        }catch (e: Exception){
+            Log.d("updateWork", "failed due to ${e.message}")
+        }
+    }
+    fun deleteWork(workDoneId : UUID){
+        viewModelScope.launch {
+            workDoneRepo.deleteWorkById(workDoneId)
+        }
+    }
 }
-// Data class to represent a single WorkDone entry in the form
 data class WorkFormState(
     val id: UUID = UUID.randomUUID(),
-    val workDate: Long = System.currentTimeMillis(), // Use Long for DatePicker
+    val workDate: Long = System.currentTimeMillis(),
     val isEditMode: Boolean = false,
     val selectedUsers: List<NestedAppUser> = emptyList(),
     val selectedStacks: List<SelectedStackItem> = emptyList()

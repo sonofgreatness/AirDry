@@ -90,10 +90,7 @@ fun WorkForm(
                     // Example: IconButton(onClick = { navigator.popBackStack() }) { Icon(Icons.Default.ArrowBack, "Back") }
                 }
             )
-
-            // --- Core Form Content (Scrollable, takes up remaining space) ---
-            // The Modifier.weight(1f) ensures this LazyColumn fills the space between the top and bottom bar
-            LazyColumn(
+             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 16.dp)

@@ -21,6 +21,7 @@ class UploadWorkDataUseCase @Inject constructor(
             if(cachedWork.isNotEmpty()) {
                 Log.d("upload work", "cache not empty")
                uploadCachedData(cachedWork)
+                workDoneRepo.unCacheForInsertAllWork()
             }
             emit(DownloadState.Success("work data uploaded successfully"))
 
@@ -46,7 +47,8 @@ class UploadWorkDataUseCase @Inject constructor(
     }
     private  suspend fun uploadCachedData(cachedWork:List<CreateWorkDoneDTO>){
         try {
-            cachedWork.forEach { workApi.createWork(it) }
+            cachedWork.forEach { workApi.createWork(it)
+           }
         }catch (e: Exception){
             Log.d("upload work", "upload exception")
             Log.d("uploadCachedData", "failed to upload cached data ${e.message}")

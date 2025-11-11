@@ -15,15 +15,22 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,7 +52,7 @@ fun ManageStacksScreen(
     // ... (Existing code for viewModel, LaunchedEffects, Context) ...
     val allStacks by viewModel.allStack.collectAsState()
     val context = LocalContext.current
-
+    var searchText by  remember {mutableStateOf("")}
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -64,6 +71,23 @@ fun ManageStacksScreen(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
+
+        TextField(
+        value =  searchText,
+        onValueChange = {
+                searchText =it
+                viewModel.updateFilteredStacks(it)
+            },
+       trailingIcon = {Icon(Icons.Default.Cancel,
+       modifier = Modifier.clickable{
+                    searchText = ""
+                    viewModel.getAllStacks()},
+        contentDescription = "Search")
+       }, placeholder = {Text("Search...")},
+        modifier = Modifier.fillMaxWidth(),
+            maxLines = 1
+
+        )
         GreenDivider() // Assuming you have this composable
 
         // 👇 Using LazyVerticalGrid for a "gallery" or "library shelf" look
@@ -74,6 +98,7 @@ fun ManageStacksScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
+
             itemsIndexed (allStacks) { index,stack ->
                 StackDetailsCard(stack = stack, onClick = {
                     navController.navigate(Screen.EditStack.withArgs(stack.stack.id.toString()))

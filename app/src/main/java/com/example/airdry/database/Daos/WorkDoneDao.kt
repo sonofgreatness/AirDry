@@ -262,6 +262,27 @@ interface  WorkDoneDao {
     suspend fun getNestedStackFromId(id: UUID) : NestedStack
     @Query("SELECT *FROM app_user where id =:id LIMIT 1")
     suspend fun getNestedAppUserFromId(id: UUID) : NestedAppUser
+    @Query("DELETE FROM work_done_user WHERE work_done_id = :workDoneId")
+    suspend fun deleteWorkDoneUsersById(workDoneId: UUID)
+    @Query("DELETE FROM work_done_stack WHERE work_done_id = :workDoneId")
+    suspend fun deleteWorkDoneStacksById(workDoneId: UUID)
+    @Transaction
+    suspend fun deleteWorkDoneChildren(workDoneId : UUID){
+        deleteWorkDoneUsersById(workDoneId)
+        deleteWorkDoneStacksById(workDoneId)
+    }
 
-
+    @Query("DELETE  FROM work_done  WHERE id =:workDoneId")
+    suspend  fun deleteWorkById(workDoneId: UUID)
+    @Transaction
+    suspend fun unCacheForInsertAllWork(){
+        val cached = getCachedWork()
+        cached.forEach {
+            updateWork(it.workDone.copy(isPendingInsert = false))
+        }
+    }
 }
+
+
+
+
