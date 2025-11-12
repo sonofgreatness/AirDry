@@ -8,7 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.rememberNavController
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.ui.nav.Navigation
@@ -42,10 +42,12 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var sessionManager: SessionManager
     @Inject
-    lateinit var  connectivityObserver: ConnectivityObserver
+    lateinit var  myConnectivityObserver: MyConnectivityObserver
     @Inject
     lateinit var themeManager: ThemeManager
 
+    @Inject
+    lateinit var connectivityObserver: ConnectivityObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -53,10 +55,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-                val isServerUp by  connectivityObserver.isServerReachable.collectAsState()
+                val isServerUp by  myConnectivityObserver.isServerReachable.collectAsState()
                 val isUserLoggedIn  by sessionManager.isLoggedInFlow.collectAsState()
                 val bool = shouldMoveToLoginScreen(isUserLoggedIn, isServerUp)
-                AppContent(bool)
+                AppContent(bool,themeManager)
 
         }
     }
@@ -66,25 +68,35 @@ class MainActivity : ComponentActivity() {
         return isServerUp && !isUserLoggedIn
     }
     @Composable
-    fun AppContent(shouldMoveToLoginScreen: Boolean) {
-        val  isDarkThemeEnabled by themeManager.isDarkThemeEnabled.collectAsState(initial = false)
-        if (shouldMoveToLoginScreen == true) {
-            val navController = rememberNavController()
-            AirDryTheme(isDarkThemeEnabled) {LoginScreen(mAuthViewModel) { navController.navigate(Screen.SelectEmployee.route) } }
+    fun AppContent(shouldMoveToLoginScreen: Boolean, themeManager: ThemeManager) {
+        // Immediately get the theme synchronously
+        val initialTheme = remember { themeManager.currentTheme() }
 
-        } else {
-            AirDryTheme(isDarkThemeEnabled) {
-            Navigation(mEmployeeViewModel, mWorkViewModel,
-                mConnectionsViewModel,
-                mAuthViewModel,
-                sessionManager,
-                connectivityObserver,
-                mProfileViewModel,
-                stackViewModel=mStackViewModel,
-                mSettingsViewModel,
-                mRecordWorkViewModel,
-                themeManager,)
-        }
+        // Then observe changes (but don't reset to false on first frame)
+        val isDarkThemeEnabled by themeManager.isDarkThemeEnabled.collectAsState(initial = initialTheme)
+
+        val navController = rememberNavController()
+
+        AirDryTheme(isDarkThemeEnabled) {
+            if (shouldMoveToLoginScreen) {
+                LoginScreen(mAuthViewModel) {
+                    navController.navigate(Screen.SelectEmployee.route)
+                }
+            } else {
+                Navigation(
+                    mEmployeeViewModel,
+                    mWorkViewModel,
+                    mConnectionsViewModel,
+                    mAuthViewModel,
+                    sessionManager,
+                    myConnectivityObserver,
+                    mProfileViewModel,
+                    stackViewModel = mStackViewModel,
+                    mSettingsViewModel,
+                    mRecordWorkViewModel,
+                    themeManager,
+                )
+            }
         }
     }
 }

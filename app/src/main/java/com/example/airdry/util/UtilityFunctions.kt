@@ -142,5 +142,18 @@ class UtilityFunctions {
         }
 
 
+        fun covertNumberTo2DecimalString(number : Float): String {
+            return String.format("%.2f m³", number)
+        }
+        fun covertNumberTo2DecimalString(number : Double): String {
+            return String.format("%.2f m³", number)
+        }
+        fun covertNumberTo3DecimalString(number : Float): String {
+            return String.format("%.3f m³", number)
+        }
+        fun covertNumberTo3DecimalString(number : Double): String {
+            return String.format("%.3f m³", number)
+        }
+
     }
 }

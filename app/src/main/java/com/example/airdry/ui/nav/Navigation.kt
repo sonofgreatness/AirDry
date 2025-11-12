@@ -23,9 +23,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,10 +35,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.airdry.ConnectivityObserver
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.auth.SessionManager
-import com.example.airdry.database.Entities.UserManagement.AppUser
-import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.ui.AirDryTopAppBar
 import com.example.airdry.ui.screens.auth.LoginScreen
 import com.example.airdry.ui.screens.auth.ProfileScreen
@@ -68,7 +63,6 @@ import com.example.airdry.ui.viewmodels.SettingsViewModel
 import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import com.example.airdry.util.UtilityFunctions.Companion.toUUID
-import java.util.UUID
 
 @Composable
 fun Navigation(employeeViewModel: EmployeeViewModel,
@@ -76,14 +70,14 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
                connectionsViewModel: ConnectionsViewModel,
                authViewModel: AuthViewModel,
                sessionManager: SessionManager,
-               connectivityObserver: ConnectivityObserver,
+               myConnectivityObserver: MyConnectivityObserver,
                profileViewModel: ProfileViewModel,
                stackViewModel: StackViewModel,
                settingsViewModel: SettingsViewModel,
                recordWorkViewModel: RecordWorkViewModel,
                themeManager: ThemeManager
                ) {
-    val isServerUp by  connectivityObserver.isServerReachable.collectAsState()
+    val isServerUp by  myConnectivityObserver.isServerReachable.collectAsState()
     val isUserLoggedIn  by sessionManager.isLoggedInFlow.collectAsState()
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()

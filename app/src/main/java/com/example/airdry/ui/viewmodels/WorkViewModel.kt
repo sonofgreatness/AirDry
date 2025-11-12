@@ -6,14 +6,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.airdry.ConnectivityObserver
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.data.dto.Work.WorkDaySummaryDTO
 import com.example.airdry.data.dto.WorkDataFiltersDTO
 import com.example.airdry.database.Entities.Stack.NestedStack
 import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.UserManagement.Department
-import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.domain.REST_API.interfaces.OrganizationApi
 import com.example.airdry.domain.REST_API.interfaces.WorkApi
@@ -24,7 +23,6 @@ import com.example.airdry.domain.use_cases.WorkManagement.UploadWorkDataUseCase
 import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE
 import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import com.example.airdry.util.UtilityFunctions.Companion.toUUIDOrNull
-import com.example.airdry.util.operational_states.DownloadState
 import com.example.airdry.util.operational_states.WorkDataFiltersDTOState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -41,7 +39,7 @@ class WorkViewModel @Inject constructor(
     private val workDoneRepo: WorkDoneRepository,
     private val stackRepo: StackRepository,
     private val userManagementRepo: UserRepository,
-    private val connectivityObserver: ConnectivityObserver,
+    private val myConnectivityObserver: MyConnectivityObserver,
     private val sessionManager: SessionManager,
     private val workApi: WorkApi,
     private val organizationApi: OrganizationApi,
@@ -59,7 +57,7 @@ class WorkViewModel @Inject constructor(
     private val _dailyWorkSummaries = MutableStateFlow<List<WorkDaySummaryDTO>>(emptyList())
     val  dailyWorkSummaries: StateFlow<List<WorkDaySummaryDTO>> = _dailyWorkSummaries
 
-    val isNetworkAvailable: StateFlow<Boolean> = connectivityObserver.isServerReachable
+    val isNetworkAvailable: StateFlow<Boolean> = myConnectivityObserver.isServerReachable
     val isOnlineLoggedIn : StateFlow<Boolean> =  sessionManager.isLoggedInFlow
 
     private val  _filterDto  = MutableStateFlow<WorkDataFiltersDTO>(WorkDataFiltersDTO())

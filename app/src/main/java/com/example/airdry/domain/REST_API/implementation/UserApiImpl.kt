@@ -30,6 +30,7 @@ import com.example.airdry.util.ConstanstFromShared.Companion.PAGE
 import com.example.airdry.util.ConstanstFromShared.Companion.PAGE_SIZE
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -123,6 +124,11 @@ class UserApiImpl(private val client: HttpClient,
         try{
         val response = client.get("$API_BASE_URL$API_HEALTH"){
             contentType(ContentType.Application.Json)
+            timeout {
+                requestTimeoutMillis = 20_000
+                connectTimeoutMillis = 10_000
+                socketTimeoutMillis = 20_000
+            }
         }
         return  if (response.status.isSuccess())
              SimpleResponse(message =  SERVER_OK_TEXT)

@@ -22,7 +22,6 @@ import com.example.airdry.database.Entities.UserManagement.UserType
 import com.example.airdry.database.Entities.Work.WorkDone
 import com.example.airdry.database.Entities.Work.WorkDoneStack
 import com.example.airdry.database.Entities.Work.WorkDoneUser
-import com.example.airdry.database.typeConverters.EnumConverters
 import com.example.airdry.database.typeConverters.TimestampConverter
 import com.example.airdry.database.typeConverters.UUIDConverter
 import com.example.airdry.util.Constants
@@ -44,8 +43,7 @@ import com.example.airdry.util.Constants
     , version = 1,
     exportSchema = false
 )
-@TypeConverters(TimestampConverter::class, UUIDConverter::class,
-    EnumConverters::class)
+@TypeConverters(TimestampConverter::class, UUIDConverter::class)
 abstract class MainDatabase :RoomDatabase() {
 
     abstract fun getEmployeeDao(): UserManagementDao

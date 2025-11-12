@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.airdry.ConnectivityObserver
+import com.example.airdry.MyConnectivityObserver
+import com.example.airdry.NetworkConnectivityObserver
 import com.example.airdry.auth.SessionExpiryRepository
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.database.Daos.UserManagement.UserManagementDao
@@ -125,11 +127,20 @@ object AppModule {
     fun provideSessionExpiryRepository(settings: Settings) : SessionExpiryRepository{
         return SessionExpiryRepository(settings)
     }
+
+    @Singleton
+    @Provides
+    fun providesConnectivityObserver(application: Application) : ConnectivityObserver{
+       return NetworkConnectivityObserver(application)
+    }
+
+
     @Provides
     @Singleton
-    fun provideConnectivityObserver(  userApi: UserApi,
-                                     logger: Logger) : ConnectivityObserver{
-        return ConnectivityObserver(userApi,logger)
+    fun provideMyConnectivityObserver(  userApi: UserApi,
+                                        logger: Logger,connectivityObserver: ConnectivityObserver
+                                        ,application: Application) : MyConnectivityObserver{
+        return MyConnectivityObserver(userApi,logger,connectivityObserver,application)
     }
     @Provides
     @Singleton

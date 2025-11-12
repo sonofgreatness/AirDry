@@ -4,7 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.airdry.ConnectivityObserver
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.database.Entities.UserManagement.Profile
 import com.example.airdry.domain.repository.interfaces.UserRepository
@@ -25,7 +25,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val app: Application,
     private val sessionManager: SessionManager,
-    private val connectivityObserver: ConnectivityObserver,
+    private val myConnectivityObserver: MyConnectivityObserver,
     private val userRepository: UserRepository
 ) : ViewModel() {
 
@@ -37,7 +37,7 @@ class ProfileViewModel @Inject constructor(
     // --- State: Derived state from dependencies (network/login status) ---
     val loggedInState: StateFlow<LoggedInState> = combine(
         sessionManager.isLoggedInFlow,
-        connectivityObserver.isServerReachable
+        myConnectivityObserver.isServerReachable
     ) { isLoggedIn, isNetwork ->
         when {
             isLoggedIn && isNetwork -> LoggedInState.LoggedIn
@@ -54,7 +54,7 @@ class ProfileViewModel @Inject constructor(
  private val _uiEvent = Channel<ProfileUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
     fun loadProfile(userId: UUID) {
-        Log.d("ProfileViewModel", "loadProfile called logged in State : ${loggedInState.value}isLoggeIn ${sessionManager.isLoggedInFlow.value} network ${connectivityObserver.isServerReachable.value}")
+        Log.d("ProfileViewModel", "loadProfile called logged in State : ${loggedInState.value}isLoggeIn ${sessionManager.isLoggedInFlow.value} network ${myConnectivityObserver.isServerReachable.value}")
         viewModelScope.launch {
             _uiEvent.send(ProfileUiEvent.ShowToast("Loading profile..."))
             _profile.value = null

@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.airdry.ConnectivityObserver
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.domain.REST_API.interfaces.UserApi
 import com.example.airdry.domain.use_cases.UserManagement.CreateLogInProfileUseCase
 import com.example.airdry.util.Constants.Companion.FAILED_LOGIN
@@ -18,21 +18,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.slf4j.Logger
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val appContext: Application,
     private  val userApi: UserApi,
-    private val connectivityObserver: ConnectivityObserver,
-private  val createLogInProfileUseCase: CreateLogInProfileUseCase
+    private val myConnectivityObserver: MyConnectivityObserver,
+    private  val createLogInProfileUseCase: CreateLogInProfileUseCase
     )
     : ViewModel(){
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState
 
-    val isNetworkAvailable: StateFlow<Boolean> = connectivityObserver.isServerReachable
+    val isNetworkAvailable: StateFlow<Boolean> = myConnectivityObserver.isServerReachable
 
     // move form fields here
     var username by mutableStateOf("")

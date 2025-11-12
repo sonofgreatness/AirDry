@@ -17,7 +17,7 @@ class ThemeManager(private val settings: Settings) {
       _isDarkThemeEnabled.value = getTheme()
   }
     val isDarkThemeEnabled = _isDarkThemeEnabled.asStateFlow()
-
+    fun currentTheme(): Boolean = _isDarkThemeEnabled.value
     fun setDarkTheme(enabled: Boolean) {
         settings.putBoolean(THEME_KEY, enabled)
          val newSystemSetting = settings.getBoolean(THEME_KEY, false)
