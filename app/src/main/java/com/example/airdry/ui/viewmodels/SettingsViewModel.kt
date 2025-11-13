@@ -5,9 +5,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.airdry.MyConnectivityObserver
@@ -40,6 +45,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -128,9 +134,33 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settings.putLong(OFFSETDAY_KEY, newOffset)
             _offsetDays.value = newOffset
+            schedulePeriodicSync(newOffset)
             _uiEvent.send("Update data every   $newOffset days.")
 
         }
+    }
+    fun schedulePeriodicSync(updateDays: Long) {
+        val workManager = WorkManager.getInstance(application)
+
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val workRequest = PeriodicWorkRequestBuilder<SyncAppDataWorker>(
+            updateDays, TimeUnit.DAYS
+        )
+            .setConstraints(constraints)
+            .setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL,
+                15, TimeUnit.MINUTES
+            )
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            SyncAppDataWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE, // Replace if already exists
+            workRequest
+        )
     }
     fun getOldestRecordDateString(offsetMonths: Long): String {
         val targetDate = LocalDate.now(ZoneOffset.UTC).minusMonths(offsetMonths)

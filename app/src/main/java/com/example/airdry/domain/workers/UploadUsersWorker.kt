@@ -39,11 +39,11 @@ class UploadUsersWorker(
                         setForeground(createForegroundInfo("Uploading cached users..."))
                     }
                     is DownloadState.Success -> {
-                        showCompletedNotification("Upload complete: ${state.message}", true)
+                        showCompletedNotification("✅ Upload complete: ${state.message}", true)
                         result = Result.success()
                     }
                     is DownloadState.Error -> {
-                        showCompletedNotification("Upload failed: ${state.message}", true)
+                        showCompletedNotification("⚠️ Upload failed: ${state.message}", true)
                         result = Result.failure()
                     }
                 }

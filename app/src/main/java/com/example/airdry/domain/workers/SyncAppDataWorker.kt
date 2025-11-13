@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.RingtoneManager
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -14,6 +15,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.domain.use_cases.StackManagement.DownloadStackDataUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertCasualUsersUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertDepartmentsUseCase
@@ -38,7 +40,8 @@ class SyncAppDataWorker (
     private val downloadAndInsertUserTypesUseCase: DownloadAndInsertUserTypesUseCase,
     private val uploadCachedUsersUseCase: UploadCachedUsersUseCase,
     private val uploadWorkDataUseCase: UploadWorkDataUseCase,
-    private val writeWorkUpdatesUseCase: WriteWorkUpdatesUseCase
+    private val writeWorkUpdatesUseCase: WriteWorkUpdatesUseCase,
+    private  val connectivityObserver: MyConnectivityObserver
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
@@ -49,6 +52,7 @@ class SyncAppDataWorker (
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override suspend fun doWork(): Result {
+        val isServerReachable = connectivityObserver.isServerReachable.value
         createNotificationChannel()
         setForeground(createForegroundInfo("Starting synchronization...", 0))
 
@@ -65,27 +69,39 @@ class SyncAppDataWorker (
         )
 
         val totalTasks = tasks.size
-        try {
-            for ((index, task) in tasks.withIndex()) {
-                val (label, useCase) = task
-                val progressPercent = ((index.toFloat() / totalTasks) * 100).toInt()
-                val progressText = "Step ${index + 1} of $totalTasks: $label ($progressPercent%)"
-
-                updateProgress(progressText, progressPercent)
-                val result = runUseCase(label, useCase)
-
-                if (!result) {
-                    showCompletedNotification("❌ Failed during: $label", success = false)
-                    return Result.failure()
-                }
-            }
-
-            showCompletedNotification("✅ Synchronization completed successfully", success = true)
-            return Result.success()
-        } catch (e: Exception) {
-            showCompletedNotification("❌ Sync failed: ${e.localizedMessage}", success = false)
-            return Result.failure()
+        if (isServerReachable == false) {
+            Log.d("sync data worker", "server  NOT reached")
+            return Result.retry()
         }
+         else{
+
+
+            try {
+                Log.d("sync data worker", "server reached")
+                for ((index, task) in tasks.withIndex()) {
+                    val (label, useCase) = task
+                    val progressPercent = ((index.toFloat() / totalTasks) * 100).toInt()
+                    val progressText = "Step ${index + 1} of $totalTasks: $label ($progressPercent%)"
+
+                    updateProgress(progressText, progressPercent)
+                    val result = runUseCase(label, useCase)
+
+                    if (!result) {
+                        showCompletedNotification("❌ Failed during: $label", success = false)
+                        return Result.failure()
+                    }
+                }
+
+                showCompletedNotification("✅ Synchronization completed successfully", success = true)
+                return Result.success()
+            } catch (e: Exception) {
+                showCompletedNotification("❌ Sync failed: ${e.localizedMessage}", success = false)
+                return Result.failure()
+            }
+         }
+
+
+
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {

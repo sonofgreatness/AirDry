@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.domain.use_cases.StackManagement.DownloadStackDataUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertCasualUsersUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertDepartmentsUseCase
@@ -29,6 +30,7 @@ import javax.inject.Inject
         private val downloadAndInsertDepartmentsUseCase: DownloadAndInsertDepartmentsUseCase,
         private val downloadAndInsertSectionsUseCase: DownloadAndInsertSectionsUseCase,
         private val downloadAndInsertUserTypesUseCase: DownloadAndInsertUserTypesUseCase,
+        private val connectivityObserver: MyConnectivityObserver
 
 
     ) : WorkerFactory() {
@@ -56,7 +58,8 @@ import javax.inject.Inject
                  downloadAndInsertUserTypesUseCase,
                      uploadCachedUsersUseCase,
                      uploadWorkDataUseCase,
-                     writeWorkUpdatesUseCase)
+                     writeWorkUpdatesUseCase,
+                        connectivityObserver)
                 else -> null
             }
         }

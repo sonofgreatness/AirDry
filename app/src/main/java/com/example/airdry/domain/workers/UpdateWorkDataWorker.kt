@@ -38,11 +38,11 @@ class UpdateWorkDataWorker(appContext: Context,
                     setForeground(createForegroundInfo("Updating cached work..."))
                 }
                 is DownloadState.Success -> {
-                    showCompletedNotification("Update complete: ${state.message}", true)
+                    showCompletedNotification("✅ Update complete: ${state.message}", true)
                     result = ListenableWorker.Result.success()
                 }
                 is DownloadState.Error -> {
-                    showCompletedNotification("Update failed: ${state.message}", true)
+                    showCompletedNotification("⚠️ Update failed: ${state.message}", true)
                     result = ListenableWorker.Result.failure()
                 }
             }

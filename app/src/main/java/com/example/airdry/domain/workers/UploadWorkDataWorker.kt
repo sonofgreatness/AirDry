@@ -38,11 +38,11 @@ private val uploadWorkDataUseCase: UploadWorkDataUseCase
                     setForeground(createForegroundInfo("Uploading cached work..."))
                 }
                 is DownloadState.Success -> {
-                    showCompletedNotification("Upload complete: ${state.message}", true)
+                    showCompletedNotification("✅ Upload complete: ${state.message}", true)
                     result = ListenableWorker.Result.success()
                 }
                 is DownloadState.Error -> {
-                    showCompletedNotification("Upload failed: ${state.message}", true)
+                    showCompletedNotification("⚠️ Upload failed: ${state.message}", true)
                     result = ListenableWorker.Result.failure()
                 }
             }
