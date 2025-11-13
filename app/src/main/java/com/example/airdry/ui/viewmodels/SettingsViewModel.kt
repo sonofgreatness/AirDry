@@ -20,8 +20,10 @@ import com.example.airdry.domain.use_cases.UserManagement.UploadCachedUsersUseCa
 import com.example.airdry.domain.use_cases.WorkManagement.DownloadAndInsertWorkDataUseCase
 import com.example.airdry.domain.use_cases.WorkManagement.WriteWorkUpdatesUseCase
 import com.example.airdry.domain.workers.SyncAppDataWorker
+import com.example.airdry.util.Constants.Companion.DEFAULT_OFFSETDAY_VALUE
 import com.example.airdry.util.Constants.Companion.DEFAULT_OFFSETMONTH_VALUE
 import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT
+import com.example.airdry.util.Constants.Companion.OFFSETDAY_KEY
 import com.example.airdry.util.Constants.Companion.OFFSETMONTH_KEY
 import com.example.airdry.util.operational_states.DownloadState
 import com.example.airdry.util.operational_states.SyncStatus
@@ -57,6 +59,12 @@ class SettingsViewModel @Inject constructor(
         settings.getLong(OFFSETMONTH_KEY, DEFAULT_OFFSETMONTH_VALUE)
     )
     val offsetMonths: StateFlow<Long> = _offsetMonths.asStateFlow()
+
+    private val _offsetDays =MutableStateFlow(
+        settings.getLong(OFFSETDAY_KEY, DEFAULT_OFFSETDAY_VALUE)
+    )
+    val offsetDays: StateFlow<Long> = _offsetDays.asStateFlow()
+
     private val _oldestRecordDateString = MutableStateFlow(
         getOldestRecordDateString(_offsetMonths.value)
     )
@@ -114,6 +122,14 @@ class SettingsViewModel @Inject constructor(
             _offsetMonths.value = newOffset
             _oldestRecordDateString.value = getOldestRecordDateString(newOffset)
             _uiEvent.send("Data history range updated to $newOffset months.")
+        }
+    }
+    fun onUpdateOffsetDays(newOffset: Long) {
+        viewModelScope.launch {
+            settings.putLong(OFFSETDAY_KEY, newOffset)
+            _offsetDays.value = newOffset
+            _uiEvent.send("Update data every   $newOffset days.")
+
         }
     }
     fun getOldestRecordDateString(offsetMonths: Long): String {

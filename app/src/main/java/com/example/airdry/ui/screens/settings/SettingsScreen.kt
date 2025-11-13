@@ -67,6 +67,7 @@ fun Settings(
     val syncStatus by viewModel.syncStatus.collectAsState()
     val isSyncing = syncStatus is SyncStatus.Working
     val offsetMonths by viewModel.offsetMonths.collectAsState()
+    val offsetdays by viewModel.offsetDays.collectAsState()
     val oldestRecordDateString by viewModel.oldestRecordDateString.collectAsState()
 
     val scrollState = rememberScrollState()
@@ -92,15 +93,6 @@ fun Settings(
 
                 )
                 GreenDivider()
-                Text(
-                    "Check For Updates", modifier = Modifier.padding(16.dp).align(
-                        Alignment.Start
-                    ).clickable {
-                        navController.navigate(route = Screen.ManageUpdates.route)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface)
-                GreenDivider()
                 ProgressSettingItem(
                     icon = Icons.Default.CloudDownload,
                     title = "Update Application Data",
@@ -125,6 +117,13 @@ fun Settings(
                     onUpdateOffset = viewModel::onUpdateOffsetMonths
                 )
                 GreenDivider()
+                GreenDivider()
+                OffsetSettingItem2(
+                    currentOffset = offsetdays,
+                    onUpdateOffset = viewModel::onUpdateOffsetDays
+                )
+                GreenDivider()
+
                 SettingItem(
                     icon = Icons.Outlined.DarkMode,
                     title = "Dark Mode",
@@ -149,7 +148,7 @@ fun Settings(
                     modifier = Modifier.padding(16.dp).align(Alignment.Start).clickable {
                         navController.navigate(route = Screen.ManageStacks.route)
                     },
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
                     color = MaterialTheme.colorScheme.onSurface
 
                 )
@@ -336,6 +335,86 @@ fun OffsetSettingItem(
                             onUpdateOffset(month.toLong())
                             isExpanded.value = false
                             Toast.makeText(context, "Data offset set to $month months", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun OffsetSettingItem2(
+    currentOffset: Long,
+    onUpdateOffset: (Long) -> Unit
+) {
+    val context = LocalContext.current
+    val isExpanded = remember { mutableStateOf(false) }
+    val monthsOptions = (1..6).toList() // Options: 1, 2, 3, 4, 5, 6
+
+    // Calculate the human-readable description for the offset
+    val offsetDescription = remember(currentOffset) {
+        "Automatic synchronization is enabled for  $currentOffset day${if (currentOffset > 1) "s" else ""}."
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isExpanded.value = true } // Open dropdown on click
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.DateRange, // Or another relevant icon
+            contentDescription = null,
+            tint = ForestGreen,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                "Automatic Sync frequency ",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+            )
+            Text(
+                offsetDescription,
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        // Trailing Composable: Dropdown for month selection
+        Box {
+            // Display current value with a dropdown arrow
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = currentOffset.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Select frequency"
+                )
+            }
+
+            // Dropdown Menu
+            DropdownMenu(
+                expanded = isExpanded.value,
+                onDismissRequest = { isExpanded.value = false }
+            ) {
+                monthsOptions.forEach { month ->
+                    DropdownMenuItem(
+                        text = {
+                            Text("$month day${if (month > 1) "s" else ""}")
+                        },
+                        onClick = {
+                            onUpdateOffset(month.toLong())
+                            isExpanded.value = false
+                            Toast.makeText(context, "Automatic updates set to  every $month days", Toast.LENGTH_SHORT).show()
                         }
                     )
                 }

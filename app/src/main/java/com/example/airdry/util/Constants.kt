@@ -57,6 +57,8 @@ class Constants {
       const val HUMAN_READABLE_FORMAT_NUMERIC = "EEEE dd/MM/yyyy"
         const val HUMAN_READABLE_FORMAT_TEXT = "EEEE dd MMM yyyy"
         const val HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE =  "EEEE dd MMM yyyy HH:mm"
+       const val OFFSETDAY_KEY = "off_set_day_key"
+        const val DEFAULT_OFFSETDAY_VALUE = 2L
 
     }
 }
