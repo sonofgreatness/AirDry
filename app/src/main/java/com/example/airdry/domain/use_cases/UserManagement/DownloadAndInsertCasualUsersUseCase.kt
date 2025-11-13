@@ -18,7 +18,7 @@ class DownloadAndInsertCasualUsersUseCase @Inject constructor(
     private val _currentPage = MutableStateFlow(1)
     private val _totalPages = MutableStateFlow(Int.MAX_VALUE)
     private val _casualWorkers = MutableStateFlow<List<UserResponse>>(emptyList())
-    suspend operator fun invoke(): Flow<DownloadState> = flow {
+    operator fun invoke(): Flow<DownloadState> = flow {
         try {
             emit(DownloadState.Loading)
             _currentPage.value = 1

@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.ui.nav.Screen
 import com.example.airdry.ui.theme.BrownDriftwood
 import com.example.airdry.ui.theme.ForestGreen
@@ -56,8 +57,12 @@ fun Settings(
         navController: NavController,
         viewModel : SettingsViewModel,
         darkThemeEnabled: Boolean,
-        onToggleTheme: (Boolean) -> Unit
+        onToggleTheme: (Boolean) -> Unit,
+        connectivityObserver: MyConnectivityObserver
     ){
+
+
+    val isServerReachable by connectivityObserver.isServerReachable.collectAsState()
     val context = LocalContext.current
     val syncStatus by viewModel.syncStatus.collectAsState()
     val isSyncing = syncStatus is SyncStatus.Working
@@ -106,7 +111,12 @@ fun Settings(
                         is SyncStatus.Error -> (syncStatus as SyncStatus.Error).message
                     },
                     isWorking = isSyncing,
-                    onClick = viewModel::synchronizeData
+                    onClick = {
+                        if (isServerReachable ==true)
+                               viewModel.synchronizeData()
+                        else
+                            Toast.makeText(context, "Server not reachable", Toast.LENGTH_SHORT).show()
+                    }
                 )
                 GreenDivider()
                 OffsetSettingItem(

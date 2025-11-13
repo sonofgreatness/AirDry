@@ -90,4 +90,9 @@ interface UserManagementDao {
     suspend fun deleteProfiles()
     @Query("SELECT * FROM user_profile WHERE id =:userId LIMIT 1")
     suspend fun getProfileById(userId: UUID): Profile?
+
+    @Query("SELECT COUNT(*) FROM app_user WHERE is_pending_insert = 1")
+    suspend fun  getCountOfUsersPendingInsert():Int
+
+
 }

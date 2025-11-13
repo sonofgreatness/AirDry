@@ -1,7 +1,16 @@
 package com.example.airdry.ui.viewmodels
 
+import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.domain.use_cases.StackManagement.DownloadStackDataUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertCasualUsersUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertDepartmentsUseCase
@@ -10,6 +19,7 @@ import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertUserT
 import com.example.airdry.domain.use_cases.UserManagement.UploadCachedUsersUseCase
 import com.example.airdry.domain.use_cases.WorkManagement.DownloadAndInsertWorkDataUseCase
 import com.example.airdry.domain.use_cases.WorkManagement.WriteWorkUpdatesUseCase
+import com.example.airdry.domain.workers.SyncAppDataWorker
 import com.example.airdry.util.Constants.Companion.DEFAULT_OFFSETMONTH_VALUE
 import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT
 import com.example.airdry.util.Constants.Companion.OFFSETMONTH_KEY
@@ -21,6 +31,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -31,21 +42,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val downloadStackDataUseCase: DownloadStackDataUseCase,
-    private val downloadAndInsertCasualUsersUseCase: DownloadAndInsertCasualUsersUseCase,
-    private val downloadAndInsertDepartmentsUseCase: DownloadAndInsertDepartmentsUseCase,
-    private val downloadAndInsertSectionsUseCase: DownloadAndInsertSectionsUseCase,
-    private val downloadAndInsertUserTypesUseCase: DownloadAndInsertUserTypesUseCase,
-    private val uploadCachedUsersUseCase: UploadCachedUsersUseCase,
-    private val downloadAndInsertWorkDataUseCase: DownloadAndInsertWorkDataUseCase,
     private val settings: Settings,
-    private val uploadWorkDataUseCase: UploadCachedUsersUseCase,
-    private  val writeWorkUpdatesUseCase: WriteWorkUpdatesUseCase
+    private val application : Application,
 )
     : ViewModel()  {
 
     private val _uiEvent = Channel<String>()
     val uiEvent = _uiEvent.receiveAsFlow()
+
 
     private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
@@ -59,117 +63,51 @@ class SettingsViewModel @Inject constructor(
     val oldestRecordDateString: StateFlow<String> = _oldestRecordDateString.asStateFlow()
 
     fun synchronizeData(){
+        Log.d("sync", "sync called")
+        val workManager = WorkManager.getInstance(application)
+        val workRequest = OneTimeWorkRequestBuilder<SyncAppDataWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
+
+        workManager.enqueueUniqueWork(
+            SyncAppDataWorker.WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
         viewModelScope.launch {
-            _syncStatus.value = SyncStatus.Working("Starting synchronization...")
-            try {
-                forcedUpload()
-                uploadCachedWork()
-                writeCacheUpdateForWork()
-                getUserTypes()
-                getDepartments()
-                getSections()
-                downloadStackData()
-                getUsers()
-                getWorkData()
-                _syncStatus.value = SyncStatus.Complete
-            } catch (e: Exception) {
-                _syncStatus.value = SyncStatus.Error("Synchronization failed: ${e.localizedMessage}")
-            }
-        }
-    }
-    private suspend fun getUserTypes(){
-        downloadAndInsertUserTypesUseCase().collect{
-            when(it){
-                is DownloadState.Loading -> _syncStatus.value = SyncStatus.Working("downloading user types...")
-                is DownloadState.Success-> _uiEvent.send(it.message) // Keep toast for final success
-                is DownloadState.Error -> {
-                    _syncStatus.value = SyncStatus.Error("Error: ${it.message}")
-                    throw RuntimeException(it.message) // Stop process on error
-                }
-            }
-        }
-    }
-    private suspend fun  getDepartments(){
-        downloadAndInsertDepartmentsUseCase().collect{
-            when(it){
-                is DownloadState.Loading -> _syncStatus.value = SyncStatus.Working("downloading departments...")
-                is DownloadState.Success-> _uiEvent.send(it.message)
-                is DownloadState.Error ->{
-                    _syncStatus.value = SyncStatus.Error("Error: ${it.message}")
-                    throw RuntimeException(it.message)
-                }
-            }
-        }
-    }
+            workManager.getWorkInfoByIdLiveData(workRequest.id)
+                .asFlow()
+                .filterNotNull()
+                .collect { workInfo ->
+                    when (workInfo.state) {
+                        WorkInfo.State.ENQUEUED -> {
+                            _syncStatus.value = SyncStatus.Working("⏳ Preparing synchronization...")
+                        }
 
-    private suspend fun  getSections(){
-        downloadAndInsertSectionsUseCase().collect{
-            when(it){
-                is DownloadState.Loading -> _syncStatus.value = SyncStatus.Working("downloading sections...")
-                is DownloadState.Success-> _uiEvent.send(it.message)
-                is DownloadState.Error ->{
-                    _syncStatus.value = SyncStatus.Error("Error: ${it.message}")
-                    throw RuntimeException(it.message)
-                }
-            }
-        }
-    }
-    private suspend fun getUsers(){
-        downloadAndInsertCasualUsersUseCase().collect{
-            when(it){
-                is DownloadState.Loading -> _syncStatus.value = SyncStatus.Working("downloading workers...")
-                is DownloadState.Success-> _uiEvent.send(it.message)
-                is DownloadState.Error ->{
-                    _syncStatus.value = SyncStatus.Error("Error: ${it.message}")
-                    throw RuntimeException(it.message)
-                }
-            }
-        }
-    }
-    private suspend fun downloadStackData() {
-        downloadStackDataUseCase().collect{
-            when(it){
-                is DownloadState.Loading -> _syncStatus.value = SyncStatus.Working("downloading  stacks...")
-                is DownloadState.Success-> _uiEvent.send(it.message)
-                is DownloadState.Error ->{
-                    _syncStatus.value = SyncStatus.Error("Error: ${it.message}")
-                    throw RuntimeException(it.message)
-                }
-            }
-        }
-    }
-    private suspend  fun forcedUpload(){
-        uploadCachedUsersUseCase().collect{
-            when(it){
-                is DownloadState.Error -> {
-                    _syncStatus.value = SyncStatus.Error("Error: ${it.message}")
-                    throw RuntimeException(it.message)
-                }
-                DownloadState.Loading -> {
-                    _syncStatus.value = SyncStatus.Working("Uploading cached users...")
-                }
-                is DownloadState.Success -> {
-                    _uiEvent.send(it.message)
-                }
-            }
-        }
-    }
-    private suspend fun  getWorkData(){
-            downloadAndInsertWorkDataUseCase().collect{
-                 when(it){
-                     is DownloadState.Error -> {
-                         _uiEvent.send(it.message)
-                     }
-                     DownloadState.Loading -> {
-                         _uiEvent.send("downloading work data ...")
-                     }
-                     is DownloadState.Success -> {
-                         _uiEvent.send(it.message)
-                     }
-                 }
-             }
-    }
+                        WorkInfo.State.RUNNING -> {
+                            val progress = workInfo.progress.getInt("Progress", 0)
+                            val message = workInfo.progress.getString("Message") ?: "Synchronizing..."
+                            _syncStatus.value = SyncStatus.Working("🔄 $message ($progress%)")
+                        }
 
+                        WorkInfo.State.SUCCEEDED -> {
+                            _syncStatus.value = SyncStatus.Complete
+                            _uiEvent.send("✅ Synchronization completed successfully")
+                        }
+
+                        WorkInfo.State.FAILED -> {
+                            _syncStatus.value = SyncStatus.Error("❌ Synchronization failed")
+                        }
+
+                        WorkInfo.State.CANCELLED -> {
+                            _syncStatus.value = SyncStatus.Error("❌ Synchronization cancelled")
+                        }
+
+                        else -> Unit
+                    }
+                }
+        }
+    }
     fun onUpdateOffsetMonths(newOffset: Long) {
         viewModelScope.launch {
             settings.putLong(OFFSETMONTH_KEY, newOffset)
@@ -184,25 +122,5 @@ class SettingsViewModel @Inject constructor(
             .withLocale(Locale.getDefault())
         return targetDate.format(formatter)
     }
-    private suspend fun uploadCachedWork(){
-            uploadWorkDataUseCase().collect{
-                when(it){
-                    is DownloadState.Error -> {_uiEvent.send(it.message)}
-                    DownloadState.Loading -> {_uiEvent.send("about to upload... ")}
-                    is DownloadState.Success -> {_uiEvent.send(it.message)}
-                }
 
-            }
-    }
-
-    private suspend fun writeCacheUpdateForWork(){
-        writeWorkUpdatesUseCase().collect{
-            when(it){
-                is DownloadState.Error -> {_uiEvent.send(it.message)}
-                DownloadState.Loading -> {_uiEvent.send("about to update work data... ")}
-                is DownloadState.Success -> {_uiEvent.send(it.message)}
-            }
-
-        }
-    }
 }

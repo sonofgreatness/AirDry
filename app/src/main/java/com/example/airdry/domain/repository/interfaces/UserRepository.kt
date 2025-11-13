@@ -31,6 +31,8 @@ interface UserRepository {
     suspend fun  getAllCachedEmployees():List<AppUser>?
     suspend fun getCasualUserType(casual:String  = CASUAL_NAME):List<UserType>?
     suspend fun getOganization(): Organization?
+    suspend fun getCountOfUsersPendingInsert():Int
+
 
     //====ORGANIZATION MANAGEMENT====
     suspend fun  createOrganization(entity: Organization)

@@ -49,6 +49,10 @@ class UpdateWorkDataWorker(appContext: Context,
         }
         return result
     }
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return createForegroundInfo("Preparing updates...")
+    }
     private fun createForegroundInfo(progressText: String): ForegroundInfo {
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("Work Update")

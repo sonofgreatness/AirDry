@@ -316,6 +316,11 @@ interface  WorkDoneDao {
 
     @Query("SELECT * FROM work_done WHERE is_pending_insert = 1")
     suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
+
+    @Query("SELECT COUNT(*) FROM work_done WHERE is_pending_insert = 1")
+    suspend fun getCountOfWorkDonePendingInsert() :Int
+    @Query("SELECT COUNT(*) FROM work_done WHERE is_pending_update = 1")
+    suspend fun  getCountOfWorkDonePendingUpdate() : Int
 }
 
 

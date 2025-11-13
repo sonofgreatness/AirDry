@@ -17,7 +17,7 @@ class DownloadAndInsertSectionsUseCase
         private val userRepository: UserRepository
     ){
     private val _sections = MutableStateFlow<List<CreateSectDTO>>(emptyList())
-    suspend operator fun invoke(): Flow<DownloadState> = flow {
+    operator fun invoke(): Flow<DownloadState> = flow {
         try {
             emit(DownloadState.Loading)
             _sections.value = emptyList()

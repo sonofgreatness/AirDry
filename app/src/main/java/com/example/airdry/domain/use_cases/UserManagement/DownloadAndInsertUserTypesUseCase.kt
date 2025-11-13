@@ -15,7 +15,7 @@ class DownloadAndInsertUserTypesUseCase @Inject constructor(
     private  val userApi: UserApi
 ){
     private val _userTypes = MutableStateFlow<List<UserTypesDTO>>(emptyList())
-    suspend operator fun invoke(): Flow<DownloadState> = flow {
+   operator fun invoke(): Flow<DownloadState> = flow {
         try {
             emit(DownloadState.Loading)
             _userTypes.value = emptyList()

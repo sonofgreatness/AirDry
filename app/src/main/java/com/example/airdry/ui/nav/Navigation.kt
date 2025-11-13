@@ -137,7 +137,8 @@ fun Navigation(employeeViewModel: EmployeeViewModel,
 
                     Settings(navController, settingsViewModel
                     , darkThemeEnabled = darkTheme,
-                  onToggleTheme = { themeManager.setDarkTheme(it) })
+                  onToggleTheme = { themeManager.setDarkTheme(it) },
+                        myConnectivityObserver)
                 }
                 composable(Screen.SelectEmployee.route) {
                     WorkListScreen(viewModel = workViewModel,navController)

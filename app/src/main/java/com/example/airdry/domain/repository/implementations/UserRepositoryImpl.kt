@@ -33,6 +33,10 @@ class UserRepositoryImpl @Inject constructor(val userManagementDao : UserManagem
     override suspend fun replaceAllUserTypesInTransaction(userTypes: List<UserType>) = userManagementDao.replaceAllUserTypesInTransaction(userTypes)
     override suspend fun getCasualUserType(casual:String)= userManagementDao.getCasualUserType()
     override  suspend fun getOganization(): Organization? = userManagementDao.getOganization()
+    override suspend fun getCountOfUsersPendingInsert(): Int {
+        return userManagementDao.getCountOfUsersPendingInsert()
+    }
+
     //====ORGANIZATION MANAGEMENT====
     override suspend fun  createOrganization(entity: Organization) = userManagementDao.createOrganization(entity)
     override suspend fun  deleteAllOrganizations() =userManagementDao.deleteAllOrganizations()

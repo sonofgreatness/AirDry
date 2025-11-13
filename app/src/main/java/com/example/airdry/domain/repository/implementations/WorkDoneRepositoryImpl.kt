@@ -71,4 +71,6 @@ override      suspend fun  getCachedWorkInsert():List<WorkDone>
    override suspend fun unCacheWorkDoneForUpdate(workDoneId: UUID) = workDoneDao.unCacheWorkDoneForUpdate(workDoneId)
     override  suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks> = workDoneDao.getCachedWork()
 
+   override suspend fun getCountOfWorkDonePendingInsert():Int = workDoneDao.getCountOfWorkDonePendingInsert()
+   override suspend fun  getCountOfWorkDonePendingUpdate() :Int  = workDoneDao.getCountOfWorkDonePendingUpdate()
 }

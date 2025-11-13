@@ -50,6 +50,10 @@ class UploadUsersWorker(
             }
             return result
         }
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return createForegroundInfo("Starting upload...")
+    }
         private fun createForegroundInfo(progressText: String): ForegroundInfo {
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("User Upload")

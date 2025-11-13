@@ -1,5 +1,6 @@
 package com.example.airdry.domain.repository.interfaces
 
+import androidx.room.Query
 import com.example.airdry.data.dto.Common.PaginatedResponse
 import com.example.airdry.data.dto.Work.WorkDaySummaryDTO
 import com.example.airdry.data.dto.WorkDataFiltersDTO
@@ -50,4 +51,6 @@ interface WorkDoneRepository {
     suspend fun unCacheWorkDoneForUpdate(workDoneId: UUID)
     suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
 
+    suspend fun getCountOfWorkDonePendingInsert() :Int
+    suspend fun  getCountOfWorkDonePendingUpdate() :Int
 }

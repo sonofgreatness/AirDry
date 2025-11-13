@@ -12,6 +12,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.UserManagement.Department
 import com.example.airdry.database.Entities.UserManagement.NestedAppUser
@@ -42,9 +43,13 @@ import javax.inject.Inject
 @HiltViewModel
 class EmployeeViewModel
     @Inject constructor(private val application: Application,
-                        private val repository: UserRepository):
+                        private val repository: UserRepository,
+        private  val connectivityObserver: MyConnectivityObserver):
     ViewModel() {
 
+
+
+     val isServerReachable = connectivityObserver.isServerReachable
     private val _filteredEmployees = MutableLiveData<List<NestedAppUser>>()
     val filteredEmployees :LiveData<List<NestedAppUser>>
         get() = _filteredEmployees
