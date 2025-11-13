@@ -4,7 +4,9 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.util.Log
+import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.example.airdry.domain.workers.factories.MyNewFactory
 import com.example.airdry.domain.workers.factories.MyWorkerFactory
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL
 import com.example.airdry.util.Constants.Companion.DOWNLOAD_FILE_CHANNEL_DESCRIPTION
@@ -17,38 +19,11 @@ import javax.inject.Inject
 @HiltAndroidApp
 class AirDryApplication: Application(), Configuration.Provider {
 
-    @Inject lateinit var myWorkerFactory: MyWorkerFactory
+    @Inject lateinit var workerFactory: MyNewFactory
 
-    override fun onCreate() {
-        super.onCreate()
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            Log.d("met1", "channel created")
-            val channel = NotificationChannel(
-                GENERATE_FILE_CHANNEL,
-                GENERATE_FILE_CHANNEL_DESCRIPTION,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Used for foreground notifications while generating Excel reports."
-            }
-            val channel2 = NotificationChannel(
-                DOWNLOAD_FILE_CHANNEL,
-                DOWNLOAD_FILE_CHANNEL_DESCRIPTION,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = DOWNLOAD_FILE_CHANNEL_DESCRIPTION_MAIN
-            }
-
-            val notificationManager = getSystemService(NotificationManager::class.java)
-
-            notificationManager.createNotificationChannel(channel)
-            notificationManager.createNotificationChannel(channel2)
-        }
-    }
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder()
-            .setWorkerFactory(myWorkerFactory)
-            .setMinimumLoggingLevel(Log.DEBUG)
+    override fun getWorkManagerConfiguration() =
+        Configuration.Builder()
+            .setWorkerFactory(workerFactory)
             .build()
-    }
 
 }

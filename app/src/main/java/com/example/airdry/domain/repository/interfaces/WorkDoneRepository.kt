@@ -1,6 +1,5 @@
 package com.example.airdry.domain.repository.interfaces
 
-import androidx.room.Transaction
 import com.example.airdry.data.dto.Common.PaginatedResponse
 import com.example.airdry.data.dto.Work.WorkDaySummaryDTO
 import com.example.airdry.data.dto.WorkDataFiltersDTO
@@ -37,10 +36,18 @@ interface WorkDoneRepository {
         pageSize: Int = DEFAULT_PAGE_SIZE,
         filters: WorkDataFiltersDTO
     ): PaginatedResponse<WorkDaySummaryDTO>?
-    suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
+    suspend fun  getCachedWorkInsert():List<WorkDone>
     suspend fun deleteWorkDoneChildren(workDoneId : UUID)
     suspend  fun deleteWorkById(workDoneId: UUID)
     suspend fun unCacheForInsertAllWork()
     suspend fun getCachedUpdateWork():List<WorkDoneWithUsersAndStacks>
     suspend fun unCacheForUpdateAllWork()
+
+    suspend fun getPendingWorkDone(): List<WorkDone>
+    suspend fun getUserIdsForWorkDone(workDoneId: UUID): List<UUID>
+    suspend fun getStackIdsForWorkDone(workDoneId: UUID): List<UUID>
+    suspend fun unCacheWorkDoneForInsert(workDoneId: UUID)
+    suspend fun unCacheWorkDoneForUpdate(workDoneId: UUID)
+    suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
+
 }

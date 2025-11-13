@@ -19,7 +19,6 @@ import com.example.airdry.domain.REST_API.interfaces.WorkApi
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
-import com.example.airdry.domain.use_cases.WorkManagement.UploadWorkDataUseCase
 import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE
 import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import com.example.airdry.util.UtilityFunctions.Companion.toUUIDOrNull
@@ -42,8 +41,7 @@ class WorkViewModel @Inject constructor(
     private val myConnectivityObserver: MyConnectivityObserver,
     private val sessionManager: SessionManager,
     private val workApi: WorkApi,
-    private val organizationApi: OrganizationApi,
-    private  val uploadWorkDataUseCase: UploadWorkDataUseCase
+    private val organizationApi: OrganizationApi
 ) : ViewModel()
 {
 
@@ -71,6 +69,10 @@ class WorkViewModel @Inject constructor(
     private val _sections = MutableStateFlow<List<Section>>(emptyList())
     val  sections: StateFlow<List<Section>> = _sections
 
+    private val _viewModeOnly = MutableStateFlow<Boolean>(false)
+    val viewModeOnly: StateFlow<Boolean> get() = _viewModeOnly
+
+
     private val _uiEvent = Channel<String>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -86,11 +88,20 @@ class WorkViewModel @Inject constructor(
             }
         }
     }
+    fun setViewMode(value:Boolean){
+        _viewModeOnly.value  = value
+    }
 
     fun clearAllFilters(){
         _filterDto.value = WorkDataFiltersDTO()
         _totalPages.value = DEFAULT_PAGE
         _currentPage.value = DEFAULT_PAGE // <-- RESET CURRENT PAGE
+        populateDailyWorkSummaries()
+    }
+    fun refreshData(){
+        _totalPages.value = DEFAULT_PAGE
+        _currentPage.value = DEFAULT_PAGE // <-- RESET CURRENT PAGE
+        _dailyWorkSummaries.value = emptyList()
         populateDailyWorkSummaries()
     }
 
@@ -150,22 +161,24 @@ class WorkViewModel @Inject constructor(
 
     }
 
-    fun loadNextPage(pageSize: Int = DEFAULT_PAGE_SIZE) {
+    fun loadNextPage(pageSize: Int = DEFAULT_PAGE_SIZE, viewModeOnly: Boolean =_viewModeOnly.value) {
         if (_currentPage.value < _totalPages.value) {
             _currentPage.value++
-            populateDailyWorkSummaries(pageSize)
+            populateDailyWorkSummaries(pageSize, viewModeOnly)
         }
     }
-    fun populateDailyWorkSummaries(pageSize: Int = DEFAULT_PAGE_SIZE) {
+    fun populateDailyWorkSummaries(pageSize: Int = DEFAULT_PAGE_SIZE, viewModeOnly:Boolean =_viewModeOnly.value) {
         val page  = _currentPage.value
         if (page > _totalPages.value) {
             return
         }
         viewModelScope.launch {
-            if (isNetworkAvailable.value && isOnlineLoggedIn.value)
+            if (isNetworkAvailable.value && isOnlineLoggedIn.value && viewModeOnly)
             {
+                Log.d("load data", "server")
             getDataFromServer(page, pageSize)
             }else{
+                Log.d("load data", "local")
                 getDataLocally(page, pageSize)
             }
         }
@@ -198,7 +211,6 @@ class WorkViewModel @Inject constructor(
       }catch (e: Exception){
           Log.d("getDataLocally", "failed ${e.message}")
       }
-
      }
 
     fun populateDepartmentsAndSections(){
@@ -213,7 +225,6 @@ class WorkViewModel @Inject constructor(
             }
         }
     }
-
     private suspend fun pickDepartmentDataSource(isNetworkAvailable: Boolean = false,isOnlineLoggedIn: Boolean) {
         try{
             if (isNetworkAvailable &&isOnlineLoggedIn){

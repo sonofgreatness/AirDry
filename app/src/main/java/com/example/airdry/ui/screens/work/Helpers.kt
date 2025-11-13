@@ -129,7 +129,24 @@ fun StackDropdown(
                 DropdownMenuItem(
                     text = {
                         //Text("${stack.stack.displayName} (${stack.stackCode.displayCode})")
-                          Text("${stack.printDimensionsAndVolume()}")
+                        Text(
+                            text = buildString {
+                                val safeDisplayName = stack.stack.displayName.ifBlank { "Unnamed Stack" }
+                                val safeStackCode = stack.stackCode.displayCode.ifBlank { "N/A" }
+                                val safeStackCodeName = stack.stackCode.displayName.ifBlank { "N/A" }
+
+                                // Header: Stack name
+                                append("📦 $safeDisplayName\n")
+
+                                // Subheader: Stack code + name
+                                append("🆔 $safeStackCode - $safeStackCodeName\n")
+
+                                // Dimensions and volume
+                                append("📏 Dims: ${"%.3f".format(stack.stack.length)}×${"%.3f".format(stack.stack.height)}×${"%.3f".format(stack.stack.thickness)}\n")
+                                append("🔢 Pieces: ${stack.stack.numberOfPieces}  |  🔹 Cubes: ${"%.2f".format(stack.stack.volume ?: 0.0)} m³")
+                            },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                            },
                     onClick = {
                         onSelect(stack)

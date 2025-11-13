@@ -49,6 +49,9 @@ android {
         compose = true
         buildConfig = true
     }
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
@@ -91,8 +94,8 @@ dependencies {
     implementation (libs.commons.compress)
 
     // Hilt + WorkManager
-    implementation ("androidx.hilt:hilt-work:1.0.0")
-    kapt ("androidx.hilt:hilt-compiler:1.0.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
     // WorkManager
     implementation ("androidx.work:work-runtime-ktx:2.7.1")
 

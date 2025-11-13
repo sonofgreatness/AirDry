@@ -65,12 +65,10 @@ abstract class MainDatabase :RoomDatabase() {
                     MainDatabase::class.java,
                     Constants.LOCAL_DATABASE_NAME
 
-                )
-                    .addCallback(
+                ).addCallback(
                         callback()
                     )
                     .build()
-
                 INSTANCE = instance
                 return instance
             }

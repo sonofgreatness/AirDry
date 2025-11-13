@@ -43,7 +43,6 @@ class WorkApiImpl(    private  val client: HttpClient
                 }
                 setBody(filters)
             }
-            println("resp: ${resp.bodyAsText()}")
             return resp.body()
         }catch(e: Exception){
             e.printStackTrace()

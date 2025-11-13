@@ -74,7 +74,7 @@ interface  WorkDoneDao {
      suspend fun  getAllWorkDoneWithUsersAndStack():List<WorkDoneWithUsersAndStacks>
 
      @Query("SELECT * FROM work_done WHERE is_pending_insert = 1")
-     suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
+     suspend fun  getCachedWorkInsert():List<WorkDone>
 
     @Transaction
     @Query("SELECT * FROM work_done WHERE work_date BETWEEN :startDate AND :endDate")
@@ -276,13 +276,29 @@ interface  WorkDoneDao {
     suspend  fun deleteWorkById(workDoneId: UUID)
     @Transaction
     suspend fun unCacheForInsertAllWork(){
-        val cached = getCachedWork()
+        val cached = getCachedWorkInsert()
         cached.forEach {
-            updateWork(it.workDone.copy(isPendingInsert = false))
+            updateWork(it.copy(isPendingInsert = false))
         }
     }
-    @Query("SELECT * FROM work_done WHERE is_pending_update = 1")
+    @Transaction
+    @Query("""SELECT * FROM work_done WHERE is_pending_update = 1
+""")
     suspend fun getCachedUpdateWork():List<WorkDoneWithUsersAndStacks>
+
+
+    @Query("SELECT * FROM work_done WHERE is_pending_update = 1")
+    suspend fun getPendingWorkDone(): List<WorkDone>
+
+
+    @Query("SELECT app_user_id FROM work_done_user WHERE work_done_id = :workDoneId")
+    suspend fun getUserIdsForWorkDone(workDoneId: UUID): List<UUID>
+
+    @Query("SELECT stack_id FROM work_done_stack WHERE work_done_id = :workDoneId")
+    suspend fun getStackIdsForWorkDone(workDoneId: UUID): List<UUID>
+
+
+
 
     @Transaction
     suspend fun unCacheForUpdateAllWork(){
@@ -292,7 +308,18 @@ interface  WorkDoneDao {
         }
     }
 
+    @Query("UPDATE work_done SET is_pending_insert =0 WHERE id =:workDoneId")
+    suspend fun unCacheWorkDoneForInsert(workDoneId: UUID)
+
+    @Query("UPDATE work_done SET is_pending_update =0 WHERE id =:workDoneId")
+    suspend fun unCacheWorkDoneForUpdate(workDoneId: UUID)
+
+    @Query("SELECT * FROM work_done WHERE is_pending_insert = 1")
+    suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
 }
+
+
+
 
 
 

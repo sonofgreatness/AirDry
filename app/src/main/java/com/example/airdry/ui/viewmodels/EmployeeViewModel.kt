@@ -6,7 +6,12 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.UserManagement.Department
 import com.example.airdry.database.Entities.UserManagement.NestedAppUser
@@ -19,11 +24,16 @@ import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertDepar
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertSectionsUseCase
 import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertUserTypesUseCase
 import com.example.airdry.domain.use_cases.UserManagement.UploadCachedUsersUseCase
+import com.example.airdry.domain.workers.UploadUsersWorker
+import com.example.airdry.ui.screens.workers.WorkerCard
 import com.example.airdry.util.operational_states.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -32,15 +42,12 @@ import javax.inject.Inject
 @HiltViewModel
 class EmployeeViewModel
     @Inject constructor(private val application: Application,
-                        private val repository: UserRepository,
-                        private val uploadCachedUsersUseCase: UploadCachedUsersUseCase):
+                        private val repository: UserRepository):
     ViewModel() {
 
     private val _filteredEmployees = MutableLiveData<List<NestedAppUser>>()
     val filteredEmployees :LiveData<List<NestedAppUser>>
         get() = _filteredEmployees
-    private val _uiEvent = Channel<String>()
-    val uiEvent = _uiEvent.receiveAsFlow()
 
     private val  _useTypes  = MutableStateFlow<List<UserType>> (emptyList())
     val useTypes: StateFlow<List<UserType>> = _useTypes
@@ -100,12 +107,7 @@ class EmployeeViewModel
             repository.createEmployee(entity)
         }
     }
-     fun editEmployee(entity: AppUser) {
-        viewModelScope.launch {
-            Toast.makeText(application, "Employee Edited", Toast.LENGTH_SHORT).show()
-            repository.editEmployee(entity)
-        }
-    }
+
     fun updateFilteredEmployees(searchTerm :String){
     viewModelScope.launch{
         repository.getFilteredEmployees(searchTerm).let{
@@ -130,21 +132,31 @@ class EmployeeViewModel
      }
     }
     fun forcedUpload(){
+        val workRequest = OneTimeWorkRequestBuilder<UploadUsersWorker>().build()
+        val workManager = WorkManager.getInstance(application)
+
+        workManager.enqueueUniqueWork(
+            UploadUsersWorker.WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
         viewModelScope.launch {
-            uploadCachedUsersUseCase().collect{
-                when(it){
-                    is DownloadState.Error -> {
-                        _uiEvent.send(it.message)
-                    }
-                    DownloadState.Loading -> {
-                        _uiEvent.send("Updating users...")
-                    }
-                    is DownloadState.Success -> {
-                        _uiEvent.send(it.message)
+            workManager.getWorkInfoByIdLiveData(workRequest.id)
+                .asFlow()
+                .filterNotNull()
+                .map { it.state }
+                .distinctUntilChanged()
+                .collect { state ->
+                    when (state) {
+                        WorkInfo.State.SUCCEEDED -> loadAllEmployees()
+                        WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
+                            Log.d("forcedUpload", "Upload failed or cancelled")
+                        }
+                        else -> { /* do nothing */ }
                     }
                 }
-            }
         }
+
     }
    fun reloadSectionsByDepartment(departmentId :UUID){
        viewModelScope.launch {

@@ -1,20 +1,29 @@
 package com.example.airdry.ui.screens.work
 
 import android.widget.Toast
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -36,7 +45,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -50,105 +62,134 @@ const val STACKS_INDEX = 2
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkForm(
-    viewModel: RecordWorkViewModel, // Use the shared ViewModel
+    viewModel: RecordWorkViewModel,
     onSubmit: (WorkFormState) -> Unit,
-    onDelete: (() -> Unit)? = null, // Only available in Edit mode
+    onDelete: (() -> Unit)? = null,
     isEditMode: Boolean,
     navController: NavController
 ) {
-    // Collect the state from the ViewModel
     val formState by viewModel.formState.collectAsState()
+    val updateState by viewModel.updateWorkDone.collectAsState()
     val filteredEmployees by viewModel.filteredEmployees.observeAsState(emptyList())
     val focusManager = LocalFocusManager.current
-    // --- Local UI States ---
+    val context = LocalContext.current
+
     var showDatePicker by remember { mutableStateOf(false) }
     var showAlertDialog by remember { mutableStateOf(false) }
 
-    val listState = rememberLazyListState() // State for the LazyColumn
-    val scope = rememberCoroutineScope() // Coroutine scope for scrolling
+    val pagerState = rememberPagerState(pageCount = { 3 }) // 3 pages
 
+    // Scroll states for each page
+    val scrollState0 = rememberScrollState()
+    val scrollState1 = rememberScrollState()
+    val scrollState2 = rememberScrollState()
 
-
-    val context =LocalContext.current
+    // Side effects
+    LaunchedEffect(Unit) { viewModel.populateStacksAndWorkerLists() }
     LaunchedEffect(Unit) {
-        viewModel.uiEvent.collect {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        }
-    }
-    // Initial Load
-    LaunchedEffect(Unit) {
-        viewModel.populateStacksAndWorkerLists()
+        viewModel.uiEvent.collect { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
     }
 
-
-    // Use a Surface or Column as the main container
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // --- Custom Top Bar (Always visible) ---
+            // --- Top AppBar ---
             TopAppBar(
                 title = { Text(if (isEditMode) "Edit Work Entry" else "Record New Work") },
                 actions = {
-                    if (isEditMode && onDelete != null) {
+                    if (isEditMode && onDelete != null && updateState?.isPendingInsert == true) {
                         IconButton(onClick = onDelete) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete Work")
                         }
                     }
-                },
-                navigationIcon = {
-                    // Example: IconButton(onClick = { navigator.popBackStack() }) { Icon(Icons.Default.ArrowBack, "Back") }
                 }
             )
-             LazyColumn(
+
+            // --- Pager Section ---
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 16.dp)
-                    // 1. Detect taps anywhere in the LazyColumn area
-                    .pointerInput(Unit) {
-                        detectTapGestures(onTap = {
-                            // 2. Clear focus when a tap occurs, dismissing the keyboard
-                            focusManager.clearFocus()
-                        })
-                    },
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp) ) {
-                item {
-                    WorkDetailsSection(
-                        formState = formState,
-                        onUpdateDate = { viewModel.updateWorkDate(it) },
-                        onShowDatePicker = {shouldShow ->
-                            showDatePicker = shouldShow }
+                    .fillMaxWidth()
+                    .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
+            ) {
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                    flingBehavior = PagerDefaults.flingBehavior(
+                        state = pagerState,
+                        snapAnimationSpec = spring()
                     )
-                }
-                item {
-                    WorkersSelectionSection(
-                        formState = formState,
-                        filteredEmployees = filteredEmployees,
-                        onSearch = { viewModel.updateFilteredEmployees(it) },
-                        onToggleUser = { user -> viewModel.toggleUserSelection(user) }
-                    )
+                ) { page ->
+                    when (page) {
+                        0 -> WorkDetailsSection(
+                            formState,
+                            onUpdateDate = { viewModel.updateWorkDate(it) },
+                            onShowDatePicker = { showDatePicker = it }
+                        )
+                        1 -> WorkersSelectionSection(
+                            formState,
+                            filteredEmployees,
+                            onSearch = { viewModel.updateFilteredEmployees(it) },
+                            onToggleUser = { viewModel.toggleUserSelection(it) }
+                        )
+                        2 -> StacksSelectionSection(
+                            formState,
+                            viewModel,
+                            onAddStack = { viewModel.addStackSelection(it) },
+                            onRemoveStack = { viewModel.removeStackSelection(it) }
+                        )
+                    }
                 }
 
-                // 3. Stacks Selection Section (Can be repeated, requires volume)
-                item {
-                    StacksSelectionSection(
-                        formState = formState,
-                        viewModel,
-                        onAddStack = { stack -> viewModel.addStackSelection(stack) },
-                        onRemoveStack = { item -> viewModel.removeStackSelection(item) }
-                    )
+                // --- Scroll hint ---
+                val scrollState = when (pagerState.currentPage) {
+                    0 -> scrollState0
+                    1 -> scrollState1
+                    2 -> scrollState2
+                    else -> null
+                }
+
+                scrollState?.let {
+                    if (it.value < it.maxValue) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .align(Alignment.BottomCenter)
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+                                        )
+                                    )
+                                )
+                        )
+
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Scroll down",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            modifier = Modifier
+                                .size(36.dp)
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                        )
+                    }
                 }
             }
+
+            // --- Bottom Submit Button ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface) // Important: Add background to cover content below
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(16.dp)
-                    .imePadding(), // Handles keyboard pushing the content up
+                    .imePadding(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(
-                    onClick = { showAlertDialog =true },
+                    onClick = { showAlertDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = formState.selectedUsers.isNotEmpty() && formState.selectedStacks.isNotEmpty()
                 ) {
@@ -157,37 +198,32 @@ fun WorkForm(
             }
         }
     }
+
+    // --- Date Picker ---
     if (showDatePicker) {
-        val dateState = rememberDatePickerState(
-            initialSelectedDateMillis = formState.workDate
-        )
+        val dateState = rememberDatePickerState(initialSelectedDateMillis = formState.workDate)
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        dateState.selectedDateMillis?.let { millis ->
-                            viewModel.updateWorkDate(millis)
-                        }
-                        showDatePicker = false
-                    }
-                ) { Text("OK") }
+                TextButton(onClick = {
+                    dateState.selectedDateMillis?.let { viewModel.updateWorkDate(it) }
+                    showDatePicker = false
+                }) { Text("OK") }
             }
-        ) {
-            DatePicker(state = dateState)
-        }
+        ) { DatePicker(state = dateState) }
     }
-    if (showAlertDialog){
+
+    // --- Confirmation Dialog ---
+    if (showAlertDialog) {
         WorkConfirmationDialog(
-            onConfirmSave =  {
+            onConfirmSave = {
                 onSubmit(formState)
-                             showAlertDialog = false
+                showAlertDialog = false
                 viewModel.clearFormState()
                 navController.navigate(Screen.SelectEmployee.route)
-                             },
-            onDismiss = {showAlertDialog = false},
+            },
+            onDismiss = { showAlertDialog = false },
             state = formState
         )
     }
-
 }

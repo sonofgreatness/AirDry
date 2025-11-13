@@ -57,12 +57,7 @@ fun WorkersListScreen(
     viewModel: EmployeeViewModel
 ) {
 
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        viewModel.uiEvent.collect {
-            Toast.makeText(context,it, Toast.LENGTH_SHORT).show()
-        }
-    }
+
     LaunchedEffect(Unit) {
 
         viewModel.updateFilteredEmployees("")

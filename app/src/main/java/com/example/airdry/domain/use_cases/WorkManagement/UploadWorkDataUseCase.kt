@@ -8,49 +8,74 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import  android.util.Log
+import com.example.airdry.util.operational_states.ApiResponse
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.catch
+
 class UploadWorkDataUseCase @Inject constructor(
     private val workDoneRepo : WorkDoneRepository,
     private val workApi: WorkApi
-) {
-    operator  fun invoke() :Flow<DownloadState> =flow{
-        try {
+)  {
 
-            emit(DownloadState.Loading)
-            Log.d("upload work", "Loading")
-            val cachedWork : List<CreateWorkDoneDTO> = getCachedWork()
-            if(cachedWork.isNotEmpty()) {
-                Log.d("upload work", "cache not empty")
-               uploadCachedData(cachedWork)
-                workDoneRepo.unCacheForInsertAllWork()
+    operator fun invoke(): Flow<DownloadState> = flow {
+        emit(DownloadState.Loading)
+
+        val cachedWork = runCatching { getCachedWork() }
+            .getOrElse {
+                emit(DownloadState.Error("Failed to load cached work: ${it.message}"))
+                return@flow
             }
-            emit(DownloadState.Success("work data uploaded successfully"))
 
-        }catch (e: Exception){
-            Log.d("upload work", "reachd exception ${e.message}")
-            emit(DownloadState.Error("failed to upload work data ${e.message}"))
+        if (cachedWork.isEmpty()) {
+            emit(DownloadState.Success("No work data to upload"))
+            return@flow
         }
+
+        // Upload concurrently
+        val uploadResults = coroutineScope {
+            cachedWork.map { work ->
+                async {
+                    when (val res = workApi.createWork(work)) {
+                        is ApiResponse.Created -> Result.success(work)
+                        is ApiResponse.Success ->{
+                            workDoneRepo.unCacheWorkDoneForInsert(work.id)
+                            Log.d("Transaction create", "success")
+                            Result.success(work)
+
+                        }
+                        is ApiResponse.Error ->{
+                            Log.d("Transaction create", "error")
+                            Result.failure(Exception(res.message))}
+                    }
+                }
+            }.awaitAll()
+        }
+        // Check for failures
+        val failed = uploadResults.filter { it.isFailure }
+        if (failed.isEmpty()) {
+            // Only clear cache if ALL succeeded
+            workDoneRepo.unCacheForInsertAllWork()
+            emit(DownloadState.Success("All work data uploaded successfully"))
+        } else {
+            val failedCount = failed.size
+            emit(
+                DownloadState.Error(
+                    "Uploaded partially: ${cachedWork.size - failedCount} succeeded, $failedCount failed"
+                )
+            )
+        }
+
+    }.catch { e ->
+        emit(DownloadState.Error("Failed to upload work data: ${e.message}"))
     }
 
-
-    private suspend fun getCachedWork() :List<CreateWorkDoneDTO>{
-        try {
-           return  workDoneRepo.getCachedWork().map {
-               it.generateCreateWorkDoneDTO()
-           }
-
-        }catch (e: Exception){
-            Log.d("getCachedWork", "failed to get cached work ${e.message}")
-            return emptyList()
+    private suspend fun getCachedWork(): List<CreateWorkDoneDTO> =
+        runCatching {
+            workDoneRepo.getCachedWork().map { it.generateCreateWorkDoneDTO() }
+        }.getOrElse {
+            Log.e("getCachedWork", "Error fetching cached work: ${it.message}")
+            emptyList()
         }
-    }
-    private  suspend fun uploadCachedData(cachedWork:List<CreateWorkDoneDTO>){
-        try {
-            cachedWork.forEach { workApi.createWork(it)
-           }
-        }catch (e: Exception){
-            Log.d("upload work", "upload exception")
-            Log.d("uploadCachedData", "failed to upload cached data ${e.message}")
-            throw e
-        }
-    }
 }

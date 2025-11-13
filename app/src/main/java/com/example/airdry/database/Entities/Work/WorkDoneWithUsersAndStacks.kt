@@ -1,5 +1,6 @@
 package com.example.airdry.database.Entities.Work
 
+import android.util.Log
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
@@ -45,6 +46,9 @@ data class WorkDoneWithUsersAndStacks(
             stacksList
         )
 
+        Log.d("w_2", "stacks pure ${stacksList.size}")
+        Log.d("w_2", "users pure ${workersList.size}")
+        Log.d("w_2", "stacks.size ${stacksList.size}")
         return CreateWorkDoneDTO(
             id = workDone.id,
             workDate = workDone.workDate,

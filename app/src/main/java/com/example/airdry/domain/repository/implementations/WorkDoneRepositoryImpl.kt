@@ -9,8 +9,6 @@ import com.example.airdry.database.Entities.Work.WorkDoneStack
 import com.example.airdry.database.Entities.Work.WorkDoneUser
 import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
-import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE
-import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import java.sql.Timestamp
 import java.util.UUID
 import javax.inject.Inject
@@ -58,12 +56,19 @@ class WorkDoneRepositoryImpl
         filters: WorkDataFiltersDTO
     ): PaginatedResponse<WorkDaySummaryDTO>? {
         return workDoneDao.getDailyWorkSummaries(page,pageSize,filters)}
-override      suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks>
-= workDoneDao.getCachedWork()
+override      suspend fun  getCachedWorkInsert():List<WorkDone>
+= workDoneDao.getCachedWorkInsert()
 
    override suspend fun deleteWorkDoneChildren(workDoneId : UUID) = workDoneDao.deleteWorkDoneChildren(workDoneId)
    override suspend   fun deleteWorkById(workDoneId: UUID) = workDoneDao.deleteWorkById(workDoneId)
    override suspend fun unCacheForInsertAllWork() = workDoneDao.unCacheForInsertAllWork()
    override suspend fun getCachedUpdateWork():List<WorkDoneWithUsersAndStacks> = workDoneDao.getCachedUpdateWork()
    override suspend fun unCacheForUpdateAllWork() = workDoneDao.unCacheForUpdateAllWork()
+   override suspend fun getPendingWorkDone(): List<WorkDone> = workDoneDao.getPendingWorkDone()
+   override suspend fun getUserIdsForWorkDone(workDoneId: UUID): List<UUID> = workDoneDao.getUserIdsForWorkDone(workDoneId)
+   override suspend fun getStackIdsForWorkDone(workDoneId: UUID): List<UUID> = workDoneDao.getStackIdsForWorkDone(workDoneId)
+    override suspend fun unCacheWorkDoneForInsert(workDoneId: UUID) = workDoneDao.unCacheWorkDoneForInsert(workDoneId)
+   override suspend fun unCacheWorkDoneForUpdate(workDoneId: UUID) = workDoneDao.unCacheWorkDoneForUpdate(workDoneId)
+    override  suspend fun  getCachedWork():List<WorkDoneWithUsersAndStacks> = workDoneDao.getCachedWork()
+
 }

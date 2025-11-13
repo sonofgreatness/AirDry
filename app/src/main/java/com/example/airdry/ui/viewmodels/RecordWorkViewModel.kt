@@ -1,10 +1,18 @@
 package com.example.airdry.ui.viewmodels
 
+import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import com.example.airdry.ConnectivityObserver
+import com.example.airdry.MyConnectivityObserver
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.database.Entities.Stack.NestedStack
 import com.example.airdry.database.Entities.UserManagement.NestedAppUser
@@ -16,11 +24,17 @@ import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.domain.repository.interfaces.StackRepository
 import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
+import com.example.airdry.domain.workers.UpdateWorkDataWorker
+import com.example.airdry.domain.workers.UploadUsersWorker
+import com.example.airdry.domain.workers.UploadWorkDataWorker
 import com.example.airdry.util.UtilityFunctions.Companion.toUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -30,10 +44,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RecordWorkViewModel @Inject constructor(
+    private  val application: Application,
     private val workDoneRepo: WorkDoneRepository,
     private val stackRepo: StackRepository,
     private val userManagementRepo: UserRepository,
     private  val sessionManager: SessionManager,
+    private  val connectivityObserver: MyConnectivityObserver
 ):ViewModel() {
 
     // Use to provide workers select list
@@ -51,7 +67,9 @@ class RecordWorkViewModel @Inject constructor(
     private val _uiEvent = Channel<String>()
     val uiEvent = _uiEvent.receiveAsFlow()
     private  val _updateWorkDone = MutableStateFlow<WorkDone?>(null)
+    val updateWorkDone : StateFlow<WorkDone?> = _updateWorkDone
 
+    val isServerReachable = connectivityObserver.isServerReachable
 
 
     fun populateStacksAndWorkerLists(){
@@ -153,21 +171,84 @@ class RecordWorkViewModel @Inject constructor(
                val workDone =  generateWorkDataFromState(state)
                val workDoneUsers = generateWorkDoneUsers(state.selectedUsers,workDone.id)
                val workDoneStacks = generateWorkDoneStacks(listOfStacks, workDone.id)
-               Log.d("process work", "middle")
+               Log.d("process work", "start insert")
                insertWork(workDone,workDoneUsers,workDoneStacks)
-               Log.d("process work", "end")
-           }catch (e: Exception){
+                }catch (e: Exception){
                Log.d("process work", "process work failed ${e.message}")
            }
         }
+    }
 
+
+    fun forcedUpload(){
+        val workRequest = OneTimeWorkRequestBuilder<UploadWorkDataWorker>().build()
+        val workManager = WorkManager.getInstance(application)
+
+        workManager.enqueueUniqueWork(
+            UploadWorkDataWorker.WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
+        viewModelScope.launch {
+            try {
+                workManager.getWorkInfoByIdLiveData(workRequest.id)
+                    .asFlow()
+                    .filterNotNull()
+                    .map { it.state }
+                    .distinctUntilChanged()
+                    .collect { state ->
+                        when (state) {
+                            WorkInfo.State.SUCCEEDED -> {
+                                Log.d("upload work", "suck seed")
+                            }
+                            WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
+                                Log.d("forcedUpload", "Upload failed or cancelled")
+                            }
+                            else -> { /* do nothing */ }
+                        }
+                    }
+            }catch (e: Exception){
+                Log.d("forcedUpload worker", "failed due to ${e.message}")
+            }
+        }
+    }
+    fun forcedUpdate(){
+        val workRequest = OneTimeWorkRequestBuilder<UpdateWorkDataWorker>().build()
+        val workManager = WorkManager.getInstance(application)
+
+        workManager.enqueueUniqueWork(
+            UpdateWorkDataWorker.WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
+        viewModelScope.launch {
+            try {
+                workManager.getWorkInfoByIdLiveData(workRequest.id)
+                    .asFlow()
+                    .filterNotNull()
+                    .map { it.state }
+                    .distinctUntilChanged()
+                    .collect { state ->
+                        when (state) {
+                            WorkInfo.State.SUCCEEDED -> {
+                                Log.d("update work", "suck seed")
+                            }
+                            WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
+                                Log.d("forced update", "Update failed or cancelled")
+                            }
+                            else -> { /* do nothing */ }
+                        }
+                    }
+            }catch (e: Exception){
+                Log.d("forced Update worker", "failed due to ${e.message}")
+            }
+        }
     }
     private  suspend fun  generateWorkDataFromState(state: WorkFormState) :WorkDone{
         var profile:Profile? = null
         sessionManager.userId?.let {
            profile=  userManagementRepo.getProfileById(it.toUUID())
         }
-
         return  WorkDone(
             id  = UUID.randomUUID(),
             workDate = Timestamp(state.workDate),
@@ -267,6 +348,7 @@ class RecordWorkViewModel @Inject constructor(
  fun updateExistingWork(state: WorkFormState){
  viewModelScope.launch {
     try {
+        Log.d("updateWork", "callled 0")
         var profile : Profile? =null
         val profileId = sessionManager.userId?.toUUID()
         if (profileId!=null)
@@ -288,6 +370,7 @@ class RecordWorkViewModel @Inject constructor(
         val workDoneUsers = generateWorkDoneUsers(state.selectedUsers,workDone.id)
         val workDoneStacks = generateWorkDoneStacks(listOfStacks, workDone.id)
         updateWork(workDone, workDoneUsers, workDoneStacks)
+        Log.d("updateWork", "finished ")
     }catch (e: Exception){
         Log.d("updateExistingWork", "failed due to ${e.message}")
     }
@@ -300,7 +383,7 @@ class RecordWorkViewModel @Inject constructor(
         workDoneStacks: List<WorkDoneStack>
     ) {
         try {
-            Log.d("updateWork","start users ${workDoneUsers.size} stacks ${workDoneStacks.size}")
+            Log.d("updateWork","start users ${workDoneUsers.size} stacks ${workDoneStacks.size} workDone ${workDone.isPendingUpdate}")
             workDoneRepo.updateWork(workDone)
             workDoneRepo.deleteWorkDoneChildren(workDone.id)
             workDoneUsers.forEach {
@@ -309,6 +392,7 @@ class RecordWorkViewModel @Inject constructor(
             workDoneStacks.forEach {
                 workDoneRepo.createWorkDoneStack(it)
             }
+        Log.d("updateWork","start finish ${workDoneUsers.size} stacks ${workDoneStacks.size} workDone ${workDone.isPendingUpdate}")
         }catch (e: Exception){
             Log.d("updateWork", "failed due to ${e.message}")
         }

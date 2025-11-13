@@ -1,8 +1,6 @@
 package com.example.airdry.ui.screens.work
 
-// In package com.example.airdry.ui.screens.work
 
-// ... (Your existing imports) ...
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -91,6 +89,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkListScreen(
@@ -112,10 +111,10 @@ fun WorkListScreen(
     val expandedDays = remember { mutableStateMapOf<String, Boolean>() }
     var showFilterModal by remember { mutableStateOf(false) } // State for modal visibility
     val sheetState = rememberModalBottomSheetState()
-    var viewOnlyMode by remember { mutableStateOf(false) }
+    val viewOnlyMode by  viewModel.viewModeOnly.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.populateDailyWorkSummaries(pageSize = pageSize)
+        viewModel.refreshData()
         viewModel.populateDepartmentsAndSections()
     }
     val context = LocalContext.current
@@ -130,9 +129,6 @@ fun WorkListScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-
-            // --- Header Row with Filter Button ---
-
             // --- Header Row with Filter Button and Settings ---
             Row(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -164,23 +160,18 @@ fun WorkListScreen(
                             modifier = Modifier.size(34.dp)
                         )
                     }
-
-                    Spacer(Modifier.width(8.dp)) // Spacing after Add button
-
-                    // --- FILTER BUTTON ---
+                    Spacer(Modifier.width(8.dp))
                     IconButton(onClick = { showFilterModal = true }) {
                         Icon(Icons.Default.FilterList,
                             contentDescription = "Show Filters",
                             tint =  MaterialTheme.colorScheme.primary)
                     }
-
-                    Spacer(Modifier.width(8.dp)) // **CRITICAL: Spacing after Filter button**
-
+                    Spacer(Modifier.width(8.dp))
                     // --- SETTINGS BUTTON and DROPDOWN MENU ---
                     Box {
-                        IconButton(onClick = { showSettingsMenu = true }) { // Toggle the menu visibility
+                        IconButton(onClick = { showSettingsMenu = true }) {
                             Icon(
-                                imageVector = Icons.Default.MoreVert, // Settings Icon
+                                imageVector = Icons.Default.MoreVert,
                                 contentDescription = "Settings",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(34.dp)
@@ -203,16 +194,16 @@ fun WorkListScreen(
                                         Switch(
                                             checked = viewOnlyMode,
                                             onCheckedChange = { isChecked ->
-                                                viewOnlyMode = isChecked
+                                                viewModel.setViewMode(isChecked)
                                             }
                                         )
                                     }
                                 },
                                 onClick = {
-                                    // Toggle logic for the entire menu item click
-                                    viewOnlyMode = !viewOnlyMode
-                                    // Keep the menu open or close it after click
+                                    viewModel.setViewMode(!viewOnlyMode)
+                                    viewModel.refreshData()
                                     showSettingsMenu = false
+
                                 }
                             )
                         }

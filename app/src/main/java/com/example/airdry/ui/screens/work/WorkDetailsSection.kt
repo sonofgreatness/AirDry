@@ -1,10 +1,16 @@
 package com.example.airdry.ui.screens.work
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Divider
@@ -23,38 +29,40 @@ import java.time.format.DateTimeFormatter
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkDetailsSection(
     formState: WorkFormState,
-    onUpdateDate: (Long) -> Unit, // Not used in this snippet but kept for completeness
+    onUpdateDate: (Long) -> Unit,
     onShowDatePicker: (Boolean) -> Unit
 ) {
-    // Note: Removed @ExperimentalTime opt-in as it's not needed for java.time classes
     val date = java.time.Instant.ofEpochMilli(formState.workDate)
         .atZone(java.time.ZoneId.systemDefault())
         .toLocalDate()
 
     val formattedDate = date.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy"))
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()), // allow scrolling if content grows
+        verticalArrangement = Arrangement.Top
+    ) {
         Text("Work Metadata", style = MaterialTheme.typography.titleLarge)
         Divider(Modifier.padding(vertical = 8.dp))
 
-        // Use a Box to make the entire OutlinedTextField area clickable
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onShowDatePicker(true) } // Requests the dialog to be shown
+                .clickable { onShowDatePicker(true) }
         ) {
             OutlinedTextField(
                 value = formattedDate,
                 onValueChange = {},
                 label = { Text("Work Date") },
                 readOnly = true,
-                // Ensure it's not focusable to prevent soft keyboard showing
                 singleLine = true,
-                enabled = false, // Set to false to remove tap ripple but still show value
+                enabled = false,
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,
                     disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -65,5 +73,8 @@ fun WorkDetailsSection(
                 leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = "Date") }
             )
         }
+
+        Spacer(Modifier.height(24.dp))
+        // Additional form fields can go here, they will scroll if overflow
     }
 }
