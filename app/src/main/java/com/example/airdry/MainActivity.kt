@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.example.airdry.auth.SessionManager
 import com.example.airdry.ui.nav.Navigation
@@ -25,6 +27,9 @@ import com.example.airdry.ui.viewmodels.SettingsViewModel
 import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -48,9 +53,10 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var connectivityObserver: ConnectivityObserver
-
+    private var keepSplashOnScreen = true
     override fun onCreate(savedInstanceState: Bundle?) {
-
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { keepSplashOnScreen }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -61,6 +67,21 @@ class MainActivity : ComponentActivity() {
                 AppContent(bool,themeManager)
 
         }
+
+        lifecycleScope.launch {
+            // Combine the critical flows and take the first emission (initial data ready)
+            combine(
+                sessionManager.isLoggedInFlow,
+                myConnectivityObserver.isServerReachable
+            ) { isLoggedIn, isServerUp ->
+                true
+            }.take(1)
+                .collect {
+                    keepSplashOnScreen = false
+                }
+        }
+
+
     }
     private fun shouldMoveToLoginScreen(isUserLoggedIn: Boolean, isServerUp: Boolean): Boolean{
 

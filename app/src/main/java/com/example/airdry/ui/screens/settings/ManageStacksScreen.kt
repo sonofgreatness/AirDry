@@ -3,6 +3,7 @@ package com.example.airdry.ui.screens.settings
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,8 +18,10 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.airdry.database.Entities.Stack.NestedStack
 import com.example.airdry.ui.nav.Screen
+import com.example.airdry.ui.screens.work.EmptyListPlaceHolder
 import com.example.airdry.ui.viewmodels.StackViewModel
 import java.util.Locale
 
@@ -52,6 +56,8 @@ fun ManageStacksScreen(
     // ... (Existing code for viewModel, LaunchedEffects, Context) ...
     val allStacks by viewModel.allStack.collectAsState()
     val context = LocalContext.current
+    val  isSyncing by viewModel.isSyncing.collectAsState()
+
     var searchText by  remember {mutableStateOf("")}
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { message ->
@@ -88,21 +94,32 @@ fun ManageStacksScreen(
             maxLines = 1
 
         )
-        GreenDivider() // Assuming you have this composable
+        GreenDivider()
 
-        // 👇 Using LazyVerticalGrid for a "gallery" or "library shelf" look
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2), // Two cards per row, like an open book
-            contentPadding = PaddingValues(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
+        if (allStacks.isEmpty() && isSyncing ==false){
+            EmptyListPlaceHolder("No stacks to show", 50 , Icons.Default.WarningAmber)
+        }
+        if(allStacks.isEmpty() && isSyncing ==true){
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        }else{
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2), // Two cards per row, like an open book
+                contentPadding = PaddingValues(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
 
-            itemsIndexed (allStacks) { index,stack ->
-                StackDetailsCard(stack = stack, onClick = {
-                    navController.navigate(Screen.EditStack.withArgs(stack.stack.id.toString()))
-                })
+                itemsIndexed (allStacks) { index,stack ->
+                    StackDetailsCard(stack = stack, onClick = {
+                        navController.navigate(Screen.EditStack.withArgs(stack.stack.id.toString()))
+                    })
+                }
             }
         }
     }

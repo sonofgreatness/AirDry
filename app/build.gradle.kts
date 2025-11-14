@@ -125,4 +125,6 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.material.icons.extended)
 
+    implementation("androidx.core:core-splashscreen:1.2.0")
+
 }
