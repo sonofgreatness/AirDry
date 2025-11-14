@@ -48,7 +48,6 @@ import com.example.airdry.ui.screens.settings.ManageUpdatesScreen
 import com.example.airdry.ui.screens.settings.Settings
 import com.example.airdry.ui.screens.work.EditWorkScreen
 import com.example.airdry.ui.screens.work.RecordWorkScreen
-
 import com.example.airdry.ui.screens.work.WorkListScreen
 import com.example.airdry.ui.screens.workers.CreateWorkerScreen
 import com.example.airdry.ui.screens.workers.EditWorkerScreen
@@ -64,214 +63,163 @@ import com.example.airdry.ui.viewmodels.StackViewModel
 import com.example.airdry.ui.viewmodels.WorkViewModel
 import com.example.airdry.util.UtilityFunctions.Companion.toUUID
 
+
+
 @Composable
-fun Navigation(employeeViewModel: EmployeeViewModel,
-               workViewModel: WorkViewModel,
-               connectionsViewModel: ConnectionsViewModel,
-               authViewModel: AuthViewModel,
-               sessionManager: SessionManager,
-               myConnectivityObserver: MyConnectivityObserver,
-               profileViewModel: ProfileViewModel,
-               stackViewModel: StackViewModel,
-               settingsViewModel: SettingsViewModel,
-               recordWorkViewModel: RecordWorkViewModel,
-               themeManager: ThemeManager
-               ) {
-    val isServerUp by  myConnectivityObserver.isServerReachable.collectAsState()
-    val isUserLoggedIn  by sessionManager.isLoggedInFlow.collectAsState()
+fun Navigation(
+    employeeViewModel: EmployeeViewModel,
+    workViewModel: WorkViewModel,
+    connectionsViewModel: ConnectionsViewModel,
+    authViewModel: AuthViewModel,
+    sessionManager: SessionManager,
+    myConnectivityObserver: MyConnectivityObserver,
+    profileViewModel: ProfileViewModel,
+    stackViewModel: StackViewModel,
+    settingsViewModel: SettingsViewModel,
+    recordWorkViewModel: RecordWorkViewModel,
+    themeManager: ThemeManager
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
     val title = "BrotherHood Mobile"
     val showBackIcon = currentRoute !in listOf(
         Screen.Workers.route,
         Screen.SelectEmployee.route,
         Screen.Settings.route,
-        Screen.Login.route)
-    val darkTheme  by themeManager.isDarkThemeEnabled.collectAsState()
+        Screen.Login.route
+    )
 
-
+    val isServerUp by myConnectivityObserver.isServerReachable.collectAsState()
+    val isUserLoggedIn by sessionManager.isLoggedInFlow.collectAsState()
+    val darkTheme by themeManager.isDarkThemeEnabled.collectAsState()
 
     Scaffold(
-        modifier = Modifier
-            .windowInsetsPadding(WindowInsets.navigationBars),
         topBar = {
             AirDryTopAppBar(
                 title = title,
                 showBackIcon = showBackIcon,
                 onBackClick = { navController.popBackStack() },
-                onProfileClick = {navController.navigate(Screen.Profile.route)},
+                onProfileClick = { navController.navigate(Screen.Profile.route) },
                 isServerUp = isServerUp,
                 isUserLoggedIn = isUserLoggedIn
             )
         },
         bottomBar = { BottomNavigationBar(navController) }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            NavHost(navController = navController, startDestination = Screen.SelectEmployee.route) {
-        //
+        Box(Modifier.padding(padding)) {
+
+            NavHost(
+                navController = navController,
+                startDestination = Screen.SelectEmployee.route
+            ) {
+
+                composable(Screen.SelectEmployee.route) {
+                    WorkListScreen(workViewModel, navController)
+                }
+
                 composable(Screen.Workers.route) {
-                    WorkersListScreen(navController = navController, viewModel = employeeViewModel)
+                    WorkersListScreen(navController, employeeViewModel)
+                }
+
+                composable(Screen.Settings.route) {
+                    Settings(
+                        navController,
+                        settingsViewModel,
+                        darkThemeEnabled = darkTheme,
+                        onToggleTheme = { themeManager.setDarkTheme(it) },
+                        myConnectivityObserver
+                    )
                 }
 
                 composable(Screen.CreateWorker.route) {
-                    CreateWorkerScreen(navController = navController, viewModel = employeeViewModel)
+                    CreateWorkerScreen(navController, employeeViewModel)
+                }
+
+                composable(Screen.RecordWork.route) {
+                    RecordWorkScreen(recordWorkViewModel, navController)
+                }
+
+                composable(Screen.ManageUpdates.route) {
+                    ManageUpdatesScreen(connectionsViewModel)
+                }
+
+                composable(Screen.Profile.route) {
+                    ProfileScreen(profileViewModel,navController, sessionManager)
                 }
 
                 composable(
                     route = Screen.EditWorker.route + "/{workerId}",
-                    arguments = listOf(
-                        navArgument("workerId") {
-                            type = NavType.StringType
-                        },
-                    )
+                    arguments = listOf(navArgument("workerId") { type = NavType.StringType })
                 ) { entry ->
-                    val id = entry.arguments?.getString("workerId")
                     EditWorkerScreen(
-                        navController = navController,
-                        employeeId = id.toString(),
-                        viewModel = employeeViewModel
+                        navController,
+                        entry.arguments?.getString("workerId").toString(),
+                        employeeViewModel
                     )
                 }
-                composable(Screen.Settings.route) {
-
-                    Settings(navController, settingsViewModel
-                    , darkThemeEnabled = darkTheme,
-                  onToggleTheme = { themeManager.setDarkTheme(it) },
-                        myConnectivityObserver)
-                }
-                composable(Screen.SelectEmployee.route) {
-                    WorkListScreen(viewModel = workViewModel,navController)
-                }
-                composable(Screen.ManageStacks.route) {
-
-                    val stacks by workViewModel.allStacks.observeAsState(emptyList())
-                    // Launch coroutine to fetch data
-                    LaunchedEffect(stacks) {
-
-                        workViewModel.loadAllStacks()
-                    }
-                    ManageStacksScreen(stackViewModel, navController)
-                }
-                composable(Screen.ManageUpdates.route) { ManageUpdatesScreen(connectionsViewModel) }
 
                 composable(
-                    route = Screen.EditStack.route + "/{stackId}",
-                    arguments = listOf(
-                        navArgument("stackId") {
-                            type = NavType.StringType
-                        },
-                    )
+                    route = Screen.EditWork.route + "/{workId}",
+                    arguments = listOf(navArgument("workId") { type = NavType.StringType })
                 ) { entry ->
-                    val id = entry.arguments?.getString("stackId")
-                    EditStackScreen(
-                        navController = navController,
-                        stackId = id.toString(),
-                        viewModel = stackViewModel
-                    )
-                }
-                composable(Screen.About.route)
-                {
-                    AboutScreen()
-                }
-                composable(Screen.ProductKey.route) {
-                    ProductKeyScreen(connectionsViewModel)
-                }
-                composable(Screen.Login.route) {
-                    LoginScreen(
-                        authViewModel
-                    ) {
-                        navController.navigate(Screen.ManageUpdates.route)
-                    }
-                }
-                composable(Screen.Profile.route) {
-                    ProfileScreen(profileViewModel,sessionManager=sessionManager, navController = navController)
-                }
-                composable(Screen.RecordWork.route) {
-                    RecordWorkScreen(recordWorkViewModel,navController)
-                }
-                composable(route =Screen.EditWork.route +"/{workId}",
-                    arguments = listOf(
-                        navArgument("workId") {
-                            type = NavType.StringType
-                        },)
-                ){
-                    val workId = it.arguments?.getString("workId").toString()
+                    val workId = entry.arguments?.getString("workId")!!
                     EditWorkScreen(
-                        navController = navController,
-                        viewModel = recordWorkViewModel,
-                        workDoneId = workId.toUUID()
+                        recordWorkViewModel,
+                        workId.toUUID(),
+                        navController,
+
                     )
                 }
             }
         }
     }
-
 }
 
-    @Composable
-    fun BottomNavigationBar(navController: NavController) {
-        val screens = listOf(Screen.Workers, Screen.SelectEmployee, Screen.Settings)
-        val currentDestination = navController.currentBackStackEntryAsState().value?.destination
-        Box {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                tonalElevation = 8.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                screens.forEachIndexed { index, screen ->
-                    if (index == 1) {
-                        Spacer(Modifier.weight(1f)) // Leave space for center FAB
-                    } else {
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    screen.icon!!,
-                                    contentDescription = screen.title,
-                                    tint = if (currentDestination?.route == screen.route)
-                                        MaterialTheme.colorScheme.primary
-                                    else
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                            },
-                            label = { Text(screen.title) },
-                            selected = currentDestination?.route == screen.route,
-                            onClick = {
-                                navController.navigate(screen.route) {
 
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        )
-                    }
+@Composable
+fun BottomNavigationBar(navController: NavController) {
+    val screens = listOf(Screen.Workers, Screen.SelectEmployee, Screen.Settings)
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
+
+    Box {
+        NavigationBar {
+            screens.forEachIndexed { index, screen ->
+                if (index == 1) {
+                    Spacer(Modifier.weight(1f))
+                } else {
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                screen.icon!!,
+                                contentDescription = screen.title,
+                                tint = if (currentDestination?.route == screen.route)
+                                    MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        label = { Text(screen.title) },
+                        selected = currentDestination?.route == screen.route,
+                        onClick = { navController.navigateTopLevel(screen.route) }
+                    )
                 }
             }
+        }
 
-            // Center FAB
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screen.SelectEmployee.route)
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .offset(y = (-36).dp)
-                    .size(64.dp),
-                shape = CircleShape
-            ) {
-                Icon(
-                    Screen.WorkDone.icon!!,
-                    contentDescription = "Work Done",
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+        FloatingActionButton(
+            onClick = {
+                navController.navigateTopLevel(Screen.SelectEmployee.route)
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color.White,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = (-36).dp)
+                .size(64.dp),
+            shape = CircleShape
+        ) {
+            Icon(Screen.WorkDone.icon!!, contentDescription = "Work Done")
         }
     }
+}

@@ -9,6 +9,8 @@ import com.example.airdry.database.Entities.Work.WorkDoneStack
 import com.example.airdry.database.Entities.Work.WorkDoneUser
 import com.example.airdry.database.Entities.Work.WorkDoneWithUsersAndStacks
 import com.example.airdry.domain.repository.interfaces.WorkDoneRepository
+import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE
+import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import java.sql.Timestamp
 import java.util.UUID
 import javax.inject.Inject
@@ -73,4 +75,9 @@ override      suspend fun  getCachedWorkInsert():List<WorkDone>
 
    override suspend fun getCountOfWorkDonePendingInsert():Int = workDoneDao.getCountOfWorkDonePendingInsert()
    override suspend fun  getCountOfWorkDonePendingUpdate() :Int  = workDoneDao.getCountOfWorkDonePendingUpdate()
+   override   suspend fun getDailyWorkSummariesForUser(
+       page: Int,
+       pageSize: Int,
+       filters: WorkDataFiltersDTO
+   ): PaginatedResponse<WorkDaySummaryDTO>? = workDoneDao.getDailyWorkSummariesForUser(page,pageSize,filters)
 }

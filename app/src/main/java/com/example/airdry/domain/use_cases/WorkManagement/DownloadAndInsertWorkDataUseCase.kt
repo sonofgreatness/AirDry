@@ -32,7 +32,6 @@ class DownloadAndInsertWorkDataUseCase
         try {
                 val filters = getDateFilters()
             emit(DownloadState.Loading)
-            Log.d("soul","filters: $filters")
             populateSummariesList(filters)
             insertWorkDoneInDB()
             emit(DownloadState.Success("Downloaded work data successfully"))

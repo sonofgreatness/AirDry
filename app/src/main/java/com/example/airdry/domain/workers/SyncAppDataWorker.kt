@@ -70,14 +70,12 @@ class SyncAppDataWorker (
 
         val totalTasks = tasks.size
         if (isServerReachable == false) {
-            Log.d("sync data worker", "server  NOT reached")
             return Result.retry()
         }
          else{
 
 
             try {
-                Log.d("sync data worker", "server reached")
                 for ((index, task) in tasks.withIndex()) {
                     val (label, useCase) = task
                     val progressPercent = ((index.toFloat() / totalTasks) * 100).toInt()
@@ -91,7 +89,6 @@ class SyncAppDataWorker (
                         return Result.failure()
                     }
                 }
-
                 showCompletedNotification("✅ Synchronization completed successfully", success = true)
                 return Result.success()
             } catch (e: Exception) {

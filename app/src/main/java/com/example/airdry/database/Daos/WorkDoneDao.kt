@@ -25,8 +25,11 @@ import com.example.airdry.util.Constants.Companion.DEFAULT_PAGE_SIZE
 import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT
 import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE
 import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 
 @Dao
@@ -101,106 +104,119 @@ interface  WorkDoneDao {
         filters: WorkDataFiltersDTO
     ): PaginatedResponse<WorkDaySummaryDTO>? {
         try {
-            // 1. Get ALL filtered work done relations (no pagination yet)
             val filteredWorkDoneList = getFilteredWorkDone(filters)
-
-            if (filteredWorkDoneList.isEmpty()) {
-                // Return an empty paginated response if there are no records
-                return PaginatedResponse(emptyList(), page, pageSize, 0, 1)
-            }
-
-            // 2. Map all filtered work done records to atomic WorkSummaryDTOs
-            val summaries = filteredWorkDoneList.map { relation ->
-                val workDone = relation.workDone
-                val dateFmt = java.text.SimpleDateFormat(HUMAN_READABLE_FORMAT_TEXT)
-                val workDateStr = dateFmt.format(java.util.Date(workDone.workDate.time))
-
-                // ... (Stack mapping logic remains the same)
-                val stacks = relation.stacks.map { stack ->
-                    val nestedStack = getNestedStackFromId(stack.id)
-                    StackInfoDTO(
-                        id = stack.id,
-                        displayName = stack.displayName,
-                        stackCodeDisplayName = nestedStack.stackCode.displayName ?: "",
-                        stackCode = nestedStack.stackCode.displayCode ?: "",
-                        volume = stack.volume?: 0.0
-                    )
-                }
-                val totalVolume = stacks.sumOf { it.volume }
-                val totalStacks = stacks.size
-
-                // ... (User mapping and volume calculation logic remains the same)
-                val users = relation.users.map { user ->
-                    UserInfoDTO(
-                        id = user.id,
-                        name = user.name.toString(),
-                        surname = user.surname.toString(),
-                        phoneNumber = user.phoneNumber.toString(),
-                        isActive = user.isActive ==true,
-                        isApproved = user.isApproved ==true,
-                        personalCubes = 0.0
-                    )
-                }
-                val totalUsers = users.size
-                val perUserVolume = if (totalUsers > 0) totalVolume / totalUsers else 0.0
-                val usersWithCubes = users.map { it.copy(personalCubes = perUserVolume) }
-
-                val timeFormat = java.text.SimpleDateFormat(HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE)
-                val createdAtStr = workDone.capturedAt?.let { timeFormat.format(java.util.Date(it.time)) }
-                val updatedAtStr = workDone.updatedAt?.let { timeFormat.format(java.util.Date(it.time)) }
-
-                WorkSummaryDTO(
-                    id = workDone.id,
-                    workDate = workDateStr,
-                    totalVolume = totalVolume,
-                    totalStacks = totalStacks,
-                    totalUsers = totalUsers,
-                    stacks = stacks,
-                    users = usersWithCubes,
-                    capturedAt = createdAtStr,
-                    updatedAt = updatedAtStr,
-                    capturedBy = workDone.capturedBy.toString(),
-                    updatedBy = workDone.updatedBy.toString()
-                )
-            }
-
-            // 3. GROUP by day: Convert atomic summaries into final WorkDaySummaryDTOs
-            // This is the list we need to paginate.
-            val groupedByDay = summaries.groupBy { it.workDate }.map { (day, works) ->
-                WorkDaySummaryDTO(
-                    dayLabel = day,
-                    totalVolume = works.sumOf { it.totalVolume },
-                    totalStacks = works.sumOf { it.totalStacks },
-                    totalUsers = works.flatMap { it.users }.distinctBy { it.id }.size,
-                    workList = works
-                )
-            }.sortedByDescending {
-                // Optional: Sort by date descending to show most recent first
-                java.text.SimpleDateFormat(HUMAN_READABLE_FORMAT_TEXT).parse(it.dayLabel)
-            }
-
-            // 4. APPLY PAGINATION to the grouped list
-            val finalCount = groupedByDay.size.toLong() // Total count of *DAYS*
-            val finalTotalPages = if (finalCount == 0L) 1 else ((finalCount + pageSize - 1) / pageSize).toInt()
-
-            val pagedGroupedList = groupedByDay
-                .drop((page - 1) * pageSize)
-                .take(pageSize)
-
-            // 5. Return the response
-            return PaginatedResponse(
-                items = pagedGroupedList, // The paged list of daily summaries
-                page = page,
-                pageSize = pageSize,
-                totalCount = finalCount, // The total number of unique days
-                totalPages = finalTotalPages
-            )
+            return paginatedResponse(filteredWorkDoneList, page, pageSize)
 
         }catch (e: Exception){
             Log.d("getDailyWorkSummaries", "DAO failed due to ${e.message}")
             return null
         }
     }
+
+    @Transaction
+    suspend fun paginatedResponse(
+        filteredWorkDoneList: List<WorkDoneWithUsersAndStacks>,
+        page: Int,
+        pageSize: Int
+    ): PaginatedResponse<WorkDaySummaryDTO> {
+        if (filteredWorkDoneList.isEmpty()) {
+            // Return an empty paginated response if there are no records
+            return PaginatedResponse(emptyList(), page, pageSize, 0, 1)
+        }
+
+        // 2. Map all filtered work done records to atomic WorkSummaryDTOs
+        val summaries = filteredWorkDoneList.map { relation ->
+            val workDone = relation.workDone
+            val dateFmt = SimpleDateFormat(HUMAN_READABLE_FORMAT_TEXT,Locale.getDefault())
+            val workDateStr = dateFmt.format(Date(workDone.workDate.time))
+
+            // ... (Stack mapping logic remains the same)
+            val stacks = relation.stacks.map { stack ->
+                val nestedStack = getNestedStackFromId(stack.id)
+                StackInfoDTO(
+                    id = stack.id,
+                    displayName = stack.displayName,
+                    stackCodeDisplayName = nestedStack.stackCode.displayName ?: "",
+                    stackCode = nestedStack.stackCode.displayCode ?: "",
+                    volume = stack.volume ?: 0.0
+                )
+            }
+            val totalVolume = stacks.sumOf { it.volume }
+            val totalStacks = stacks.size
+
+            // ... (User mapping and volume calculation logic remains the same)
+            val users = relation.users.map { user ->
+                UserInfoDTO(
+                    id = user.id,
+                    name = user.name.toString(),
+                    surname = user.surname.toString(),
+                    phoneNumber = user.phoneNumber.toString(),
+                    isActive = user.isActive == true,
+                    isApproved = user.isApproved == true,
+                    personalCubes = 0.0
+                )
+            }
+            val totalUsers = users.size
+            val perUserVolume = if (totalUsers > 0) totalVolume / totalUsers else 0.0
+            val usersWithCubes = users.map { it.copy(personalCubes = perUserVolume) }
+
+            val timeFormat = SimpleDateFormat(HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE, Locale.getDefault())
+            val createdAtStr = workDone.capturedAt?.let { timeFormat.format(Date(it.time)) }
+            val updatedAtStr = workDone.updatedAt?.let { timeFormat.format(Date(it.time)) }
+
+            WorkSummaryDTO(
+                id = workDone.id,
+                workDate = workDateStr,
+                totalVolume = totalVolume,
+                totalStacks = totalStacks,
+                totalUsers = totalUsers,
+                stacks = stacks,
+                users = usersWithCubes,
+                capturedAt = createdAtStr,
+                updatedAt = updatedAtStr,
+                capturedBy = workDone.capturedBy.toString(),
+                updatedBy = workDone.updatedBy.toString()
+            )
+        }
+
+        // 3. GROUP by day: Convert atomic summaries into final WorkDaySummaryDTOs
+        // This is the list we need to paginate.
+        val groupedByDay = summaries.groupBy { it.workDate }.map { (day, works) ->
+            WorkDaySummaryDTO(
+                dayLabel = day,
+                totalVolume = works.sumOf { it.totalVolume },
+                totalStacks = works.sumOf { it.totalStacks },
+                totalUsers = works.flatMap { it.users }.distinctBy { it.id }.size,
+                workList = works
+            )
+        }.sortedByDescending {
+            // Optional: Sort by date descending to show most recent first
+            SimpleDateFormat(HUMAN_READABLE_FORMAT_TEXT, Locale.getDefault()).parse(it.dayLabel)
+        }
+
+        // 4. APPLY PAGINATION to the grouped list
+        val finalCount = groupedByDay.size.toLong() // Total count of *DAYS*
+        val finalTotalPages =
+            if (finalCount == 0L) 1 else ((finalCount + pageSize - 1) / pageSize).toInt()
+
+        val pagedGroupedList = groupedByDay
+            .drop((page - 1) * pageSize)
+            .take(pageSize)
+
+        // 5. Return the response
+        return PaginatedResponse(
+            items = pagedGroupedList, // The paged list of daily summaries
+            page = page,
+            pageSize = pageSize,
+            totalCount = finalCount, // The total number of unique days
+            totalPages = finalTotalPages
+        )
+    }
+
+
+
+
+
 
     @Query("SELECT* FROM user_profile LIMIT 1")
     suspend  fun getAuthUser(): Profile?
@@ -249,6 +265,48 @@ interface  WorkDoneDao {
             matchDate && matchUser
         }
     }
+    @Transaction
+    suspend fun getDailyWorkSummariesForUser(
+        page: Int = DEFAULT_PAGE,
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        filters: WorkDataFiltersDTO
+    ): PaginatedResponse<WorkDaySummaryDTO>? {
+        try {
+            val filteredWorkDoneList = getFilteredWorkDoneForUser(filters)
+            return paginatedResponse(filteredWorkDoneList, page, pageSize)
+
+        }catch (e: Exception){
+            Log.d("getDailyWorkSummaries", "DAO failed due to ${e.message}")
+            return null
+        }
+    }
+
+    @Transaction
+    suspend fun getFilteredWorkDoneForUser(filters: WorkDataFiltersDTO): List<WorkDoneWithUsersAndStacks> {
+        val allWork = getAllWorkDoneWithUsersAndStack()
+        return allWork.filter { relation ->
+            val work = relation.workDone
+            // 1. Date filter
+            val matchDate = filters.filterDate?.let { dateStr ->
+                val date = LocalDate.parse(dateStr)
+                val startOfDay = date.minusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
+                val endOfDay = date.atStartOfDay(ZoneOffset.UTC).toInstant()
+                work.workDate.toInstant() in startOfDay..endOfDay
+            } ?: true
+
+            // 2. Department, section, and user filters
+            val matchUser = relation.users.any { user ->
+                var ok = true
+                if (!filters.includeInactiveWorkers) {
+                    ok = ok && (user.isActive == true && user.isApproved == true)
+                }
+                filters.filterUserId?.let { ok = ok && user.id == it }
+                ok
+            }
+            matchDate && matchUser
+        }
+    }
+
 
     fun checkIfWorkDoneBelongsToUser(
         uUID: UUID?,

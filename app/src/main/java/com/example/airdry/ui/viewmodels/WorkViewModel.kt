@@ -25,6 +25,7 @@ import com.example.airdry.util.UtilityFunctions.Companion.toUUIDOrNull
 import com.example.airdry.util.operational_states.WorkDataFiltersDTOState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -45,8 +46,8 @@ class WorkViewModel @Inject constructor(
 ) : ViewModel()
 {
 
-    private val _selectedAppUser = MutableLiveData<AppUser?>()
-    val selectedAppUser: LiveData<AppUser?> = _selectedAppUser
+    private val _users = MutableLiveData<List<AppUser>>()
+    val users: LiveData<List<AppUser>> get() = _users
 
     private val _allStacks = MutableLiveData<List<NestedStack?>>()
     val allStacks : LiveData<List<NestedStack?>>  get() = _allStacks
@@ -71,7 +72,8 @@ class WorkViewModel @Inject constructor(
 
     private val _viewModeOnly = MutableStateFlow<Boolean>(false)
     val viewModeOnly: StateFlow<Boolean> get() = _viewModeOnly
-
+    private val _isSyncing = MutableStateFlow(true)
+    val isSyncing: StateFlow<Boolean> get()=_isSyncing
 
     private val _uiEvent = Channel<String>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -79,6 +81,7 @@ class WorkViewModel @Inject constructor(
 
     init{
         loadAllStacks()
+        loadAllUsers()
     }
 
      fun loadAllStacks() {
@@ -87,6 +90,23 @@ class WorkViewModel @Inject constructor(
                 _allStacks.postValue(it)
             }
         }
+    }
+    fun loadAllUsers(){
+        viewModelScope.launch {
+            filterUsers("")
+        }
+    }
+
+    fun filterUsers(searchTerm : String){
+        viewModelScope.launch {
+            userManagementRepo.getFilteredEmployees(searchTerm).let {
+                    _users.postValue(it?.map { my ->
+                        my.appUser
+                    })
+
+            }
+        }
+
     }
     fun setViewMode(value:Boolean){
         _viewModeOnly.value  = value
@@ -126,8 +146,10 @@ class WorkViewModel @Inject constructor(
                    populateDailyWorkSummaries()
                }
                is WorkDataFiltersDTOState.FilterName -> {
-                   _filterDto.value = _filterDto.value.copy(filterName = newValue)
-                   populateDailyWorkSummaries()
+                   //
+                   _filterDto.value = _filterDto.value.copy(filterUserId = newValue.toUUIDOrNull())
+                    populateDailyWorkSummariesForUser()
+                   //populateDailyWorkSummaries()
                }
                is WorkDataFiltersDTOState.FilterSection ->{
                    _filterDto.value = _filterDto.value.copy(filterSectionId = newValue.toUUIDOrNull())
@@ -173,6 +195,7 @@ class WorkViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
+            _isSyncing.value = true
             if (isNetworkAvailable.value && isOnlineLoggedIn.value && viewModeOnly)
             {
                 Log.d("load data", "server")
@@ -181,11 +204,16 @@ class WorkViewModel @Inject constructor(
                 Log.d("load data", "local")
                 getDataLocally(page, pageSize)
             }
+            delay(2000)
+            _isSyncing.value = false
         }
     }
 
+
+
     private suspend fun getDataFromServer(page: Int, pageSize: Int) {
         val resp = workApi.getDailyWorkSummaries(page, pageSize, filterDto.value)
+        Log.d("server get", "res  ${resp}")
         resp?.let {
             _totalPages.value = it.totalPages
             if (page <= 1) {
@@ -212,6 +240,58 @@ class WorkViewModel @Inject constructor(
           Log.d("getDataLocally", "failed ${e.message}")
       }
      }
+
+    fun  populateDailyWorkSummariesForUser(pageSize: Int = DEFAULT_PAGE_SIZE, viewModeOnly:Boolean =_viewModeOnly.value){
+        val page  = _currentPage.value
+        if (page > _totalPages.value) {
+            return
+        }
+        viewModelScope.launch {
+            _isSyncing.value = true
+            if (isNetworkAvailable.value && isOnlineLoggedIn.value && viewModeOnly)
+            {
+                Log.d("load data for User", "server")
+                getDataFromServerForUser(page, pageSize)
+            }else{
+                Log.d("load data For User", "local")
+                getDataLocallyForUser(page, pageSize)
+            }
+            delay(2000)
+            _isSyncing.value = false
+        }
+    }
+
+
+
+    private suspend fun getDataFromServerForUser(page: Int, pageSize: Int) {
+        val resp = workApi.getDailyWorkSummariesByUser(page, pageSize, filterDto.value)
+        resp?.let {
+            _totalPages.value = it.totalPages
+            if (page <= 1) {
+                _dailyWorkSummaries.value = it.items
+            } else {
+                _dailyWorkSummaries.value += it.items
+            }
+        }
+    }
+    private suspend fun getDataLocallyForUser(page: Int, pageSize: Int){
+
+        try {
+            val resp = workDoneRepo.getDailyWorkSummariesForUser(page, pageSize, filterDto.value)
+            resp?.let {
+                _totalPages.value = it.totalPages
+                if (page <= 1) {
+                    _dailyWorkSummaries.value = it.items
+                } else {
+                    _dailyWorkSummaries.value += it.items
+                }
+            }
+
+        }catch (e: Exception){
+            Log.d("getDataLocally", "failed ${e.message}")
+        }
+    }
+
 
     fun populateDepartmentsAndSections(){
         populateDepartments()

@@ -66,7 +66,7 @@ fun AboutScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("About AirDry", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("About BrotherHood Mobile", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         Text("Accurate and timely recording of production work", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
@@ -98,7 +98,7 @@ fun AboutScreen(
                         }
 
                         Text(
-                            "AirDry helps the production department accurately and timely record work done every day. " +
+                            "BrotherHood helps the production department accurately and timely record work done every day. " +
                                     "It centralizes personnel information and lets workers record stacks completed at the end of each working day.",
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -108,10 +108,10 @@ fun AboutScreen(
                         Text("Key features", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
                         Spacer(Modifier.height(4.dp))
 
-                        FeatureBullet("Personnel management — keep employee records and assignments.")
-                        FeatureBullet("Stack recording — record stacks (pieces/cubes) done by each worker daily.")
-                        FeatureBullet("Stack Management settings — configure stack types: name, pieces per stack, etc.")
-                        FeatureBullet("Report generation — creates multi-sheet Excel workbooks for analysis.")
+                        FeatureBullet("Personnel management — keep employee personal info and work records")
+                        FeatureBullet("Work recording — record stacks (pieces/cubes) done by each worker daily.")
+                        FeatureBullet("Stack Management settings — View stack types: name, pieces per stack, etc.")
+
                     }
                 }
 
@@ -124,25 +124,25 @@ fun AboutScreen(
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(painterResource(R.drawable.summarize_24), contentDescription = "Reports", modifier = Modifier.size(24.dp))
+                            Icon(painterResource(R.drawable.summarize_24), contentDescription = "Work Done", modifier = Modifier.size(24.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Reports (Excel)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text("Record Work Done", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                         }
 
                         Text(
-                            "When you export reports the app generates an Excel workbook with three sheets:",
+                            "You can create WorkDone for a list of users and it can include 1 or more stacks they worked  on",
                             style = MaterialTheme.typography.bodyMedium
                         )
 
                         Spacer(Modifier.height(6.dp))
 
                         // Sheets list
-                        SheetBullet("Raw Data — all stacks by all personnel in a selected period.")
-                        SheetBullet("Daily Summary — number of cubes per person per day + totals.")
-                        SheetBullet("Period Summary — total cubes and stacks per person across the selected period.")
+                        SheetBullet("Work data  recorded includes work date, stacks done and list of  contributing users")
+                        SheetBullet("Turn on viewModeOnly if  you do not want to record work but just browse through records")
+                        SheetBullet("You can filter work  so you can only see work  work recorded by you, work recorded on a particular day, by department , by section")
 
                         Spacer(Modifier.height(6.dp))
-                        Text("These reports help operations and management review individual and team productivity over time.", style = MaterialTheme.typography.bodySmall)
+                        Text("These features enable easy recording, viewing and confirmation of work data  in the system", style = MaterialTheme.typography.bodySmall)
                     }
                 }
 
@@ -160,9 +160,9 @@ fun AboutScreen(
                             Text("How to use", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                         }
 
-                        Text("1. Go to Settings → Stack Management to define stack types (name and pieces).", style = MaterialTheme.typography.bodyMedium)
-                        Text("2. During each shift, workers record completed stacks using the Work Done screen.", style = MaterialTheme.typography.bodyMedium)
-                        Text("3. At period end, export reports to review raw and summarized output.", style = MaterialTheme.typography.bodyMedium)
+                        Text("1. Go to Settings → View Stacks Library  to view stacks dimensions and cubes.", style = MaterialTheme.typography.bodyMedium)
+                        Text("2. To set  how much data  you want to get from the server configure Month Offset", style = MaterialTheme.typography.bodyMedium)
+                        Text("3. To set how often the application should sync with server configure Day Offset", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
 

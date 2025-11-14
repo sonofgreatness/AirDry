@@ -24,12 +24,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +44,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,13 +54,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,12 +75,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.airdry.data.dto.Work.StackInfoDTO
 import com.example.airdry.data.dto.Work.UserInfoDTO
 import com.example.airdry.data.dto.Work.WorkDaySummaryDTO
 import com.example.airdry.data.dto.Work.WorkSummaryDTO
 import com.example.airdry.data.dto.WorkDataFiltersDTO
+import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.UserManagement.Department
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.ui.nav.Screen
@@ -84,6 +96,7 @@ import com.example.airdry.util.Constants.Companion.FILTER_DATE_FORMAT
 import com.example.airdry.util.UtilityFunctions
 import com.example.airdry.util.UtilityFunctions.Companion.covertNumberTo2DecimalString
 import com.example.airdry.util.UtilityFunctions.Companion.covertNumberTo3DecimalString
+import com.example.airdry.util.UtilityFunctions.Companion.extractFullNameFromApiString
 import com.example.airdry.util.operational_states.WorkDataFiltersDTOState
 import java.time.Instant
 import java.time.ZoneId
@@ -97,7 +110,8 @@ fun WorkListScreen(
     navigator: NavController
 ) {
 
-    val workSummaries by viewModel.dailyWorkSummaries.collectAsState()
+
+    val workSummaries  by  viewModel.dailyWorkSummaries.collectAsState()
     val filtersDTO by viewModel.filterDto.collectAsState()
     val departments by viewModel.departments.collectAsState()
     val sections by viewModel.sections.collectAsState()
@@ -106,18 +120,29 @@ fun WorkListScreen(
     val currentPage by viewModel.currentPage.collectAsState()
     val isMoreDataAvailable = currentPage < totalPages
     val pageSize = DEFAULT_PAGE_SIZE
-    var showSettingsMenu by remember { mutableStateOf(false)}
+    var showSettingsMenu by remember {mutableStateOf(false)}
 
-    val expandedDays = remember { mutableStateMapOf<String, Boolean>() }
-    var showFilterModal by remember { mutableStateOf(false) } // State for modal visibility
+    val expandedDays = remember {mutableStateMapOf<String,Boolean>() }
+    var showFilterModal by remember {mutableStateOf(false)}
     val sheetState = rememberModalBottomSheetState()
     val viewOnlyMode by  viewModel.viewModeOnly.collectAsState()
+    val isSyncing   by viewModel.isSyncing.collectAsState()
+    val users by  viewModel.users.observeAsState()
+    var expandedUser by  remember {mutableStateOf(true)}
+    var showWorkerDropDown by remember {mutableStateOf(false)}
+    val selectedUser by remember(filtersDTO, users) {
+        derivedStateOf { users?.find { it.id == filtersDTO.filterUserId } }
+    }
+
 
     LaunchedEffect(Unit) {
         viewModel.refreshData()
         viewModel.populateDepartmentsAndSections()
+        viewModel.loadAllUsers()
     }
+
     val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -129,7 +154,6 @@ fun WorkListScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-            // --- Header Row with Filter Button and Settings ---
             Row(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -140,8 +164,6 @@ fun WorkListScreen(
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-
-                    // --- NEW WORK BUTTON ---
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
@@ -167,7 +189,6 @@ fun WorkListScreen(
                             tint =  MaterialTheme.colorScheme.primary)
                     }
                     Spacer(Modifier.width(8.dp))
-                    // --- SETTINGS BUTTON and DROPDOWN MENU ---
                     Box {
                         IconButton(onClick = { showSettingsMenu = true }) {
                             Icon(
@@ -177,12 +198,10 @@ fun WorkListScreen(
                                 modifier = Modifier.size(34.dp)
                             )
                         }
-
                         DropdownMenu(
                             expanded = showSettingsMenu,
                             onDismissRequest = { showSettingsMenu = false }
                         ) {
-                            // Dropdown menu item with the toggle
                             DropdownMenuItem(
                                 text = {
                                     Row(
@@ -210,51 +229,82 @@ fun WorkListScreen(
                     }
                 }
             }
+            if(showWorkerDropDown){
+                UserDropDown(
+                    expandedUser = expandedUser,
+                    onExpandedChange = { expandedUser = it },
+                    selectedUser = selectedUser,
+                    users = users,
+                    viewModel = viewModel)
+            }
+            Spacer(Modifier.height(12.dp))
+            Box(modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+                ){
+                Icon(
+                    if (showWorkerDropDown)
+                      Icons.Default.ExpandLess
+                    else
+                        Icons.Default.ExpandMore
+                    , contentDescription = "Opens worker Select"
+                    , modifier = Modifier.size(36.dp).clickable{
+                        showWorkerDropDown =!showWorkerDropDown
+                        if (!showWorkerDropDown){
+                            viewModel.clearAllFilters()
+                        }
+
+                    }
+                )
+            }
             Spacer(Modifier.height(18.dp))
+            if (workSummaries.isEmpty() && isSyncing ==false){
+                EmptyListPlaceHolder("No work data to show", 50 , Icons.Default.WarningAmber)
+            }
+            if (workSummaries.isEmpty() && isSyncing ==true){
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if (workSummaries.isEmpty()){
-                    item {
-                        Text("No work data to show")
+                    Box(modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center){
+                        CircularProgressIndicator()
                     }
-                }
 
-                itemsIndexed(workSummaries) {index, daySummary ->
+            }else{
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(workSummaries) {index, daySummary ->
 
-                    if (index == workSummaries.lastIndex && isMoreDataAvailable) {
-                        LaunchedEffect(index) {
-                            viewModel.loadNextPage(pageSize)
+                        if (index == workSummaries.lastIndex && isMoreDataAvailable) {
+                            LaunchedEffect(index) {
+                                viewModel.loadNextPage(pageSize)
+                            }
+                        }
+                        WorkDaySummaryCard(
+                            summary = daySummary,
+                            expanded = expandedDays[daySummary.dayLabel] == true,
+                            onToggleExpand = { expanded ->
+                                expandedDays[daySummary.dayLabel] = expanded
+                            },
+                            navigator,viewOnlyMode
+                        )
+                    }
+                    if (isMoreDataAvailable) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Show a progress indicator while fetching the next page
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(32.dp),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
-                    WorkDaySummaryCard(
-                        summary = daySummary,
-                        expanded = expandedDays[daySummary.dayLabel] == true,
-                        onToggleExpand = { expanded ->
-                            expandedDays[daySummary.dayLabel] = expanded
-                        },
-                        navigator,viewOnlyMode
-                    )
                 }
-                if (isMoreDataAvailable) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            // Show a progress indicator while fetching the next page
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(32.dp),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-
             }
         }
         if (showFilterModal) {
@@ -277,6 +327,78 @@ fun WorkListScreen(
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+private fun UserDropDown(
+    expandedUser: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    selectedUser: AppUser?,
+    users: List<AppUser>?,
+    viewModel: WorkViewModel
+) {
+
+
+    val searchTerm = remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+         TextField(
+             modifier = Modifier.fillMaxWidth(),
+             value = searchTerm.value,
+             onValueChange = {
+                 searchTerm.value =it
+                 viewModel.filterUsers(it)
+             },
+             placeholder = { Text("Search...") },
+             singleLine = true,
+             trailingIcon = {
+                 Icon(Icons.Filled.Cancel, contentDescription = "clear text",
+                     modifier = Modifier.clickable{
+                         searchTerm.value=""
+                         viewModel.filterUsers("")
+                     })
+             }
+
+
+         )
+
+        ExposedDropdownMenuBox(
+            expanded = expandedUser,
+            onExpandedChange = { onExpandedChange(!expandedUser) }
+        ) {
+            OutlinedTextField(
+                readOnly = true,
+                value = selectedUser?.name ?: "Select worker",
+                onValueChange = {},
+                label = { Text("Worker") },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expandedUser,
+                onDismissRequest = { onExpandedChange(false) }
+            ) {
+                users?.forEach { user ->
+                    DropdownMenuItem(
+                        text = {
+                            Text("${user.name} ${user.surname} ${user.phoneNumber}")
+                        },
+                        onClick = {
+                            onExpandedChange(false)
+                            viewModel.onChangeFilter(
+                                WorkDataFiltersDTOState.FilterName,
+                                user.id.toString()
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun FilterModalContent(
     filtersDTO: WorkDataFiltersDTO,
     departments: List<Department>,
@@ -290,7 +412,6 @@ fun FilterModalContent(
     val dateState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
     var selectedMe  = filtersDTO.includeOtherStaffRecords
 
-    // Expanded state for dropdowns in the modal
     var expandedDepartment by remember { mutableStateOf(false) }
     var expandedSection by remember { mutableStateOf(false) }
 
@@ -331,7 +452,6 @@ fun FilterModalContent(
                 }
             }
         )
-          // Date Picker Dialog
         if (openDialog.value) {
             DatePickerDialog(
                 onDismissRequest = { openDialog.value = false },
@@ -364,10 +484,9 @@ fun FilterModalContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
             Row(verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.material3.RadioButton(
-                    selected = selectedMe, // Assuming non-null means current user filter
+                    selected = selectedMe,
                     onClick = {
                         val oldSelectMe = selectedMe
                         viewModel.onChangeFilter(WorkDataFiltersDTOState.FilterForMeOnly(selectedMe),"")
@@ -388,7 +507,6 @@ fun FilterModalContent(
                 Text("Me Only", style = MaterialTheme.typography.bodyMedium)
             }
         }
-        // 3. Department and Section Dropdowns (Using your existing UI style)
         DropDownFieldsNoUserTypes(
             selectedDepartment = selectedDepartment,
             selectedSection = selectedSection,
@@ -431,9 +549,6 @@ fun FilterModalContent(
         }
     }
 }
-
-
-
 /** ✅ DAY SUMMARY CARD **/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -488,7 +603,6 @@ fun StatInline(label: String, value: String) {
         Text(d, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
     }
 }
-
 /** ✅ WORK SUMMARY ITEM — Enhanced UI **/
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -518,14 +632,26 @@ private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController, view
                         StatInline("📦 Cubes",covertNumberTo2DecimalString(work.totalVolume))
                         StatInline("🗂 Stacks", work.totalStacks.toString())
                         StatInline("👷 Users", work.totalUsers.toString())
-                        work.capturedBy?.let { StatInline("✍️ Captured by", it) }
+                        work.capturedBy?.let {
+                        StatInline("✍️ Captured by",
+                                if(!viewOnlyMode)
+                                    it
+                                else
+                                extractFullNameFromApiString(it)
+                        )
+                                }
                         work.capturedAt?.let { StatInline("⏱ Captured at", it) }
                     }
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        work.updatedBy?.let { StatInline("🔄 Updated by", it) }
+                        work.updatedBy?.let { StatInline("🔄 Updated by",
+                            if(!viewOnlyMode)
+                                it
+                            else
+                            extractFullNameFromApiString(it))
+                        }
                         if (work.capturedAt != work.updatedAt && work.updatedAt != "null") {
                             work.updatedAt?.let { StatInline("⏱ Updated at", it) }
                         }
@@ -555,9 +681,7 @@ private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController, view
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
             // -------------------------
             // Stacks Section
             // -------------------------
@@ -565,20 +689,17 @@ private fun WorkSummaryItem(work: WorkSummaryDTO, navigator: NavController, view
             Column(modifier = Modifier.fillMaxWidth().padding(start = 6.dp)) {
                 work.stacks.forEach { StackRow(it) }
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
             // -------------------------
             // Users Section
             // -------------------------
             SectionHeader(title = "Workers", subtitle = "Personal Cubes")
             Column(modifier = Modifier.fillMaxWidth().padding(start = 6.dp)) {
-                work.users.forEach { UserRow(it, navigator) }
+                work.users.forEach { UserRow(it) }
             }
         }
     }
 }
-
 @Composable
 fun SectionHeader(title: String, subtitle: String) {
     Row(
@@ -589,7 +710,6 @@ fun SectionHeader(title: String, subtitle: String) {
         Text(subtitle, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
     }
 }
-
 /** ✅ STACK ROW **/
 @Composable
 fun StackRow(stack: StackInfoDTO) {
@@ -601,9 +721,8 @@ fun StackRow(stack: StackInfoDTO) {
         Text(covertNumberTo3DecimalString(stack.volume), style = MaterialTheme.typography.bodyMedium)
     }
 }
-
 @Composable
-private fun UserRow(user: UserInfoDTO, navigator: NavController) {
+private fun UserRow(user: UserInfoDTO) {
 
     Card(
         modifier = Modifier
@@ -666,7 +785,7 @@ private fun UserRow(user: UserInfoDTO, navigator: NavController) {
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = String.format("%.3f m³", user.personalCubes),
+                    text =covertNumberTo3DecimalString(user.personalCubes),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                 )
                 Text(
@@ -677,7 +796,6 @@ private fun UserRow(user: UserInfoDTO, navigator: NavController) {
         }
     }
 }
-
 @Composable
 fun StatusChip(label: String, status: Boolean, icon: ImageVector) {
     Row(
@@ -706,4 +824,19 @@ fun StatusChip(label: String, status: Boolean, icon: ImageVector) {
         )
     }
 }
+@Composable
+fun EmptyListPlaceHolder(title:String, imageSize:Int, displayIcon: ImageVector ){
 
+    Box(modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center){
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Icon(displayIcon,
+                contentDescription = "",
+                modifier = Modifier
+                    .size(imageSize.dp)
+                    .clip(CircleShape),
+            )
+            Text(title)
+        }
+    }
+}

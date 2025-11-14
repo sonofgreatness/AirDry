@@ -2,6 +2,9 @@ package com.example.airdry.data.dto.Work
 import com.example.airdry.database.Entities.Work.WorkDone
 import com.example.airdry.database.Entities.Work.WorkDoneStack
 import com.example.airdry.database.Entities.Work.WorkDoneUser
+import com.example.airdry.util.UtilityFunctions.Companion.extractFullNameFromApiString
+import com.example.airdry.util.UtilityFunctions.Companion.extractUUIDFromApiString
+import com.example.airdry.util.UtilityFunctions.Companion.parseNullableStringToTimestamp
 import com.example.airdry.util.UtilityFunctions.Companion.parseStringFromApiToTimeStamp
 import com.example.airdry.util.UtilityFunctions.Companion.toUUIDOrNull
 import kotlinx.serialization.Serializable
@@ -48,25 +51,7 @@ data class WorkSummaryDTO(
         )
     }
 
-    private fun extractUUIDFromApiString(loaded: String?): UUID? {
-        if (loaded.isNullOrBlank()) return null
-        val uuidString = loaded.substringBefore(";").trim()
-        return try {
-            UUID.fromString(uuidString)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-    }
-    private fun extractFullNameFromApiString(loaded: String?): String {
-        if (loaded.isNullOrBlank()) return ""
-        return loaded.substringAfter(";", "").trim()
-    }
-    private fun parseNullableStringToTimestamp(dateString : String?) :Timestamp?{
-        dateString?.let{
-            return   parseStringFromApiToTimeStamp(it)
-        }
-        return null
-    }
+
 }
 
 @Serializable

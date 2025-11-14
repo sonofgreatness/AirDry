@@ -3,9 +3,9 @@ package com.example.airdry.ui.screens.workers
 
 
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,9 +24,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -41,13 +44,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.airdry.database.Entities.UserManagement.AppUser
 import com.example.airdry.database.Entities.UserManagement.NestedAppUser
 import com.example.airdry.ui.nav.Screen
+import com.example.airdry.ui.screens.work.EmptyListPlaceHolder
 import com.example.airdry.ui.theme.Typography
 import com.example.airdry.ui.viewmodels.EmployeeViewModel
 
@@ -56,16 +60,20 @@ fun WorkersListScreen(
     navController: NavController,
     viewModel: EmployeeViewModel
 ) {
-
-
     LaunchedEffect(Unit) {
-
         viewModel.updateFilteredEmployees("")
     }
-
     val workers by viewModel.filteredEmployees.observeAsState(emptyList())
     val searchTerm = remember { mutableStateOf("") }
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
+    val isSyncing by viewModel.isSyncing.collectAsState()
+    val focusManager = LocalFocusManager.current
+    Column(Modifier.fillMaxSize()
+        .padding(16.dp)
+        .pointerInput(Unit)
+    {detectTapGestures{focusManager.clearFocus()}}
+    )
+
+    {
         Text("Casual  Workers", style = Typography.titleLarge)
         Spacer(Modifier.height(16.dp))
         Button(
@@ -74,10 +82,7 @@ fun WorkersListScreen(
         ) {
             Text("Add New Worker")
         }
-
-
         Spacer(Modifier.height(16.dp))
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -85,7 +90,6 @@ fun WorkersListScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             OutlinedTextField(
                 value = searchTerm.value,
 
@@ -114,12 +118,15 @@ fun WorkersListScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-         if(workers.isEmpty()){
+        if (workers.isEmpty() && isSyncing ==false){
+            EmptyListPlaceHolder("No workers to show", 50 , Icons.Default.WarningAmber)
+        }
+         if(workers.isEmpty() && isSyncing ==true){
              Box(
                  Modifier.fillMaxSize(),
-                 contentAlignment = Alignment.Center
+                 contentAlignment = Alignment.Center,
              ) {
-                 Text("No workers found", style = MaterialTheme.typography.bodyLarge)
+                 CircularProgressIndicator()
              }
          }else{
         LazyColumn {

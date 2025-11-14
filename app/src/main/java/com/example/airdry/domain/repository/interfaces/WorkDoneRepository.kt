@@ -53,4 +53,9 @@ interface WorkDoneRepository {
 
     suspend fun getCountOfWorkDonePendingInsert() :Int
     suspend fun  getCountOfWorkDonePendingUpdate() :Int
+    suspend fun getDailyWorkSummariesForUser(
+        page: Int = DEFAULT_PAGE,
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        filters: WorkDataFiltersDTO
+    ): PaginatedResponse<WorkDaySummaryDTO>?
 }

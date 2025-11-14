@@ -155,5 +155,25 @@ class UtilityFunctions {
             return String.format("%.3f m³", number)
         }
 
+        fun extractUUIDFromApiString(loaded: String?): UUID? {
+            if (loaded.isNullOrBlank()) return null
+            val uuidString = loaded.substringBefore(";").trim()
+            return try {
+                UUID.fromString(uuidString)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
+        fun extractFullNameFromApiString(loaded: String?): String {
+            if (loaded.isNullOrBlank()) return ""
+            return loaded.substringAfter(";", "").trim()
+        }
+        fun parseNullableStringToTimestamp(dateString : String?) :Timestamp?{
+            dateString?.let{
+                return   parseStringFromApiToTimeStamp(it)
+            }
+            return null
+        }
+
     }
 }

@@ -22,7 +22,7 @@ class Constants {
 
         const val GITHUB_API = "https://api.github.com/"
         const val GITHUB_REPO_URL = "repos/sonofgreatness/AirDry/releases"
-        const val API_BASE_URL = "http://10.57.63.27:$SERVER_PORT"
+        const val API_BASE_URL = "http://172.17.34.27:$SERVER_PORT"
         const val PRODUCT_KEY = "si_sonofgreatness"
         const val  PRODUCT_KEY_PRODUCT_KEY= "key"
         const val  FAILED_LOGIN = "Failed to login, check credentials"

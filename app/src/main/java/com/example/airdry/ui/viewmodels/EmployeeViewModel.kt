@@ -20,22 +20,14 @@ import com.example.airdry.database.Entities.UserManagement.Organization
 import com.example.airdry.database.Entities.UserManagement.Section
 import com.example.airdry.database.Entities.UserManagement.UserType
 import com.example.airdry.domain.repository.interfaces.UserRepository
-import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertCasualUsersUseCase
-import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertDepartmentsUseCase
-import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertSectionsUseCase
-import com.example.airdry.domain.use_cases.UserManagement.DownloadAndInsertUserTypesUseCase
-import com.example.airdry.domain.use_cases.UserManagement.UploadCachedUsersUseCase
 import com.example.airdry.domain.workers.UploadUsersWorker
-import com.example.airdry.ui.screens.workers.WorkerCard
-import com.example.airdry.util.operational_states.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -44,13 +36,12 @@ import javax.inject.Inject
 class EmployeeViewModel
     @Inject constructor(private val application: Application,
                         private val repository: UserRepository,
-        private  val connectivityObserver: MyConnectivityObserver):
+        connectivityObserver: MyConnectivityObserver):
     ViewModel() {
 
-
-
-     val isServerReachable = connectivityObserver.isServerReachable
+    val isServerReachable = connectivityObserver.isServerReachable
     private val _filteredEmployees = MutableLiveData<List<NestedAppUser>>()
+
     val filteredEmployees :LiveData<List<NestedAppUser>>
         get() = _filteredEmployees
 
@@ -65,11 +56,20 @@ class EmployeeViewModel
 
     private val _organization = MutableStateFlow<Organization?>(null)
     val  organization : StateFlow<Organization?> = _organization
+
+    private val _isSyncing = MutableStateFlow(true)
+    val isSyncing : StateFlow<Boolean> get() =_isSyncing
+
     init {
         loadAllEmployees()
         getOrganization()
         populateDropDowns()
-
+    }
+    fun loadAllEmployees() {
+        viewModelScope.launch {
+            val all = repository.getFilteredEmployees("") ?: emptyList()
+            _filteredEmployees.postValue(all)
+        }
     }
     fun populateDropDowns(){
         populateSections()
@@ -90,7 +90,6 @@ class EmployeeViewModel
           }
       }
     }
-
     private fun populateUserTypes() {
     viewModelScope.launch {
         repository.getCasualUserType()?.let{
@@ -115,19 +114,16 @@ class EmployeeViewModel
 
     fun updateFilteredEmployees(searchTerm :String){
     viewModelScope.launch{
+        _isSyncing.value = true
         repository.getFilteredEmployees(searchTerm).let{
             _filteredEmployees.postValue(it)
         }
+        delay(2000)
+        _isSyncing.value = false
     }
     }
 
-    fun loadAllEmployees() {
-        viewModelScope.launch {
-            val all = repository.getFilteredEmployees("") ?: emptyList()
-            _filteredEmployees.postValue(all)
-            Log.d("loadEmployees", " loadEmployees called size -> ${all.size}")
-        }
-    }
+
     suspend fun getEmployeeById(id: UUID): NestedAppUser? {
         return repository.getById(id)
     }
