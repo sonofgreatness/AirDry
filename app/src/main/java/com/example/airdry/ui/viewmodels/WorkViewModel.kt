@@ -118,7 +118,11 @@ class WorkViewModel @Inject constructor(
         _currentPage.value = DEFAULT_PAGE // <-- RESET CURRENT PAGE
         populateDailyWorkSummaries()
     }
+    private var isLoading = false
     fun refreshData(){
+        if(isLoading)
+            return
+        isLoading =true
         _totalPages.value = DEFAULT_PAGE
         _currentPage.value = DEFAULT_PAGE // <-- RESET CURRENT PAGE
         _dailyWorkSummaries.value = emptyList()
@@ -206,6 +210,7 @@ class WorkViewModel @Inject constructor(
             }
             delay(2000)
             _isSyncing.value = false
+            isLoading =false
         }
     }
 

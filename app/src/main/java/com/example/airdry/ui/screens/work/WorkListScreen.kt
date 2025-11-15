@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -68,6 +69,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -133,6 +135,7 @@ fun WorkListScreen(
     val selectedUser by remember(filtersDTO, users) {
         derivedStateOf { users?.find { it.id == filtersDTO.filterUserId } }
     }
+    val listState = rememberLazyListState()
 
 
     LaunchedEffect(Unit) {
@@ -268,6 +271,18 @@ fun WorkListScreen(
                     }
 
             }else{
+                LaunchedEffect(listState) {
+                    snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
+                        .collect { atTop ->
+                            if (atTop) {
+
+                                android.util.Log.d("Top scroll", "refresh called ")
+                                if (workSummaries.isNotEmpty())
+                                        viewModel.refreshData()
+
+                            }
+                        }
+                }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
