@@ -183,8 +183,6 @@ class WorkViewModel @Inject constructor(
                }
            }
        }
-
-
     }
 
     fun loadNextPage(pageSize: Int = DEFAULT_PAGE_SIZE, viewModeOnly: Boolean =_viewModeOnly.value) {
@@ -218,7 +216,6 @@ class WorkViewModel @Inject constructor(
 
     private suspend fun getDataFromServer(page: Int, pageSize: Int) {
         val resp = workApi.getDailyWorkSummaries(page, pageSize, filterDto.value)
-        Log.d("server get", "res  ${resp}")
         resp?.let {
             _totalPages.value = it.totalPages
             if (page <= 1) {

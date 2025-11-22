@@ -275,12 +275,8 @@ fun WorkListScreen(
                     snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
                         .collect { atTop ->
                             if (atTop) {
-
-                                android.util.Log.d("Top scroll", "refresh called ")
                                 if (workSummaries.isNotEmpty())
-                                        viewModel.refreshData()
-
-                            }
+                                        viewModel.refreshData() }
                         }
                 }
                 LazyColumn(

@@ -1,5 +1,6 @@
 package com.example.airdry.domain.REST_API.implementation
 
+import android.util.Log
 import com.example.airdry.data.dto.Common.PaginatedResponse
 import com.example.airdry.data.dto.Work.CreateWorkDoneDTO
 import com.example.airdry.data.dto.Work.WorkDaySummaryDTO
@@ -56,6 +57,7 @@ class WorkApiImpl(    private  val client: HttpClient
             contentType(ContentType.Application.Json)
             setBody(req)
         }
+        Log.d("createWork", "resp: ${resp.bodyAsText()}")
         return if (resp.status.isSuccess())
             ApiResponse.Success
         else

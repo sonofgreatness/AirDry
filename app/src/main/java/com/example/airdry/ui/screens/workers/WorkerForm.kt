@@ -77,6 +77,8 @@ fun WorkerForm(
     val showIdError = nationalId.isNotEmpty() && !isNationalIdValid
     val isPhoneNumberValid = phoneNumber!!.length == 8 && phoneNumber!!.all { it.isDigit() }
     val isEmailValid  = email.isNotEmpty()
+    val isSectionValid = sectionId != null
+    val isDepartmentValid = departmentId != null
     val showPhoneNumberError = phoneNumber!!.isNotEmpty() && !isPhoneNumberValid
     val showEmailError = email.isEmpty()
 
@@ -102,6 +104,11 @@ fun WorkerForm(
     val scrollState = rememberScrollState()
     LaunchedEffect(Unit) {
         viewModel.populateDropDowns()
+    }
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
     }
     Column(modifier = Modifier
         .fillMaxSize()
@@ -245,7 +252,7 @@ fun WorkerForm(
                     Toast.makeText(context, "Invalid National ID or Phone Number", Toast.LENGTH_SHORT).show()
             }
                       },
-            enabled = isNationalIdValid && isPhoneNumberValid && isEmailValid,
+            enabled = isNationalIdValid && isPhoneNumberValid && isEmailValid &&isSectionValid && isDepartmentValid,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if(!isEditMode)

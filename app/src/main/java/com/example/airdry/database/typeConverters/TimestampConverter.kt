@@ -8,7 +8,7 @@ import java.util.Locale
 
 class TimestampConverter {
 
-    private val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
     @TypeConverter
     fun fromTimestamp(value: Long?): Timestamp? {

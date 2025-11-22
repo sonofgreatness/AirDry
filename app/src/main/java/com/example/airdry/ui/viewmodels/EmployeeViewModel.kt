@@ -22,12 +22,14 @@ import com.example.airdry.database.Entities.UserManagement.UserType
 import com.example.airdry.domain.repository.interfaces.UserRepository
 import com.example.airdry.domain.workers.UploadUsersWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -59,6 +61,9 @@ class EmployeeViewModel
 
     private val _isSyncing = MutableStateFlow(true)
     val isSyncing : StateFlow<Boolean> get() =_isSyncing
+    private val _uiEvent = Channel<String>()
+    val uiEvent = _uiEvent.receiveAsFlow()
+
 
     init {
         loadAllEmployees()
@@ -107,8 +112,13 @@ class EmployeeViewModel
     }
      fun createEmployee(entity: AppUser) {
         viewModelScope.launch {
-            Toast.makeText(application, "Employee Created", Toast.LENGTH_SHORT).show()
-            repository.createEmployee(entity)
+            _uiEvent.send("Creating ...")
+            try{
+
+                repository.createEmployee(entity)
+            }catch (e: Exception){
+                _uiEvent.send("Failed to create worker ${e.message}")
+            }
         }
     }
 

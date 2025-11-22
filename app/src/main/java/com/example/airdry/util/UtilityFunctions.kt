@@ -4,11 +4,12 @@ import android.util.Log
 import com.example.airdry.util.Constants.Companion.FILTER_DATE_FORMAT
 import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT
 import com.example.airdry.util.Constants.Companion.HUMAN_READABLE_FORMAT_TEXT_HOUR_MINUTE
-import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.sql.Timestamp
+
 
 class UtilityFunctions {
     companion object {
@@ -128,7 +129,7 @@ class UtilityFunctions {
             return LocalDate.now(utcZoneId).format(datePickerFormatter)
         }
 
-        /** Generates filter date offset by given months (UTC) */
+        /** Generates filter date offset by given months (UTC)*/
         fun generateOffSetFilterDate(offsetMonths: Long): String {
             val targetDate = LocalDate.now(utcZoneId).minusMonths(offsetMonths)
             return targetDate.format(datePickerFormatter)
@@ -173,6 +174,13 @@ class UtilityFunctions {
                 return   parseStringFromApiToTimeStamp(it)
             }
             return null
+        }
+
+
+        // Extension function on java.sql.Timestamp to convert it to java.util.Date
+        fun Timestamp.toDate(): java.util.Date {
+            // Both types share the same internal 'time' (milliseconds since epoch)
+            return Date(this.time)
         }
 
     }

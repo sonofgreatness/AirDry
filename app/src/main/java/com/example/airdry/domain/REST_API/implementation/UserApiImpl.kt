@@ -135,7 +135,7 @@ class UserApiImpl(private val client: HttpClient,
             else
              SimpleResponse(message = response.status.value.toString())
         }catch (e: Exception){
-            Log.d("ConnectivityObserver","Server check failed ${e.message}")
+            Log.d("ConnectivityObserver","Server check failed ${e.message} URL $API_BASE_URL$API_HEALTH")
             return SimpleResponse("Server check failed ${e.message}")
         }
     }

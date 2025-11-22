@@ -55,7 +55,6 @@ class SyncAppDataWorker (
         val isServerReachable = connectivityObserver.isServerReachable.value
         createNotificationChannel()
         setForeground(createForegroundInfo("Starting synchronization...", 0))
-
         val tasks = listOf(
             "Uploading cached users" to { uploadCachedUsersUseCase() },
             "Uploading cached work" to { uploadWorkDataUseCase() },

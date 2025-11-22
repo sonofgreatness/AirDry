@@ -21,9 +21,10 @@ class UploadWorkDataUseCase @Inject constructor(
 
     operator fun invoke(): Flow<DownloadState> = flow {
         emit(DownloadState.Loading)
-
+        Log.d("uploadwork ", "oo3.5")
         val cachedWork = runCatching { getCachedWork() }
             .getOrElse {
+                Log.d("uploadwork ", "oo3.9")
                 emit(DownloadState.Error("Failed to load cached work: ${it.message}"))
                 return@flow
             }
@@ -38,7 +39,12 @@ class UploadWorkDataUseCase @Inject constructor(
             cachedWork.map { work ->
                 async {
                     when (val res = workApi.createWork(work)) {
-                        is ApiResponse.Created -> Result.success(work)
+                        is ApiResponse.Created ->{
+                            workDoneRepo.unCacheWorkDoneForInsert(work.id)
+                            Log.d("uploadwork ", "oo4.5")
+                            Result.success(work)
+
+                        }
                         is ApiResponse.Success ->{
                             workDoneRepo.unCacheWorkDoneForInsert(work.id)
                             Log.d("Transaction create", "success")
@@ -73,6 +79,7 @@ class UploadWorkDataUseCase @Inject constructor(
 
     private suspend fun getCachedWork(): List<CreateWorkDoneDTO> =
         runCatching {
+            Log.d("uploadwork ", "oo4")
             workDoneRepo.getCachedWork().map { it.generateCreateWorkDoneDTO() }
         }.getOrElse {
             Log.e("getCachedWork", "Error fetching cached work: ${it.message}")

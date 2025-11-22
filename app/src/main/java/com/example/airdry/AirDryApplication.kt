@@ -69,7 +69,7 @@ override fun getWorkManagerConfiguration() =
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             SyncAppDataWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP, // KEEP so it doesn't replace if already scheduled
+            ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )
     }

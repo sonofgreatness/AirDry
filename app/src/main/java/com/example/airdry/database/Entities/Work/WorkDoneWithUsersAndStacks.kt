@@ -7,6 +7,8 @@ import androidx.room.Relation
 import com.example.airdry.data.dto.Work.CreateWorkDoneDTO
 import com.example.airdry.database.Entities.Stack.Stack
 import com.example.airdry.database.Entities.UserManagement.AppUser
+import com.example.airdry.util.UtilityFunctions.Companion.toDate
+import java.util.Date
 import java.util.UUID
 
 data class WorkDoneWithUsersAndStacks(
@@ -45,13 +47,9 @@ data class WorkDoneWithUsersAndStacks(
             id = UUID.randomUUID(),
             stacksList
         )
-
-        Log.d("w_2", "stacks pure ${stacksList.size}")
-        Log.d("w_2", "users pure ${workersList.size}")
-        Log.d("w_2", "stacks.size ${stacksList.size}")
         return CreateWorkDoneDTO(
             id = workDone.id,
-            workDate = workDone.workDate,
+            workDate = workDone.workDate.toDate(),
             workersList = listOf(userDto),
             stacksList = listOf(stacksDto),
         )

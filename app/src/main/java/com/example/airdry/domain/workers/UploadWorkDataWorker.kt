@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.RingtoneManager
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -31,17 +32,21 @@ private val uploadWorkDataUseCase: UploadWorkDataUseCase
     override suspend fun doWork(): ListenableWorker.Result {
         createNotificationChannel()
         setForeground(createForegroundInfo("Starting upload..."))
+        Log.d("uploadwork ", "oo0")
         var result: ListenableWorker.Result = ListenableWorker.Result.success()
         uploadWorkDataUseCase().collect { state ->
             when (state) {
                 is DownloadState.Loading -> {
+                    Log.d("uploadwork ", "oo1")
                     setForeground(createForegroundInfo("Uploading cached work..."))
                 }
                 is DownloadState.Success -> {
+                    Log.d("uploadwork ", "oo2")
                     showCompletedNotification("✅ Upload complete: ${state.message}", true)
                     result = ListenableWorker.Result.success()
                 }
                 is DownloadState.Error -> {
+                    Log.d("uploadwork ", "oo3")
                     showCompletedNotification("⚠️ Upload failed: ${state.message}", true)
                     result = ListenableWorker.Result.failure()
                 }

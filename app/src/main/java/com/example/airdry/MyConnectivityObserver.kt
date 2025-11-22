@@ -68,7 +68,7 @@ class MyConnectivityObserver(
 
                     _isServerReachable.value = true
                 } else {
-                    Log.d("conn", "server NOT reached")
+                    Log.d("conn", "server NOT reached ${response.message}")
                     _isServerReachable.value = false
                 }
 
