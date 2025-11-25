@@ -36,6 +36,7 @@ import java.util.UUID
     )],
         indices = [Index("department_id"),Index("organization_id"),
     Index("section_id"),Index("user_type_id"),
+            Index(value = ["national_id"], unique = true),
             Index(value = ["email"], unique = true)]
 
 )
