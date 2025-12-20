@@ -2,7 +2,7 @@ package com.example.airdry.util
 
 class ConstanstFromShared {
     companion object{
-        const val SERVER_PORT = 9090
+
         const val ADMIN_DISPLAY_NAME = "admin"
         const  val PAGE_SIZE= "pageSize"
         const  val PAGE = "page"
